@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kst version="2.0">
+    <data>
+        <source reader="ASCII file" file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt">
+            <properties vector="INDEX" interpretation="3" delimiters="#" columntype="2" columndelimiter=";" headerstart="1" fields="0" readfields="true" usedot="true" columnwidthisconst="false" readunits="false" units="0"/>
+        </source>
+    </data>
+    <variables>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="Column 1" start="3" count="-1" skip="-1" doAve="false" initialVNum="8" initialXNum="85"/>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="Column 2" start="3" count="-1" skip="-1" doAve="false" initialVNum="9" initialXNum="97"/>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="Column 3" start="3" count="-1" skip="-1" doAve="false" initialVNum="10" initialXNum="109"/>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="Time" start="-1" count="200" skip="-1" doAve="false" initialVNum="11" initialXNum="121"/>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="motorMowSense" start="-1" count="200" skip="-1" doAve="false" initialVNum="12" initialXNum="133"/>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="motorMowPWMCurr" start="-1" count="200" skip="-1" doAve="false" initialVNum="13" initialXNum="145"/>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="Time" start="-1" count="200" skip="-1" doAve="false" initialVNum="14" initialXNum="157"/>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="motorMowSense" start="-1" count="200" skip="-1" doAve="false" initialVNum="15" initialXNum="169"/>
+        <datavector file="/home/pi/Documents/PiArdumower/log/PlotMow.txt" fileRelative="log/PlotMow.txt" field="motorMowPWMCurr" start="-1" count="200" skip="-1" doAve="false" initialVNum="16" initialXNum="181"/>
+        <string value="2018-03-18 12:02:59" initialTNum="1"/>
+        <string value="2018-03-18 12:02:59" initialTNum="2"/>
+        <string value="PlotMow.txt" initialTNum="3"/>
+        <string value="/home/pi/Documents/PiArdumower/log" initialTNum="4"/>
+        <string orphan="true" editable="true" value="2018-03-18 09:22:58" initialTNum="5"/>
+        <string orphan="true" editable="true" value="2018-03-18 09:22:58" initialTNum="6"/>
+        <string orphan="true" editable="true" value="PlotMow.txt" initialTNum="7"/>
+        <string orphan="true" editable="true" value="/home/pi/Documents/PiArdumower/log" initialTNum="8"/>
+    </variables>
+    <objects/>
+    <relations>
+        <curve xvector="Column 1 (V8)" yvector="Column 2 (V9)" color="#105010" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="0" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="1079360110" initialCNum="6"/>
+        <curve xvector="Column 1 (V8)" yvector="Column 3 (V10)" color="#aa0000" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="1" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="1080340488" initialCNum="7"/>
+        <curve xvector="Time (V11)" yvector="motorMowSense (V12)" color="#0000ff" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="0" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="-65794" initialCNum="8"/>
+        <curve xvector="Time (V11)" yvector="motorMowPWMCurr (V13)" color="#008000" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="1" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="0" initialCNum="9"/>
+        <curve xvector="Time (V14)" yvector="motorMowSense (V15)" color="#000000" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="0" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="-1" initialCNum="10"/>
+        <curve xvector="Time (V14)" yvector="motorMowPWMCurr (V16)" color="#ff00ff" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="1" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="-1" initialCNum="11"/>
+    </relations>
+    <graphics>
+        <view name="View &amp;2" width="1595" height="779">
+            <plot tiedxzoom="false" tiedyzoom="false" leftlabelvisible="true" bottomlabelvisible="true" rightlabelvisible="true" toplabelvisible="true" globalfont="Sans,10,-1,5,50,0,0,0,0,0" globalfontscale="16" globalfontcolor="#000000" showlegend="true" hidebottomaxislabel="false" hidetopaxislabel="false" hideleftaxislabel="false" hiderightaxislabel="false" initialPlotNum="4" name="Plot">
+                <position x="3" y="3"/>
+                <rect x="0" y="0" width="1589" height="773"/>
+                <relativesize width="0.995614" height="0.991026" centerx="0.499687" centery="0.499359" posx="0.0018797" posy="0.00384615"/>
+                <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                    <brush color="#000000" style="1"/>
+                </pen>
+                <brush color="#ffffff" style="1"/>
+                <legend auto="true" title="" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="9.6" verticaldisplay="false" name="Legend">
+                    <position x="127" y="103.215"/>
+                    <rect x="0" y="0" width="498" height="26"/>
+                    <relativesize width="0.327632" height="0.0383198" centerx="0.213816" centery="0.151385" posx="0.05" posy="0.132225"/>
+                    <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                    <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                        <brush color="#000000" style="1"/>
+                    </pen>
+                    <brush color="#ffffff" style="1"/>
+                </legend>
+                <cartesianrender name="Cartesian Plot" type="1">
+                    <relation tag="motorMowSense vs Time (C10)"/>
+                    <relation tag="motorMowPWMCurr vs Time (C11)"/>
+                </cartesianrender>
+                <plotaxis id="xaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="0">
+                    <plotmarkers xaxis="true" linecolor="#000000" linestyle="1" linewidth="1" curvemode="1978824644"/>
+                </plotaxis>
+                <plotaxis id="yaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="1">
+                    <plotmarkers xaxis="false" linecolor="#000000" linestyle="1" linewidth="1" curvemode="0"/>
+                </plotaxis>
+                <plotlabel id="leftlabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="16" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="rightlabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="16" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="toplabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="16" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="bottomlabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="16" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="numberlabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="16" fontcolor="#000000" fontuseglobal="true"/>
+                <projectionrect x="106" y="-1.5875" width="199" height="66.675"/>
+            </plot>
+        </view>
+    </graphics>
+</kst>
