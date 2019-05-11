@@ -137,7 +137,8 @@
 #define RaspberryPIPort SerialUSB
 #define ESP8266port Serial1
 #define Bluetooth Serial2  // Ardumower default
-// GPS on Serial3
+#define GpsPort Serial1
+
 
 // ------- ultrasonic config ---------------------------------------------------------
 #define NO_ECHO 0
