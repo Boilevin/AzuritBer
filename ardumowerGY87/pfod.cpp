@@ -1062,10 +1062,7 @@ void RemoteControl::processTimerDetailMenu(String pfodCmd) {
   boolean checkStart = false;
   int startmin, stopmin;
   int timerIdx = pfodCmd[2] - '0';
-  if (pfodCmd.startsWith("p0")) {
-    robot->timer[timerIdx].active = !robot->timer[timerIdx].active;
-    robot->nextTimeTimer=millis()+30000; //reset this if the mower is in station from the home command and want to start again.
-  }
+  if (pfodCmd.startsWith("p0")) robot->timer[timerIdx].active = !robot->timer[timerIdx].active;
   else if (pfodCmd.startsWith("p1")) {
     processSlider(pfodCmd, robot->timer[timerIdx].startTime.hour, 1);
     checkStop = true;
@@ -1289,7 +1286,6 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
   } else if (pfodCmd == "rh") {
     // cmd: home
     robot->whereToStart=99999;
-    robot->nextTimeTimer=millis()+3600000;
     robot->setNextState(STATE_PERI_FIND, 0);
     sendCommandMenu(true);
   } else if (pfodCmd == "rr") {

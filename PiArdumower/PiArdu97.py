@@ -605,7 +605,6 @@ def decode_message(message):  #decode the nmea message
                         else: # write the data to a simple log file and then the raw data as well:
                             with open(cwd+"/gpsdata/" + firstFixDate +".txt", "a") as myfile:
                                 myfile.write(message.datestamp + "," + message.timestamp + "," + str(decimalLatitude) + "," + str(decimalLongitude) +"\n")
-                        
                             with open(cwd+"/gpsdata/Recu" + firstFixDate +".txt", "a") as myfile1:
                                 myfile1.write(mymower.dueSerialReceived +"\n")
 

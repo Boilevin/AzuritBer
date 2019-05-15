@@ -121,8 +121,6 @@
 #define BLUETOOTH_BAUDRATE  19200      // baudrate used for communication with Bluetooth module (Ardumower default: 19200)
 #define ESP8266_BAUDRATE    115200      // baudrate used for communication with esp8266 Wifi module
 #define BLUETOOTH_PIN       1234
-#define GPS_BAUDRATE  9600  // 9600 for M6n ,19200 or 38400 for other module
-
 
 // ------ used serial ports for console, Bluetooth, ESP8266 -----------------------------
 
@@ -130,20 +128,16 @@
 // we use 'SerialUSB' for 'Console' so the Raspberry PI receise all data
 // we use 'Serial' for 'Console' so the PC receise all data
  
-//#define Console Serial
-//#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
+#define Console Serial
+#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
 
-#define Console SerialUSB
-#define CONSOLE_BAUDRATE    250000       // baudrate used for Raspberry PI console
+//#define Console SerialUSB
+//#define CONSOLE_BAUDRATE    250000       // baudrate used for Raspberry PI console
 
 #define RaspberryPIPort SerialUSB
-#define ESP8266port Serial3  //not use and exchange with GPS to avoid workarround (but no issue for me ????????)
+#define ESP8266port Serial1
 #define Bluetooth Serial2  // Ardumower default
-#define GpsPort Serial1
-
-
-
-
+// GPS on Serial3
 
 // ------- ultrasonic config ---------------------------------------------------------
 #define NO_ECHO 0
