@@ -11,6 +11,7 @@ if (os.name=='nt'):
     myBaudRate = 115200
     myOS="Windows"
     GpsConnectedOnPi=False
+    GpsIsM6n=True
     RfidConnectedOnPi=False
     NanoConnectedOnPi=False
     DueConnectedOnPi=False
@@ -23,6 +24,7 @@ if (os.name=='posix'):
     myBaudRate = 250000
     myOS="Linux"
     GpsConnectedOnPi=False
+    GpsIsM6n=True
     RfidConnectedOnPi=False
     NanoConnectedOnPi=False
     DueConnectedOnPi=False

@@ -417,6 +417,8 @@ class mower:
         mower.timeToStartArea2Signal=0
         mower.focusOnPage=0
         mower.dueSerialReceived=''
+        #//bber17
+        mower.autoRecordBatChargeOn=False
         
         
         
@@ -751,7 +753,17 @@ def decode_message(message):  #decode the nmea message
                 mymower.roll=message.roll
                 mymower.Dht22Temp=message.Dht22Temp
                 mymower.loopsPerSecond=message.loopsPerSecond
-                #mymower.status=int(message.status)
+                #//bber17
+                if ((mymower.autoRecordBatChargeOn==False) & (myRobot.stateNames[mymower.state]=='CHARG')): #the mower is now on charge
+                    SldMainBatRefresh.set(10) #data flow 10 times each minute
+                    BtnBatPlotStartRec_click()
+                    mymower.autoRecordBatChargeOn=True
+                if ((mymower.autoRecordBatChargeOn==True) & (myRobot.stateNames[mymower.state]=='STAT')): #the mower is now on charge
+                    BtnBatPlotStopRec_click()
+                    mymower.autoRecordBatChargeOn=False
+                    
+                    
+                
                 if RfidConnectedOnPi :
                     
                     if myRobot.stateNames[mymower.state]=='PTRK':#active the rfid only when tracking
@@ -1294,7 +1306,9 @@ def BtnBatPlotStopRec_click():
     filename=cwd + "/log/PlotBattery" + time.strftime("%Y%m%d%H%M") + ".CSV"
     try:
         os.rename(cwd + "/log/PlotBat.txt",filename) #keep a copy of the plot and clear the last kst file
-        messagebox.showinfo('Info',"File " + filename + " created in log directory")
+        #//bber17
+        if(mymower.autoRecordBatChargeOn==False):
+            messagebox.showinfo('Info',"File " + filename + " created in log directory")
     except OSError:
         pass
     """recreate an empty txt file to have correct auto legend into the graph """
