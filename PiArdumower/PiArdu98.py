@@ -26,6 +26,7 @@ from config import RfidConnectedOnPi
 from config import NanoConnectedOnPi
 from config import DueConnectedOnPi
 from config import GpsIsM6n
+from config import AutoRecordBatCharging
 
 
 
@@ -754,18 +755,20 @@ def decode_message(message):  #decode the nmea message
                 mymower.Dht22Temp=message.Dht22Temp
                 mymower.loopsPerSecond=message.loopsPerSecond
                 #//bber17
-                if ((mymower.autoRecordBatChargeOn==False) & (myRobot.stateNames[mymower.state]=='CHARG')): #the mower is now on charge
-                    SldMainBatRefresh.set(10) #data flow 10 times each minute
-                    BtnBatPlotStartRec_click()
-                    mymower.autoRecordBatChargeOn=True
-                if ((mymower.autoRecordBatChargeOn==True) & (myRobot.stateNames[mymower.state]=='STAT')): #the mower is now on charge
-                    BtnBatPlotStopRec_click()
-                    mymower.autoRecordBatChargeOn=False
+                if AutoRecordBatCharging :
+                    if ((mymower.autoRecordBatChargeOn==False) & (myRobot.stateNames[mymower.state]=='CHARG')): #the mower is now on charge
+                        consoleInsertText("Start to record the Battery charging" + '\n')
+                        SldMainBatRefresh.set(10) #data flow 10 times each minute
+                        mymower.autoRecordBatChargeOn=True
+                        BtnBatPlotStartRec_click()
+                    if ((mymower.autoRecordBatChargeOn==True) & (myRobot.stateNames[mymower.state]=='STAT')): 
+                        consoleInsertText("Stop to record the Battery charging" + '\n')
+                        BtnBatPlotStopRec_click()
+                        mymower.autoRecordBatChargeOn=False
                     
                     
                 
-                if RfidConnectedOnPi :
-                    
+                if RfidConnectedOnPi :                
                     if myRobot.stateNames[mymower.state]=='PTRK':#active the rfid only when tracking
                         if not rfid.getAntennaOn() :                   
                                #print("Turning on the RFID antenna....")
@@ -776,7 +779,6 @@ def decode_message(message):  #decode the nmea message
                             #print("Turning off the RFID antenna....")
                             consoleInsertText("Turning OFF the RFID antenna...." + '\n')
                             rfid.setAntennaOn(False)
-
 
                 tk_batVoltage.set(mymower.batVoltage)         
                 tk_ImuYaw.set(int(180*float(mymower.yaw)/math.pi))
@@ -790,7 +792,7 @@ def decode_message(message):  #decode the nmea message
 
                 if ((mymower.sigArea2Off) & (myRobot.stateNames[mymower.state]=='WAITSIG2')):
                     if(time.time() >= mower.timeToStartArea2Signal):
-                        mower.timeToStartArea2Signal=time.time()+5  #try each 5 secondes
+                        mower.timeToStartArea2Signal=time.time()+5  #try to communicate with sender each 5 secondes
                         ButtonWifiOn_click() #reset dns and acces point
                         ButtonStartArea2_click()
                         
@@ -1292,8 +1294,9 @@ def BtnPeriPlotStopRec_click():
     f.close()
     
 def BtnBatPlotStartRec_click():
-   
-    batPlotterKst.start('/home/pi/Documents/PiArdumower/plotBat.kst')
+    #//bber17
+    if(mymower.autoRecordBatChargeOn!=True):#it's not the auto record so need to start KST
+        batPlotterKst.start('/home/pi/Documents/PiArdumower/plotBat.kst')
     send_req_message('BAT',''+str(SldMainBatRefresh.get())+'','1','10000','0','0','0',)    
 
 def BtnBatPlotStopRec_click():
@@ -1307,7 +1310,7 @@ def BtnBatPlotStopRec_click():
     try:
         os.rename(cwd + "/log/PlotBat.txt",filename) #keep a copy of the plot and clear the last kst file
         #//bber17
-        if(mymower.autoRecordBatChargeOn==False):
+        if(mymower.autoRecordBatChargeOn==False): #it's not the auto record so send a message
             messagebox.showinfo('Info',"File " + filename + " created in log directory")
     except OSError:
         pass

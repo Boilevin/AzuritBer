@@ -15,6 +15,7 @@ if (os.name=='nt'):
     RfidConnectedOnPi=False
     NanoConnectedOnPi=False
     DueConnectedOnPi=False
+    AutoRecordBatCharging=False
 
 if (os.name=='posix'):
     print('Linux Platform')
@@ -28,5 +29,6 @@ if (os.name=='posix'):
     RfidConnectedOnPi=False
     NanoConnectedOnPi=False
     DueConnectedOnPi=False
+    AutoRecordBatCharging=True
     
 
