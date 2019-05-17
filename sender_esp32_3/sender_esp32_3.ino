@@ -5,7 +5,7 @@ const char* ssid     = "ArduWifi";   // put here your phone acces point ssid
 const char* password = "Ardumower1234";  // put here the password
 
 
-byte sigCodeInUse = 1;
+byte sigCodeInUse = 2;
 int8_t sigcode_norm[128];
 int sigcode_size;
 
