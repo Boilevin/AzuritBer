@@ -410,7 +410,8 @@ class Robot
 
     int angleCorresp;
     int accelDuration;
-
+    //bber17
+    byte RollToInsideQty; //use to stop if roll non stop
 
     // -------- mower motor state -----------------------
     int motorMowRpmCounter ;  // mower motor speed state

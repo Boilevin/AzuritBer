@@ -128,16 +128,16 @@
 // we use 'SerialUSB' for 'Console' so the Raspberry PI receise all data
 // we use 'Serial' for 'Console' so the PC receise all data
  
-#define Console Serial
-#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
+//#define Console Serial
+//#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
 
-//#define Console SerialUSB
-//#define CONSOLE_BAUDRATE    250000       // baudrate used for Raspberry PI console
+#define Console SerialUSB
+#define CONSOLE_BAUDRATE    250000       // baudrate used for Raspberry PI console
 
 #define RaspberryPIPort SerialUSB
-#define ESP8266port Serial1
+#define ESP8266port Serial3
 #define Bluetooth Serial2  // Ardumower default
-// GPS on Serial3
+// GPS on Serial1
 
 // ------- ultrasonic config ---------------------------------------------------------
 #define NO_ECHO 0

@@ -236,7 +236,8 @@ Robot::Robot() {
   statsBatteryChargingCounter = 0;
   lastTimeForgetWire = 0; //use in peritrack
   nextTimeToDmpAutoCalibration = 0; //at this time the mower start calibration on first positive lane stop
-
+  //bber17
+  RollToInsideQty=0;
   findedYaw = 999; //use the first time set the compass and the Gyro have the same direction with state roll to find yaw
   highGrassDetect = false;
   motorRightPID.Kp = motorLeftPID.Kp;
@@ -968,7 +969,7 @@ void Robot::setMotorMowPWM(int pwm, boolean useAccel) {
   else {
     motorMowPWMCurr += int(TaC) * (pwm - motorMowPWMCurr) / motorMowAccel;
   }
-  
+
   //bber13
   setActuator(ACT_MOTOR_MOW, min(motorMowSpeedMaxPwm, max(0, motorMowPWMCurr)));
 }
@@ -2527,7 +2528,7 @@ void Robot::readSensors() {
 
 void Robot::setDefaults() {
   motorLeftSpeedRpmSet = motorRightSpeedRpmSet = 0;
-  
+
   motorMowEnable = false;
 }
 
@@ -3225,6 +3226,18 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_OUT_ROLL_TOINSIDE:  //roll left or right in normal mode
+    //bber17
+      if (stateCurr == STATE_WAIT_AND_REPEAT) {
+        RollToInsideQty = RollToInsideQty +1;
+        Console.print("Not Inside roll nb: ");
+        Console.println(RollToInsideQty);
+      }
+      else {
+        RollToInsideQty = 0;
+        Console.print("Find Inside roll nb: ");
+        Console.println(RollToInsideQty);      
+      }
+      
       if (mowPatternCurr == MOW_LANES) {
         laneUseNr = laneUseNr + 1;
         findedYaw = 999;
@@ -3988,13 +4001,17 @@ void Robot::checkPerimeterBoundary() {
     Console.print(millis());
     Console.println(" Rotation direction Left / Right change ");
   }
-
-  if ((stateCurr == STATE_FORWARD_ODO)) {
+//bber17
+  if ((stateCurr == STATE_FORWARD_ODO)||(stateCurr == STATE_MOW_SPIRALE) ) {
     if (perimeterTriggerTime != 0) {
       if (millis() >= perimeterTriggerTime) {
         perimeterTriggerTime = 0;
         Console.print(F("Perimeter trigger at : "));
         Console.println(millis());
+        //reinit spirale mowing
+        spiraleNbTurn = 0;
+        halfLaneNb = 0;
+        highGrassDetect = false; //stop the spirale
         setNextState(STATE_PERI_OUT_STOP, rollDir);
       }
     }
@@ -4301,7 +4318,7 @@ void Robot::readDHT22() {
       Console.print(" Actual Temperature = ");
       Console.println(temperatureDht);
 
-      
+
       batSwitchOffIfIdle = 2; //use to switch off after 1 minute
       setNextState(STATE_OFF, 0);
     }
@@ -4320,6 +4337,7 @@ void Robot::readDHT22() {
 }
 void Robot::checkTimeout() {
   if (stateTime > motorForwTimeMax) {
+    Console.println("Timeout on state ???????????????????????");
     setNextState(STATE_PERI_OUT_STOP, !rollDir); // toggle roll dir
   }
 }
@@ -4449,7 +4467,7 @@ void Robot::loop()  {
       imuDriveHeading = imu.ypr.yaw / PI * 180;
       motorControlOdo();
       //bber13
-      motorMowEnable=false; //to stop mow motor in OFF mode by pressing OFF again (the one shot OFF is bypass)
+      motorMowEnable = false; //to stop mow motor in OFF mode by pressing OFF again (the one shot OFF is bypass)
       checkSonar();  // only for test never use or the mower can't stay into the station
       readDHT22();
       checkBattery();
@@ -4859,7 +4877,7 @@ void Robot::loop()  {
           if ((perimeterInside) && (smoothPeriMag > 350)) //check if signal here and inside need a big value to be sure it is not only noise
           {
             if (areaToGo == 1) {
-              statusCurr = BACK_TO_STATION; //if we are in the area1 it is to go to station    
+              statusCurr = BACK_TO_STATION; //if we are in the area1 it is to go to station
               periFindDriveHeading = imu.ypr.yaw;
             }
             else
@@ -4938,15 +4956,15 @@ void Robot::loop()  {
         findedYaw = (imu.comYaw / PI * 180);
         setNextState(STATE_STOP_CALIBRATE, rollDir);
       }
-      
+
       //bber12
       //01/05/19 to avoid non stop calibrate
-      
-            if (millis() > (stateStartTime + MaxOdoStateDuration + 6000)) {
-              Console.println ("Warning can t roll to find yaw in time The Compass is certainly HS ");
-              setNextState(STATE_STOP_CALIBRATE, rollDir);
-            }
-      
+
+      if (millis() > (stateStartTime + MaxOdoStateDuration + 6000)) {
+        Console.println ("Warning can t roll to find yaw in time The Compass is certainly HS ");
+        setNextState(STATE_STOP_CALIBRATE, rollDir);
+      }
+
       break;
 
 
@@ -5188,7 +5206,7 @@ void Robot::loop()  {
           setBeeper(0, 0, 0, 0, 0); //stop sound immediatly
           if (stopMotorDuringCalib) motorMowEnable = true;//restart the mow motor
           if (perimeterInside) {
-                setNextState(STATE_FORWARD_ODO, rollDir); //if not on the wire continue in forward
+            setNextState(STATE_FORWARD_ODO, rollDir); //if not on the wire continue in forward
           }
           else  setNextState(STATE_PERI_OUT_REV, rollDir);
 
@@ -5272,7 +5290,7 @@ void Robot::loop()  {
       motorControlOdo();
       checkCurrent();
       checkBumpers();
-      checkDrop();                                                                                                                            // Dropsensor - Absturzsensor
+      //checkDrop();                                                                                                                            // Dropsensor - Absturzsensor
       checkSonar();
 
       //checkLawn();
@@ -5370,6 +5388,11 @@ void Robot::loop()  {
 
     case STATE_PERI_OUT_ROLL_TOINSIDE:
       motorControlOdo();
+      //bber17
+      if (RollToInsideQty>=10){
+        Console.println("ERROR Mower is lost out the wire and can't find the signal Roll to inside occur more than 10 Time"); 
+        setNextState(STATE_ERROR, rollDir);    
+      }
 
       if (rollDir == RIGHT) {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft) ) {
@@ -5456,7 +5479,7 @@ void Robot::loop()  {
       //bber14
       //if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
       if (!perimeterInside) setNextState(STATE_PERI_OUT_STOP, rollDir);
-      
+
       if ((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft) ) {
         if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) {
           setNextState(STATE_PERI_OUT_LANE_ROLL2, rollDir);
