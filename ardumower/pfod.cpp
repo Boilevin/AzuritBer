@@ -825,6 +825,8 @@ void RemoteControl::sendImuMenu(boolean update) {
   sendSlider("g08", F("Drift Maxi in Deg Per Second "), robot->maxDriftPerSecond, "Deg", 0.01, 0.3, 0);
   serialPort->print(F("|g18~Accel Gyro Initial Calibration more than 30sec duration"));
   serialPort->print(F("|g19~Compass calibration click to start and again to stop"));
+   //bber18
+  serialPort->print(F("|g20~Delete Compass calibration"));
   serialPort->println("}");
 }
 
@@ -844,6 +846,10 @@ void RemoteControl::processImuMenu(String pfodCmd) {
     robot->imu.calibGyro();
   }
   else if (pfodCmd == "g19") robot->imu.calibComStartStop();
+ 
+ //bber18
+  else if (pfodCmd == "g20") robot->imu.deleteCompassCalib();  
+
   sendImuMenu(true);
 }
 

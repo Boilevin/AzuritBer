@@ -237,7 +237,7 @@ Robot::Robot() {
   lastTimeForgetWire = 0; //use in peritrack
   nextTimeToDmpAutoCalibration = 0; //at this time the mower start calibration on first positive lane stop
   //bber17
-  RollToInsideQty=0;
+  RollToInsideQty = 0;
   findedYaw = 999; //use the first time set the compass and the Gyro have the same direction with state roll to find yaw
   highGrassDetect = false;
   motorRightPID.Kp = motorLeftPID.Kp;
@@ -3226,18 +3226,18 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_OUT_ROLL_TOINSIDE:  //roll left or right in normal mode
-    //bber17
+      //bber17
       if (stateCurr == STATE_WAIT_AND_REPEAT) {
-        RollToInsideQty = RollToInsideQty +1;
+        RollToInsideQty = RollToInsideQty + 1;
         Console.print("Not Inside roll nb: ");
         Console.println(RollToInsideQty);
       }
       else {
         RollToInsideQty = 0;
         Console.print("Find Inside roll nb: ");
-        Console.println(RollToInsideQty);      
+        Console.println(RollToInsideQty);
       }
-      
+
       if (mowPatternCurr == MOW_LANES) {
         laneUseNr = laneUseNr + 1;
         findedYaw = 999;
@@ -4001,8 +4001,8 @@ void Robot::checkPerimeterBoundary() {
     Console.print(millis());
     Console.println(" Rotation direction Left / Right change ");
   }
-//bber17
-  if ((stateCurr == STATE_FORWARD_ODO)||(stateCurr == STATE_MOW_SPIRALE) ) {
+  //bber17
+  if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_MOW_SPIRALE) ) {
     if (perimeterTriggerTime != 0) {
       if (millis() >= perimeterTriggerTime) {
         perimeterTriggerTime = 0;
@@ -4414,10 +4414,7 @@ void Robot::loop()  {
   }
 
 
-  if (millis() >= nextTimePfodLoop) {
-    nextTimePfodLoop = millis() + 200;
-    rc.run();
-  }
+
 
   if (millis() >= nextTimeInfo) {
     if ((millis() - nextTimeInfo > 100)) {
@@ -4437,7 +4434,10 @@ void Robot::loop()  {
     loopsPerSecCounter = 0;
   }
 
-
+  if (millis() >= nextTimePfodLoop) {
+    nextTimePfodLoop = millis() + 200;
+    rc.run();
+  }
 
   // state machine - things to do *PERMANENTLY* for current state
   // robot state machine
@@ -5389,9 +5389,9 @@ void Robot::loop()  {
     case STATE_PERI_OUT_ROLL_TOINSIDE:
       motorControlOdo();
       //bber17
-      if (RollToInsideQty>=10){
-        Console.println("ERROR Mower is lost out the wire and can't find the signal Roll to inside occur more than 10 Time"); 
-        setNextState(STATE_ERROR, rollDir);    
+      if (RollToInsideQty >= 10) {
+        Console.println("ERROR Mower is lost out the wire and can't find the signal Roll to inside occur more than 10 Time");
+        setNextState(STATE_ERROR, rollDir);
       }
 
       if (rollDir == RIGHT) {

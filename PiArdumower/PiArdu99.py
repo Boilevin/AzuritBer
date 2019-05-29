@@ -189,11 +189,13 @@ def find_rfid_tag():
     #mymower.lastRfidFind
     #mymower.lastRfidFind=0
 
-    search=mymower.lastRfidFind
+    search_code=mymower.lastRfidFind
+    search_status=myRobot.statusNames[mymower.status]
     
     mymower.newtagToDo="Null"
     for i in range(0,len(rfid_list)):
-        if str("b'"+rfid_list[i][0]+"'")== str(search):
+        #if str("b'"+rfid_list[i][0]+"'")== str(search_code):
+        if (str("b'"+rfid_list[i][0]+"'")== str(search_code)) & (str(rfid_list[i][1])== str(search_status)):
             mymower.newtagToDo=rfid_list[i][2]
             mymower.newtagSpeed=rfid_list[i][3]
             mymower.newtagRotAngle1=rfid_list[i][4]
@@ -206,7 +208,7 @@ def find_rfid_tag():
     else:
         consoleInsertText('RFID Tag find ToDO is: %s' % (mymower.newtagToDo)+ '\n')
 
-        if((mymower.newtagToDo=="RTS") & (myRobot.statusNames[mymower.status]=="BACK_TO_STATION")): #return to station from station area
+        if((mymower.newtagToDo=="RTS")): #return to station from station area
             consoleInsertText('Find faster return' + '\n')
             send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','0','0','0','0','0','0','0')
             send_pfo_message('rz','1','2','3','4','5','6',)
@@ -220,7 +222,7 @@ def find_rfid_tag():
             send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
             
         
-        if((mymower.newtagToDo=="NEW_AREA") & (myRobot.statusNames[mymower.status]=="TRACK_TO_START")):
+        if((mymower.newtagToDo=="NEW_AREA")):
             
             if (mymower.areaToGo != mymower.areaInMowing):
                 consoleInsertText('Go to area ---> '+ str(mymower.areaToGo) + '\n')
@@ -231,9 +233,8 @@ def find_rfid_tag():
                 send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
                 send_pfo_message('ry','1','2','3','4','5','6',)
                 
-        if((mymower.newtagToDo=="NEW_AREA") & (myRobot.statusNames[mymower.status]=="BACK_TO_STATION")):  #return to station from other area
+            else:  #we are already in the mowing area so return to station from other area
                 mymower.areaToGo=1
-                
                 consoleInsertText('Return to Station area ---> ' + '\n')
                 send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
                 send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','0','0','0','0','0','0','0')
@@ -241,7 +242,6 @@ def find_rfid_tag():
                 send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
                 send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
                 send_var_message('w','areaToGo','1','0','0','0','0','0','0','0')
-
                 send_pfo_message('ry','1','2','3','4','5','6',)
                 #stopsender can freeze the Pi so better to put it after the remote
                 ButtonStopArea2_click()
@@ -3196,13 +3196,19 @@ def add_rfid_tag():
 
 def test1():
         
-    search='01254456722'
+    
+                    
+    search_code=(b'01254456722')
+    search_status="ALL"
+    
+    mymower.newtagToDo="Null"
     for i in range(0,len(rfid_list)):
-        if rfid_list[i][0]==search:
+        #if (str("b'"+rfid_list[i][0]+"'")== str(search_code)) :
+        if (str("b'"+rfid_list[i][0]+"'")== str(search_code)) & (str(rfid_list[i][1])== str(search_status)):
+            
             print("trouv")
             print(rfid_list[i])
-                    
-    
+            
      
 
 tk.Label(RfidPage,text="TAG Nr:",font=("Arial", 10), fg='green').place(x=530,y=5, height=20, width=80)
@@ -3258,6 +3264,9 @@ ButtonDel.place(x=660, y=170, height=30, width=100)
 
 ButtonSave = tk.Button(RfidPage, text="Save to File",command = save_rfid)
 ButtonSave.place(x=530, y=210, height=60, width=140)
+
+ButtonTest = tk.Button(RfidPage, text="seek test",command = test1)
+ButtonTest.place(x=530, y=260, height=60, width=140)
 
 rebuild_treeview()
 
