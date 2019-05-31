@@ -356,6 +356,7 @@ void IMUClass::readHMC5883L() {
   float y = (int16_t) (((uint16_t)buf[4]) << 8 | buf[5]);
   float z = (int16_t) (((uint16_t)buf[2]) << 8 | buf[3]);
   if (useComCalibration) {
+    
     x -= comOfs.x;
     y -= comOfs.y;
     z -= comOfs.z;
@@ -438,9 +439,13 @@ void IMUClass::loadCalib() {
     gx_offset=91;
     gy_offset=12;
     gz_offset=-2;
+    comOfs.x = comOfs.y = comOfs.z = 0;
+    comScale.x = comScale.y = comScale.z = 2;
+    useComCalibration = false;
     return;
   }
   calibrationAvail = true;
+  useComCalibration = true;
   Console.println(F("IMU: found calib data"));
   loadSaveCalib(true);
 }
