@@ -73,16 +73,16 @@ float yprtest[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and
 #define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
 
 void IMUClass::begin() {
-  if(!robot.imuUse) return;
+  if (!robot.imuUse) return;
   //initialisation of CompassHMC5833L
   Console.println(F("--------------------------------- IMU INITIALISATION -------------------"));
   uint8_t data = 0;
   //while (true) {
-    I2CreadFrom(HMC5883L, 10, 1, &data, 1);
-    Console.print(F("COMPASS HMC5883L ID NEED TO BE 72 IF ALL IS OK ------>  ID="));
-    Console.println(data);
-    if (data != 72) Console.println(F("COMPASS HMC5883L FAIL"));
-    delay(1000);
+  I2CreadFrom(HMC5883L, 10, 1, &data, 1);
+  Console.print(F("COMPASS HMC5883L ID NEED TO BE 72 IF ALL IS OK ------>  ID="));
+  Console.println(data);
+  if (data != 72) Console.println(F("COMPASS HMC5883L FAIL"));
+  delay(1000);
   //}
   comOfs.x = comOfs.y = comOfs.z = 0;
   comScale.x = comScale.y = comScale.z = 2;
@@ -93,28 +93,28 @@ void IMUClass::begin() {
   I2CwriteTo(HMC5883L, 0x01, 0x20);  // config B: gain
   I2CwriteTo(HMC5883L, 0x02, 00);  // mode: continuous
   delay(2000); //    wait 2 second before doing the first reading
-  
+
   //initialisation of MPU6050
   mpu.initialize();
   Console.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
   Console.println(F("Initializing DMP..."));
   devStatus = mpu.dmpInitialize();
-  
+
   mpu.setXAccelOffset(ax_offset); //-1929
   mpu.setYAccelOffset(ay_offset); //471
   mpu.setZAccelOffset(az_offset); // 1293
   mpu.setXGyroOffset(gx_offset);//-1
   mpu.setYGyroOffset(gy_offset);//-3
   mpu.setZGyroOffset(gz_offset);//-2
-/*
-  mpu.setXAccelOffset(-1929); //-1929
-  mpu.setYAccelOffset(471); //471
-  mpu.setZAccelOffset(1293); // 1293
-  mpu.setXGyroOffset(-1);//-1
-  mpu.setYGyroOffset(-3);//-3
-  mpu.setZGyroOffset(-2);//-2
- */ 
-  CompassGyroOffset=0;
+  /*
+    mpu.setXAccelOffset(-1929); //-1929
+    mpu.setYAccelOffset(471); //471
+    mpu.setZAccelOffset(1293); // 1293
+    mpu.setXGyroOffset(-1);//-1
+    mpu.setYGyroOffset(-3);//-3
+    mpu.setZGyroOffset(-2);//-2
+  */
+  CompassGyroOffset = 0;
 
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
@@ -128,20 +128,20 @@ void IMUClass::begin() {
   nextTimeAdjustYaw = millis();
   Console.println(F("Wait 3 secondes to stabilize the Drift"));
   delay(3000); // wait 3 sec to help DMP stop drift
-// read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
-  
+  // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
+
   run();
   Console.print(F("AccelGyro Yaw: "));
   Console.print(ypr.yaw);
   Console.print(F("  Compass Yaw: "));
   Console.print(comYaw);
-  
-  CompassGyroOffset=distancePI(ypr.yaw, comYaw);
+
+  CompassGyroOffset = distancePI(ypr.yaw, comYaw);
   Console.print(F("  Diff between compass and accelGyro in Radian and Deg"));
   Console.print(CompassGyroOffset);
   Console.print(" / ");
-  Console.println(CompassGyroOffset*180/PI);
-  
+  Console.println(CompassGyroOffset * 180 / PI);
+
   Console.println(F("--------------------------------- IMU READY ------------------------------"));
 }
 
@@ -285,8 +285,8 @@ void IMUClass::meansensors() {
 
 
 void IMUClass::run() {
-if(!robot.imuUse)  return;
-if(devStatus != 0) return;
+  if (!robot.imuUse)  return;
+  if (devStatus != 0) return;
   if (state == IMU_CAL_COM) { //don't read the MPU6050 if compass calibration
     calibComUpdate();
     return;
@@ -327,22 +327,22 @@ if(devStatus != 0) return;
     Console.print (" firstStartCompassYaw ");
     Console.println (firstStartCompassYaw);
     //Console.print (" stopYawCompass ");
-    
-  */
- 
-// / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
- ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;    
-  
 
-  
+  */
+
+  // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
+  ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
+
+
+
   /*
     if (millis() > timeToAdjustGyroToCompass) {
       Console.println(ypr.yaw);
       //firstStartCompassYaw = comYaw - gyroAccYaw;
       timeToAdjustGyroToCompass = millis() + 200;
     }
-*/
-  
+  */
+
 }
 
 void IMUClass::readHMC5883L() {
@@ -356,7 +356,7 @@ void IMUClass::readHMC5883L() {
   float y = (int16_t) (((uint16_t)buf[4]) << 8 | buf[5]);
   float z = (int16_t) (((uint16_t)buf[2]) << 8 | buf[3]);
   if (useComCalibration) {
-    
+
     x -= comOfs.x;
     y -= comOfs.y;
     z -= comOfs.z;
@@ -378,7 +378,7 @@ void IMUClass::readHMC5883L() {
 void IMUClass::loadSaveCalib(boolean readflag) {
   int addr = ADDR;
   short magic = MAGIC;
-   if (readflag) Console.println(F("Load Calibration"));
+  if (readflag) Console.println(F("Load Calibration"));
   else Console.println(F("Save Calibration"));
   eereadwrite(readflag, addr, magic); // magic
   //accelgyro offset
@@ -433,12 +433,12 @@ void IMUClass::loadCalib() {
   eeread(addr, magic);
   if (magic != MAGIC) {
     Console.println(F("IMU error: no calib data"));
-    ax_offset=376;
-    ay_offset=-1768;
-    az_offset=1512;
-    gx_offset=91;
-    gy_offset=12;
-    gz_offset=-2;
+    ax_offset = 376;
+    ay_offset = -1768;
+    az_offset = 1512;
+    gx_offset = 91;
+    gy_offset = 12;
+    gz_offset = -2;
     comOfs.x = comOfs.y = comOfs.z = 0;
     comScale.x = comScale.y = comScale.z = 2;
     useComCalibration = false;
@@ -473,7 +473,7 @@ void IMUClass::deleteAccelGyroCalib() {
   mpu.setXGyroOffset(1);//-1
   mpu.setYGyroOffset(1);//-3
   mpu.setZGyroOffset(1);//-2
- 
+
   Console.println("AccelGyro calibration deleted ");
 }
 
@@ -481,51 +481,51 @@ void IMUClass::deleteAccelGyroCalib() {
 // calculate gyro offsets
 void IMUClass::calibGyro() {
 
-    Console.println("Reading sensors for first time... without any offset");
-    meansensors();
-    Console.print("Reading ax: ");
-    Console.print(mean_ax);
-    Console.print(" ay: ");
-    Console.print(mean_ay);
-    Console.print(" az: ");
-    Console.print(mean_az);
-    Console.print(" gx: ");
-    Console.print(mean_gx);
-    Console.print(" gy: ");
-    Console.print(mean_gy);
-    Console.print(" gz: ");
-    Console.println(mean_gz);
-     delay(500);
-    Console.println("\nCalculating offsets...");
-    calibration();
-    delay(500);
-    meansensors();
-    Console.print("FINISHED reading Value with new offset,If all is OK need to be close 0 exept the az close to 16384");
-    Console.print(" New reading ax: ");
-    Console.print(mean_ax);
-    Console.print(" ay: ");
-    Console.print(mean_ay);
-    Console.print(" az: ");
-    Console.print(mean_az);
-    Console.print(" gx: ");
-    Console.print(mean_gx);
-    Console.print(" gy: ");
-    Console.print(mean_gy);
-    Console.print(" gz: ");
-    Console.println(mean_gz);
-    Console.print("THE NEW OFFSET ax: ");
-    Console.print(ax_offset);
-    Console.print(" ay: ");
-    Console.print(ay_offset);
-    Console.print(" az: ");
-    Console.print(az_offset);
-    Console.print(" gx: ");
-    Console.print(gx_offset);
-    Console.print(" gy: ");
-    Console.print(gy_offset);
-    Console.print(" gz: ");
-    Console.println(gz_offset);
-    saveCalib();
+  Console.println("Reading sensors for first time... without any offset");
+  meansensors();
+  Console.print("Reading ax: ");
+  Console.print(mean_ax);
+  Console.print(" ay: ");
+  Console.print(mean_ay);
+  Console.print(" az: ");
+  Console.print(mean_az);
+  Console.print(" gx: ");
+  Console.print(mean_gx);
+  Console.print(" gy: ");
+  Console.print(mean_gy);
+  Console.print(" gz: ");
+  Console.println(mean_gz);
+  delay(500);
+  Console.println("\nCalculating offsets...");
+  calibration();
+  delay(500);
+  meansensors();
+  Console.print("FINISHED reading Value with new offset,If all is OK need to be close 0 exept the az close to 16384");
+  Console.print(" New reading ax: ");
+  Console.print(mean_ax);
+  Console.print(" ay: ");
+  Console.print(mean_ay);
+  Console.print(" az: ");
+  Console.print(mean_az);
+  Console.print(" gx: ");
+  Console.print(mean_gx);
+  Console.print(" gy: ");
+  Console.print(mean_gy);
+  Console.print(" gz: ");
+  Console.println(mean_gz);
+  Console.print("THE NEW OFFSET ax: ");
+  Console.print(ax_offset);
+  Console.print(" ay: ");
+  Console.print(ay_offset);
+  Console.print(" az: ");
+  Console.print(az_offset);
+  Console.print(" gx: ");
+  Console.print(gx_offset);
+  Console.print(" gy: ");
+  Console.print(gy_offset);
+  Console.print(" gz: ");
+  Console.println(gz_offset);
+  saveCalib();
 }
 
 
@@ -544,13 +544,19 @@ void IMUClass::calibComStartStop() {
     comScale.x = xrange;
     comScale.y = yrange;
     comScale.z = zrange;
+    //bber18
+    if ((comScale.x == 0) || (comScale.y == 0) || (comScale.z == 0)) { //jussip bug found div by 0 later
+      Console.println(F("*********************ERROR WHEN CALIBRATE : VALUE ARE TOTALY WRONG CHECK IF COMPASS IS NOT PERTURBATE **************"));
+      comOfs.x = comOfs.y = comOfs.z = 0;
+      comScale.x = comScale.y = comScale.z = 2;
+    }
     saveCalib();
     printCalib();
     useComCalibration = true;
     state = IMU_RUN;
     // completed sound
-    robot.setBeeper(2000,30,0,160,0);
-    
+    robot.setBeeper(2000, 30, 0, 160, 0);
+
   } else {
     // start
     Console.println(F("com calib..."));
@@ -594,7 +600,7 @@ void IMUClass::calibComUpdate() {
     }
     if (newfound) {
       foundNewMinMax = true;
-      
+
       Console.print("x:");
       Console.print(comMin.x);
       Console.print(",");
@@ -608,6 +614,6 @@ void IMUClass::calibComUpdate() {
       Console.print(",");
       Console.print(comMax.z);
       Console.println("\t");
-    } 
+    }
   }
 }

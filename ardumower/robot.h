@@ -638,6 +638,8 @@ class Robot
     boolean userSwitch1       ;       // user-defined switch 1 (default value)
     boolean userSwitch2       ;       // user-defined switch 2 (default value)
     boolean userSwitch3       ;       // user-defined switch 3 (default value)
+
+    
     // --------- charging -------------------------------
 
     boolean batMonitor ;              // monitor battery and charge voltage?
@@ -666,6 +668,9 @@ class Robot
     byte stationRollAngle    ;    // charge station roll angle
     int stationForwDist    ;    // charge station forward distance cm
     byte stationCheckDist   ;    // charge station check distance cm
+    //bber20
+    boolean UseBumperDock ;  //bumper is pressed when docking or not
+    byte dockingSpeed ;  //speed docking is (percent of maxspeed) when sonar detect something while tracking
     unsigned long totalDistDrive;  //use to check when to leave the wire in start timer mode
     unsigned long nextTimeBattery ;
     unsigned long nextTimeCheckBattery;

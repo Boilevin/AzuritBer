@@ -410,7 +410,8 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, stationRollAngle);
   eereadwrite(readflag, addr, stationForwDist);
   eereadwrite(readflag, addr, stationCheckDist);
-  eereadwrite(readflag, addr, odometryUse);   // // bool adress free for something else
+  //bber20
+  eereadwrite(readflag, addr, UseBumperDock);
   eereadwrite(readflag, addr, odometryTicksPerRevolution);
   eereadwrite(readflag, addr, odometryTicksPerCm);
   eereadwrite(readflag, addr, odometryWheelBaseCm);
@@ -470,11 +471,8 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, RaspberryPIUse);
   eereadwrite(readflag, addr, sonarToFrontDist);
   eereadwrite(readflag, addr, maxTemperature);
-
-
-
-
-
+  //bber20
+  eereadwrite(readflag, addr, dockingSpeed);
 
   Console.print(F("UserSettings address Start="));
   Console.println(ADDR_USER_SETTINGS);
@@ -763,6 +761,13 @@ void Robot::printSettingSerial() {
   Console.println(stationForwDist);
   Console.print  (F("stationCheckDist                           : "));
   Console.println(stationCheckDist);
+  //bber20
+  Console.print  (F("UseBumperDock                            : "));
+  Console.println(UseBumperDock);
+  Console.print  (F("dockingSpeed                               : "));
+  Console.println(dockingSpeed);
+
+
 
   // ------ odometry --------------------------------------------------------------
   Console.println(F("---------- odometry ------------------------------------------"));
@@ -2640,7 +2645,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_STATION_ROLL:  //when start in auto after mower reverse it roll for this angle
       if (mowPatternCurr == MOW_LANES)       AngleRotate = 90;
       else AngleRotate = random(30, 160);
-      if (startByTimer) AngleRotate = 45;
+      //bber20
+      if (startByTimer) AngleRotate = stationRollAngle;
       Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
@@ -3982,13 +3988,27 @@ void Robot::checkDrop() {  //the drop is used as a contact in front of the robot
 
 // check bumpers while tracking perimeter
 void Robot::checkBumpersPerimeter() {
-  if ((bumperLeft || bumperRight)) {
-    motorLeftRpmCurr = motorRightRpmCurr = 0 ;
-    setMotorPWM( 0, 0, false );//stop immediatly and wait 2 sec to see if voltage on pin
-    readSensors();  //read the chgVoltage
-    Console.println("Bump on Something check if it's the station");
-    setNextState(STATE_STATION_CHECK, rollDir);
+  //bber20
+  if (UseBumperDock) {   // we use bumper to detect station
+    if ((bumperLeft || bumperRight)) {
+      motorLeftRpmCurr = motorRightRpmCurr = 0 ;
+      setMotorPWM( 0, 0, false );//stop immediatly and wait 2 sec to see if voltage on pin
+      readSensors();  //read the chgVoltage
+      Console.println("Bump on Something check if it's the station");
+      setNextState(STATE_STATION_CHECK, rollDir);
+    }
   }
+  else      //we use only charging voltage to detect station
+  {
+    if (chgVoltage > 5) {
+      motorLeftRpmCurr = motorRightRpmCurr = 0 ;
+      setMotorPWM( 0, 0, false );//stop immediatly and wait 2 sec to see if voltage on pin
+      readSensors();  //read the chgVoltage
+      Console.println("Detect a voltage on charging contact check if it's the station");
+      setNextState(STATE_STATION_CHECK, rollDir);
+    }
+  }
+
 }
 
 // check perimeter as a boundary
@@ -4094,10 +4114,11 @@ void Robot::checkSonarPeriTrack() {
 
   if ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow))  {
     //if (((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow))  ||  ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) ||  ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow))  ) {
-    setBeeper(1000, 50, 50, 60, 60);
+    //setBeeper(1000, 50, 50, 60, 60);
     nextTimeCheckSonar = millis() + 2500;  //wait before next reading
-    timeToResetSpeedPeri = millis() + 3000; //brake the tracking during 6 secondes
-    ActualSpeedPeriPWM = MaxSpeedperiPwm / 1.7;
+    timeToResetSpeedPeri = millis() + 3000; //brake the tracking during 3 secondes
+    //bber20
+    ActualSpeedPeriPWM = MaxSpeedperiPwm * dockingSpeed / 100;
   }
 }
 
@@ -4417,7 +4438,7 @@ void Robot::loop()  {
 
 
   if (millis() >= nextTimeInfo) {
-    if ((millis() - nextTimeInfo > 100)) {
+    if ((millis() - nextTimeInfo > 250)) {
       Console.print("-------------------- LOOP NOT OK DUE IS OVERLOAD ------------------------ Over 1 sec ");
       Console.println((millis() - nextTimeInfo));
     }
@@ -5037,9 +5058,16 @@ void Robot::loop()  {
           if (batVoltage < startChargingIfBelow) { //read the battery voltage immediatly before it increase
             setNextState(STATE_STATION_CHARGING, 0);
           }
-          else checkTimer();
+          else
+          { //bber20
+            if (millis() - stateStartTime > 10000) checkTimer(); //only check timer after 10 second to avoid restart before charging
+          }
         }
-        else setNextState(STATE_OFF, 0);
+        else {
+          //bber20
+          Console.println("We are in station but ChargeVoltage is lost ??? ");
+          setNextState(STATE_OFF, 0);
+        }
       }
       else {
         if (millis() - stateStartTime > 10000) checkTimer(); //only check timer after 10 second to avoid restart before charging
@@ -5548,7 +5576,7 @@ void Robot::loop()  {
 
     case STATE_STATION_CHECK:
       motorControlOdo();
-      // check for charging voltage here after bump on perimeter
+      // check for charging voltage here after detect station
       if ((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
       {
         if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop

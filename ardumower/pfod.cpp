@@ -924,21 +924,31 @@ void RemoteControl::processBatteryMenu(String pfodCmd) {
 
 void RemoteControl::sendStationMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Station`1000"));
-
+  //bber20
+  serialPort->println(F("|k05~ Bump pressed on dock "));
+  sendYesNo(robot->UseBumperDock);
   sendSlider("k00", F("Reverse Distance (CM)"), robot->stationRevDist, "", 1, 200);
-  sendSlider("k01", F("Roll Distance (CM)"), robot->stationRollAngle, "", 1, 180);
+  sendSlider("k01", F("Roll Angle (Deg)"), robot->stationRollAngle, "", 1, 180);
   sendSlider("k02", F("Accel Distance after Roll"), robot->stationForwDist, "", 1, 200);
   sendSlider("k03", F("Station check Distance"), robot->stationCheckDist, "", 1, 20);
+  sendSlider("k06", F("Docking Speed % of MaxSpeed"), robot->dockingSpeed, "", 1,100,20);
   serialPort->println(F("|k04~Force State to Station "));
+  
+  
   serialPort->println("}");
 }
 
 void RemoteControl::processStationMenu(String pfodCmd) {
-  if (pfodCmd.startsWith("k00")) processSlider(pfodCmd, robot->stationRevDist, 1);
+    //bber20
+  if (pfodCmd == "k05" ) robot->UseBumperDock = !robot->UseBumperDock;
+  else if (pfodCmd.startsWith("k00")) processSlider(pfodCmd, robot->stationRevDist, 1);
   else if (pfodCmd.startsWith("k01")) processSlider(pfodCmd, robot->stationRollAngle, 1);
   else if (pfodCmd.startsWith("k02")) processSlider(pfodCmd, robot->stationForwDist, 1);
   else if (pfodCmd.startsWith("k03")) processSlider(pfodCmd, robot->stationCheckDist, 1);
+  else if (pfodCmd.startsWith("k06")) processSlider(pfodCmd, robot->dockingSpeed, 1);
   else if (pfodCmd.startsWith("k04")) robot->setNextState(STATE_STATION, 0);
+
+ 
   sendStationMenu(true);
 }
 
