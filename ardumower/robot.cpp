@@ -68,7 +68,7 @@ char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "P
                       "ROLLTOIN", "WAITREPEAT", "FRWODO", "TESTCOMPAS", "ROLLTOTRACK",
                       "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                       "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
-                      "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA"
+                      "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA","ROLLSTOPTOTRACK"
                      };
 
 char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "TRACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT"
@@ -989,6 +989,7 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
   lastSetMotorSpeedTime = millis();
   if (TaC > 1000) TaC = 1;
   /*
+   if (stateCurr != STATE_OFF) {
     Console.print(stateNames[stateCurr]);
     Console.print(" Les valeurs demandées a ");
     Console.print (millis());
@@ -1002,15 +1003,17 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
     Console.print (motorLeftZeroTimeout);
     Console.print(" motorLeftPWMCurr=");
     Console.println (motorLeftPWMCurr);
-  */
-
+   }
+*/
   // ----- driver protection (avoids driver explosion) ----------
   if ( ((pwmLeft < 0) && (motorLeftPWMCurr > 0)) || ((pwmLeft > 0) && (motorLeftPWMCurr < 0)) ) { // slowing before reverse
     Console.print("WARNING PROTECTION ON LEFT MOTOR ");
     Console.print("  motorLeftPWMCurr=");
     Console.print (motorLeftPWMCurr);
     Console.print("  pwmLeft=");
-    Console.println (pwmLeft);
+    Console.print (pwmLeft);
+    Console.print("  On state ");
+    Console.println(stateNames[stateCurr]);
     if (motorLeftZeroTimeout != 0) pwmLeft = motorLeftPWMCurr - motorLeftPWMCurr * ((float)TaC) / 200.0; // reduce speed
   }
   if ( ((pwmRight < 0) && (motorRightPWMCurr > 0)) || ((pwmRight > 0) && (motorRightPWMCurr < 0)) ) { // slowing before reverse
@@ -1018,7 +1021,9 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
     Console.print("  motorRightPWMCurr=");
     Console.print (motorRightPWMCurr);
     Console.print("  pwmRight=");
-    Console.println (pwmRight);
+    Console.print (pwmRight);
+    Console.print("  On state ");
+    Console.println(stateNames[stateCurr]);
     if (motorRightZeroTimeout != 0) pwmRight = motorRightPWMCurr - motorRightPWMCurr * ((float)TaC) / 200.0; // reduce speed
   }
 
@@ -2676,7 +2681,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_STATION_CHECK:
-      delayToReadVoltageStation = millis() + 2500;
+      delayToReadVoltageStation = millis() + 500;
       //bber14 no accel here ?????
       UseAccelLeft = 0;
       UseBrakeLeft = 1;
@@ -3296,7 +3301,19 @@ void Robot::setNextState(byte stateNew, byte dir) {
       OdoRampCompute();
       break;
 
+    case STATE_PERI_OUT_STOP_ROLL_TOTRACK:  //stop roll right in normal mode when find wire
+      UseAccelLeft = 0;
+      UseBrakeLeft = 1;
+      UseAccelRight = 0;
+      UseBrakeRight = 1;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 2;
+      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 2;
+      stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm * 5); //stop on 5 cm
+      stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 5);
 
+
+      OdoRampCompute();
+      break;
     case STATE_PERI_OUT_FORW:  //Accel after roll so the 2 wheel have the same speed when reach the forward state
 
       if ((mowPatternCurr == MOW_LANES) || (mowPatternCurr == MOW_ZIGZAG)) {
@@ -5041,13 +5058,16 @@ void Robot::loop()  {
       }
 
       //********************************
-      if (statusCurr == BACK_TO_STATION) {
+      //bber21
+      /*
+        if (statusCurr == BACK_TO_STATION) {
         if (batMonitor) {
           if (chgVoltage > 5.0) {
             setNextState(STATE_STATION, 0);
           }
         }
-      }
+        }
+      */
       motorControlPerimeter();
       break;
 
@@ -5450,27 +5470,32 @@ void Robot::loop()  {
       motorControlOdo();
 
       if (perimeterInside) {
-        lastTimeForgetWire = millis();
-        UseAccelLeft = 0;
-        UseBrakeLeft = 1;
-        UseAccelRight = 0;
-        UseBrakeRight = 1;
-        motorLeftSpeedRpmSet = motorRightSpeedRpmSet = 0;
-        stateEndOdometryRight = odometryRight + (odometryTicksPerCm * 20);
-        stateEndOdometryLeft = odometryLeft + (odometryTicksPerCm * 20);
-        // stateMaxiTime = millis() + 5000;
-        OdoRampCompute();
-        if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) setNextState(STATE_PERI_TRACK, 0);
-
+        setNextState(STATE_PERI_OUT_STOP_ROLL_TOTRACK, 0);
       }
 
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         Console.println ("Warning can t find perimeter Wire while PERI_OUT_ROLL_TOTRACK in time ");
         if (!perimeterInside) setNextState(STATE_WAIT_AND_REPEAT, 0);//again until find the inside
-        else setNextState(STATE_PERI_TRACK, 0);
+        else setNextState(STATE_PERI_OUT_STOP_ROLL_TOTRACK, 0);;
       }
       break;
 
+    case STATE_PERI_OUT_STOP_ROLL_TOTRACK:
+      motorControlOdo();
+
+      if (perimeterInside) {
+        if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) {
+          lastTimeForgetWire = millis(); //avoid motor reverse on tracking startup
+          setNextState(STATE_PERI_TRACK, 0);
+        }
+      }
+
+      if (millis() > (stateStartTime + MaxOdoStateDuration)) {
+        Console.println ("Warning can t PERI_OUT_STOP_ROLL_TOTRACK in time ");
+        if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOTRACK, 0);//again until find the inside
+        else setNextState(STATE_PERI_TRACK, 0);
+      }
+      break;
 
     case STATE_PERI_OUT_LANE_ROLL1:
       motorControlOdo();
@@ -5575,7 +5600,6 @@ void Robot::loop()  {
       break;
 
     case STATE_STATION_CHECK:
-      motorControlOdo();
       // check for charging voltage here after detect station
       if ((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
       {
@@ -5604,6 +5628,7 @@ void Robot::loop()  {
           }
         }
       }
+      motorControlOdo();
       break;
 
     case STATE_STATION_REV:
