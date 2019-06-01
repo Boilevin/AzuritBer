@@ -2681,7 +2681,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_STATION_CHECK:
-      delayToReadVoltageStation = millis() + 500;
+      delayToReadVoltageStation = millis() + 1500; //the battery is read only each 500 ms so need a duration to be sure we have the last voltage
       //bber14 no accel here ?????
       UseAccelLeft = 0;
       UseBrakeLeft = 1;

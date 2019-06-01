@@ -14,6 +14,7 @@ if (os.name=='nt'):
     GpsIsM6n=True
     RfidConnectedOnPi=False
     NanoConnectedOnPi=False
+    Esp32ConnectedOnPi=False
     DueConnectedOnPi=False
     AutoRecordBatCharging=False
 
@@ -28,7 +29,8 @@ if (os.name=='posix'):
     GpsIsM6n=True
     RfidConnectedOnPi=False
     NanoConnectedOnPi=False
+    Esp32ConnectedOnPi=True
     DueConnectedOnPi=False
-    AutoRecordBatCharging=True
+    AutoRecordBatCharging=False
     
 
