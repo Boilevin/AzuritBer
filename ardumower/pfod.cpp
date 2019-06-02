@@ -1306,6 +1306,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     // cmd: home
     robot->whereToStart=99999;
     robot->nextTimeTimer=millis()+3600000;
+    robot->statusCurr=BACK_TO_STATION;
     robot->setNextState(STATE_PERI_FIND, 0);
     sendCommandMenu(true);
   } else if (pfodCmd == "rr") {
@@ -1969,6 +1970,12 @@ bool RemoteControl::readSerial() {
       else if (pfodCmd.startsWith("x")) processFactorySettingsMenu(pfodCmd);
       else if (pfodCmd.startsWith("yt")) processTestOdoMenu(pfodCmd);
       else if (pfodCmd.startsWith("z")) processErrorMenu(pfodCmd);
+      //bber22 find rfid tag 
+      else if (pfodCmd.startsWith("RFID")) {
+        robot->rfidTagFind=pfodCmd;
+        robot->newTagFind();
+      }
+      
       else {
         // no match
         serialPort->println("{}");

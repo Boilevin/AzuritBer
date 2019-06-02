@@ -307,6 +307,8 @@ class Robot
     boolean remoteMowLastState ;
     boolean remoteSwitchLastState ;
     unsigned long nextTimeRTC ;
+    //bber22
+    String rfidTagFind;
 
     // --------- wheel motor state ----------------------------
     // wheel motor speed ( <0 backward, >0 forward); range -motorSpeedMaxRpm..motorSpeedMaxRpm
@@ -755,6 +757,8 @@ class Robot
     virtual void deleteUserSettings();
     virtual void saveUserSettings();
     virtual void deleteRobotStats();
+    //bber22
+    virtual void newTagFind();
 
     // other
     // virtual void beep(int numberOfBeeps, boolean shortbeep);

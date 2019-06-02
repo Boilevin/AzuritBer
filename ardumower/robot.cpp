@@ -71,7 +71,7 @@ char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "P
                       "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA","ROLLSTOPTOTRACK"
                      };
 
-char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "TRACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT"
+char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT"
                       };
 
 
@@ -1589,6 +1589,13 @@ void Robot::motorControlPerimeter() {
     if (PeriCoeffAccel < 1.00) PeriCoeffAccel = 1.00;
     rightSpeedperi = max(0, min(ActualSpeedPeriPWM, ActualSpeedPeriPWM / 1.5 +  perimeterPID.y / PeriCoeffAccel));
     leftSpeedperi = max(0, min(ActualSpeedPeriPWM, ActualSpeedPeriPWM / 1.5 -  perimeterPID.y / PeriCoeffAccel));
+    //bber30 we are in sonartrigger ,so maybe near station , so avoid 1 wheel reverse because station check is forward
+    if (ActualSpeedPeriPWM != MaxSpeedperiPwm)
+    {
+     if (rightSpeedperi<0) rightSpeedperi=0;
+     if (leftSpeedperi<0) leftSpeedperi=0;
+    }
+    
     if (consoleMode == CONSOLE_TRACKING) {
       Console.print("SLOW;");
       Console.print(millis());
@@ -2361,7 +2368,9 @@ void Robot::checkButton() {
     }
   }
 }
-
+void Robot::newTagFind(){
+  Console.println("tagtagtag");
+}
 
 void Robot::readSensors() {
   //NOTE: this function should only put sensors value into variables - it should NOT change any state!
@@ -2524,7 +2533,14 @@ void Robot::readSensors() {
     if (abs(batVoltage - batvolt) > 5)   batVoltage = batvolt; else batVoltage = (1.0 - accel) * batVoltage + accel * batvolt;
     if (abs(chgVoltage - chgvolt) > 5)   chgVoltage = chgvolt; else chgVoltage = (1.0 - accel) * chgVoltage + accel * chgvolt;
     if (abs(chgCurrent - curramp) > 0.4) chgCurrent = curramp; else chgCurrent = (1.0 - accel) * chgCurrent + accel * curramp; //Deaktiviert für Ladestromsensor berechnung
-
+    //bber30 tracking not ok with this but can check the chgvoltage
+    /*
+    Console.print(millis());
+    Console.print("/");
+    Console.print(batVoltage);
+    Console.print("/");
+    Console.println(chgVoltage);
+    */
   }
 
   if ((rainUse) && (millis() >= nextTimeRain)) {
@@ -2538,7 +2554,6 @@ void Robot::readSensors() {
 
 void Robot::setDefaults() {
   motorLeftSpeedRpmSet = motorRightSpeedRpmSet = 0;
-
   motorMowEnable = false;
 }
 
@@ -3575,7 +3590,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       setActuator(ACT_CHGRELAY, 0);
       setDefaults();
       statsMowTimeTotalStart = false;  // stop stats mowTime counter
-      loadSaveRobotStats(false);        //save robot stats
+      //bber30
+      //loadSaveRobotStats(false);        //save robot stats
 
       break;
 
@@ -3674,16 +3690,15 @@ void Robot::setNextState(byte stateNew, byte dir) {
   stateLast = stateCurr;
   stateCurr = stateNext;
   perimeterTriggerTime = 0;
-
-  Console.print ("New State ");
-  Console.print (stateCurr);
-  Console.print(" ");
+  Console.print ("Status ");
+  Console.print (F(statusNames[statusCurr]));
+  Console.print (" New State ");
   Console.print (F(stateNames[stateCurr]));
   Console.print (" Dir ");
   Console.print (rollDir);
   Console.print (" State changed at ");
   Console.print (stateStartTime);
-  Console.print (" From  previous state ");
+  Console.print (" From state ");
   Console.println (F(stateNames[stateLast]));
 
 }
@@ -4017,10 +4032,12 @@ void Robot::checkBumpersPerimeter() {
   }
   else      //we use only charging voltage to detect station
   {
+    //bber30
+    nextTimeBattery=millis();
+    readSensors();  //read the chgVoltage immediatly
     if (chgVoltage > 5) {
       motorLeftRpmCurr = motorRightRpmCurr = 0 ;
       setMotorPWM( 0, 0, false );//stop immediatly and wait 2 sec to see if voltage on pin
-      readSensors();  //read the chgVoltage
       Console.println("Detect a voltage on charging contact check if it's the station");
       setNextState(STATE_STATION_CHECK, rollDir);
     }
@@ -4132,10 +4149,12 @@ void Robot::checkSonarPeriTrack() {
   if ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow))  {
     //if (((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow))  ||  ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) ||  ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow))  ) {
     //setBeeper(1000, 50, 50, 60, 60);
-    nextTimeCheckSonar = millis() + 2500;  //wait before next reading
-    timeToResetSpeedPeri = millis() + 3000; //brake the tracking during 3 secondes
-    //bber20
+    nextTimeCheckSonar = millis() + 4000;  //wait before next reading
+    timeToResetSpeedPeri = millis() + 5000; //brake the tracking during 5 secondes
     ActualSpeedPeriPWM = MaxSpeedperiPwm * dockingSpeed / 100;
+    trakBlockInnerWheel = 1; //don't want that a wheel reverse just before station check   /bber30
+    
+    
   }
 }
 
@@ -5109,6 +5128,7 @@ void Robot::loop()  {
 
         }
       }
+      readDHT22();
       //motorControl();
       break;
 
@@ -5601,12 +5621,15 @@ void Robot::loop()  {
 
     case STATE_STATION_CHECK:
       // check for charging voltage here after detect station
-      if ((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
+      if ((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft)) //move some CM to be sure the contact is OK
       {
         if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
           //need to adapt if station is traversante
-          if (millis() >= delayToReadVoltageStation) { //wait 2.5 sec before read voltage
-            if ((chgVoltage > 5.0) && (batVoltage > 8)) {
+          if (millis() >= delayToReadVoltageStation) { //wait 1.5 sec after all stop and before read voltage
+            //bber30
+            nextTimeBattery=millis();
+            readSensors();  //read the chgVoltage immediatly
+            if (chgVoltage > 5.0)  {
               Console.println ("Charge Voltage detected ");
               setNextState(STATE_STATION, rollDir);// we are into the station
             }
@@ -5620,7 +5643,9 @@ void Robot::loop()  {
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {//the motor have not enought power to reach the cible
         Console.println ("Warning can t make the station check in time ");
         if (millis() >= delayToReadVoltageStation) {
-          if ((chgVoltage > 5.0) && (batVoltage > 8)) {
+          nextTimeBattery=millis();
+          readSensors();  //read the chgVoltage
+          if (chgVoltage > 5.0) {
             setNextState(STATE_STATION, rollDir);// we are into the station
           }
           else {
