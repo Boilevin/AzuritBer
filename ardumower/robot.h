@@ -248,6 +248,7 @@ class Robot
     // -------- gps state -------------------------------
     GPS gps;
     boolean gpsUse            ;       // use GPS?
+    boolean gpsReady; 
     float gpsLat;
     float gpsLon;
     float gpsX ;   // X position (m)
@@ -307,8 +308,9 @@ class Robot
     boolean remoteMowLastState ;
     boolean remoteSwitchLastState ;
     unsigned long nextTimeRTC ;
-    //bber22
+    //bber35
     String rfidTagFind;
+    boolean rfidUse;
 
     // --------- wheel motor state ----------------------------
     // wheel motor speed ( <0 backward, >0 forward); range -motorSpeedMaxRpm..motorSpeedMaxRpm

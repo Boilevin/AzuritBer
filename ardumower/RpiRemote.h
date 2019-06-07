@@ -29,6 +29,8 @@ class RpiRemote
     void writePi(String stringLine);
     void sendCommandToPi(String stringLine);
     void SendStatusToPi();
+    void SendRfidToPi();
+    
 
   private:
     unsigned long nextTimeRaspberryPISendStat; // delay between 2 data send to RPI for stat

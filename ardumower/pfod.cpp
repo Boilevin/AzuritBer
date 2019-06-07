@@ -236,7 +236,7 @@ void RemoteControl::sendPlotMenu(boolean update) {
 void RemoteControl::sendSettingsMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Settings"));
   serialPort->print(F("|sz~Save settings|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~R/C"));
-  serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s15~Drop sensor|s14~GPS|i~Timer|s12~Date/time|sx~Factory settings|s16~ByLane Setting}"));
+  serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s15~Drop sensor|s14~GPS RFID|i~Timer|s12~Date/time|sx~Factory settings|s16~ByLane Setting}"));
 }
 
 void RemoteControl::processSettingsMenu(String pfodCmd) {
@@ -707,25 +707,24 @@ void RemoteControl::processRainMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("m06")) processSlider(pfodCmd, robot->maxTemperature, 1);
   sendRainMenu(true);
 }
-
+//bber35
 void RemoteControl::sendGPSMenu(boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->print(F("{.GPS`1000"));
-  serialPort->print(F("|q00~Use(Need Reboot) "));
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.GPS RFID`1000"));
+  serialPort->print(F("|q00~GPS Use(Need Reboot) "));
   sendYesNo(robot->gpsUse);
-  //sendSlider("q01", F("Stuck if GPS speed is below"), robot->stuckIfGpsSpeedBelow, "", 0.1, 3);
-  //bb Why GPS and reverse ????
-  //sendSlider("q02", F("GPS speed ignore time"), robot->gpsSpeedIgnoreTime, "", 1, 10000, robot->DistPeriOutRev);
+  serialPort->print(F("|q01~RFID Use : "));
+  sendYesNo(robot->rfidUse);
+  serialPort->print(F("|q02~Last Rfid : "));
+  serialPort->print(robot->rfidTagFind);
   serialPort->println("}");
 }
 
 void RemoteControl::processGPSMenu(String pfodCmd) {
   if (pfodCmd == "q00") robot->gpsUse = !robot->gpsUse;
-  //else if (pfodCmd.startsWith("q01")) processSlider(pfodCmd, robot->stuckIfGpsSpeedBelow, 0.1);
-  //else if (pfodCmd.startsWith("q02")) processSlider(pfodCmd, robot->gpsSpeedIgnoreTime, 1);
+  else if (pfodCmd.startsWith("q01")) robot->rfidUse = !robot->rfidUse;
   sendGPSMenu(true);
 }
 
-//bb1
 void RemoteControl::sendByLaneMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.ByLane`500"));
 
@@ -1972,7 +1971,7 @@ bool RemoteControl::readSerial() {
       else if (pfodCmd.startsWith("z")) processErrorMenu(pfodCmd);
       //bber22 find rfid tag 
       else if (pfodCmd.startsWith("RFID")) {
-        robot->rfidTagFind=pfodCmd;
+        robot->rfidTagFind=pfodCmd.substring(4);
         robot->newTagFind();
       }
       

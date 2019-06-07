@@ -111,8 +111,9 @@ Mower::Mower() {
   // ------ DHT22Use ------------------------------------
   DHT22Use          = 0;      // use DHT22 sensor?
   maxTemperature    =55;      // max temp before switch off
-
+//bber35
   // ------ RFID ------------------------------------
+  rfidUse          = 0;      // use rfid
   newtagRotAngle1=-90;
   newtagRotAngle2=0;
   newtagDistance1=10;

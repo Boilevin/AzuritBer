@@ -8,6 +8,11 @@
  *      
  *      Use DUE programming port for programming and console!
  *      
+ *      
+ *      GPS Change speed according to your module
+ *      #define GPS_BAUDRATE  38400  // 9600 for M6n ,19200 or 38400 for BN880,M8Nother module
+ *      
+ *      
  *      If Raspberry PI is not use change into mower.h
  *          RaspberryPIUse = false or true
  *          #define Console Serial

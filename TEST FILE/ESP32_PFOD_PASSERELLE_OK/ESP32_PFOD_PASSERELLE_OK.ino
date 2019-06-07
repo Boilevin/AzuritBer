@@ -1,66 +1,44 @@
-/**
-   Multi-PN5180
-   An "escape room"-style puzzle in which a number of RFID tags must be placed in front
-   of the correct PN5180 RFID readers in order to be detected and solve the puzzle.
-*/
 // ESP-32    <--> PN5180 pin mapping:
-// Vin       <--> 5V  if esp32 powered using USB
+// Vin       <--> 5V  if esp32 powered using USB YOU NEED TO SEND THE 5V TO PN5180
 // 3.3V      <--> 3.3V
 // GND       <--> GND
-// SCLK, 18   --> SCLK
-// MISO, 19  <--  MISO
-// MOSI, 23   --> MOSI
-// SS, 12     --> NSS (=Not SS -> active LOW)
-// BUSY, 13   <--  BUSY
-// Reset, 14  --> RST
+// SCLK, GPIO18   --> SCLK
+// MISO, GPIO19  <--  MISO
+// MOSI, GPIO23   --> MOSI
+// SS, GPIO12     --> NSS (=Not SS -> active LOW)
+// BUSY, GPIO13   <--  BUSY
+// Reset, GPIO14  --> RST
 //
-// DEFINES
-// #define DEBUG
 
-// INCLUDES
-// Download from https://github.com/playfultechnology/PN5180-Library
-#include <PN5180.h>
-#include <PN5180ISO15693.h>
+// ESP-32    <--> pcb1.3 pin mapping:
+// Vin       <--> 5v ON BT CONNECTOR
+// GND       <--> GND ON BT CONNECTOR
+// RX2       <--> TX ON BT CONNECTOR
+// TX2       <--> RX ON BT CONNECTOR
 
-// GLOBALS
-// Each PN5180 reader requires unique NSS, BUSY, and RESET pins,
-// as defined in the constructor below
+
+#include "PN5180.h"
+#include "PN5180ISO15693.h"
+#include "BluetoothSerial.h" //Header File for Serial Bluetooth, will be added by default into Arduino
+BluetoothSerial ESP_BT; //Object for Bluetooth
+
 PN5180ISO15693 nfc(12, 13, 14);
-
-// Array to record the value of the last UID read by each reader
 uint8_t lastUid[8];
-unsigned long lastPrintWatchDog;
 
 void setup() {
-
-
-  // Initialise serial connection
-  Serial.begin(115200);
-  
+ //BT seial for Pfod init
+  Serial2.begin(19200);
+  ESP_BT.begin("ESP32_BT01");
  
-
-
-  Serial.println(F("Initialising..."));
-  nfc.begin();
-  Serial.println(F("Resetting..."));
+// rfid reader init
+  nfc.begin(); 
   nfc.reset();
-  Serial.println(F("Enabling RF field..."));
   nfc.setupRF();
-
-  Serial.println(F("Setup Complete"));
-
-  
 }
 
 void loop() {
- 
-  if (millis() > lastPrintWatchDog) {
-    lastPrintWatchDog = millis() + 60000;
-    Serial.print("WD");
-    Serial.println(millis() / 1000);
-  }
-  // Variable to store the ID of any tag read by this reader
-  uint8_t thisUid[8];
+
+ uint8_t thisUid[8];
   // Try to read a tag ID (or "get inventory" in ISO15693-speak)
   ISO15693ErrorCode rc = nfc.getInventory(thisUid);
   // If the result code was that a card had been read
@@ -68,22 +46,24 @@ void loop() {
     // If this is the same ID as we read last frame
     if (memcmp(thisUid, lastUid, 8) == 0) {
       // Nothing to do - move on to the next reader
-
     }
     // If it's a different ID
     else {
       //Serial.print(F("New Card Detected"));
       //Serial.print(F("... "));
-      String mastring=String((char *)thisUid);
+      Serial2.print("{RFID"); // pfod start message with {
+      /*
+      //i dont use all the byte number 
       for (int j = 0; j < sizeof(thisUid); j++) {
-        Serial.print(thisUid[j], HEX);
+        Serial2.print(thisUid[8-j], HEX);
       }
-      
-      Serial.println();
+      */
+      for (int j = 0; j <=3; j++) {
+        Serial2.print(thisUid[j], HEX);
+      }
+      Serial2.println("}"); //pfod stop message with }
       // Update the array that keeps track of most recent ID
       memcpy(lastUid, thisUid, sizeof(lastUid[0]) * 8);
-
-
     }
   }
   // If a card cannot be read
@@ -109,6 +89,13 @@ void loop() {
 #endif
   }
 
+// BT passthrou for 
+  while (ESP_BT.available()) {
+    Serial2.write(ESP_BT.read());
+  }
+  while (Serial2.available()) {
+    ESP_BT.write(Serial2.read());
+  }
 
-
+  
 }

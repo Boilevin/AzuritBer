@@ -68,7 +68,7 @@ char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "P
                       "ROLLTOIN", "WAITREPEAT", "FRWODO", "TESTCOMPAS", "ROLLTOTRACK",
                       "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                       "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
-                      "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA","ROLLSTOPTOTRACK"
+                      "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK"
                      };
 
 char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT"
@@ -243,6 +243,7 @@ Robot::Robot() {
   motorRightPID.Kp = motorLeftPID.Kp;
   motorRightPID.Ki = motorLeftPID.Ki;
   motorRightPID.Kd = motorLeftPID.Kd;
+  gpsReady=false;
 }
 
 
@@ -473,6 +474,9 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, maxTemperature);
   //bber20
   eereadwrite(readflag, addr, dockingSpeed);
+  //bber35
+  eereadwrite(readflag, addr, rfidUse);
+  
 
   Console.print(F("UserSettings address Start="));
   Console.println(ADDR_USER_SETTINGS);
@@ -792,7 +796,12 @@ void Robot::printSettingSerial() {
   Console.println(stuckIfGpsSpeedBelow);
   Console.print  (F("gpsSpeedIgnoreTime                         : "));
   Console.println(gpsSpeedIgnoreTime);
-
+//bber35
+ // ----- RFID ----------------------------------------------------------------------
+  Console.println(F("---------- RFID -----------------------------------------------"));
+  Console.print  (F("rfidUse                                     : "));
+  Console.println(rfidUse, 1);
+  
 
   // ----- other --------------------------------------------------------------------
   Console.println(F("---------- other ---------------------------------------------"));
@@ -989,7 +998,7 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
   lastSetMotorSpeedTime = millis();
   if (TaC > 1000) TaC = 1;
   /*
-   if (stateCurr != STATE_OFF) {
+    if (stateCurr != STATE_OFF) {
     Console.print(stateNames[stateCurr]);
     Console.print(" Les valeurs demandées a ");
     Console.print (millis());
@@ -1003,8 +1012,8 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
     Console.print (motorLeftZeroTimeout);
     Console.print(" motorLeftPWMCurr=");
     Console.println (motorLeftPWMCurr);
-   }
-*/
+    }
+  */
   // ----- driver protection (avoids driver explosion) ----------
   if ( ((pwmLeft < 0) && (motorLeftPWMCurr > 0)) || ((pwmLeft > 0) && (motorLeftPWMCurr < 0)) ) { // slowing before reverse
     Console.print("WARNING PROTECTION ON LEFT MOTOR ");
@@ -1592,10 +1601,10 @@ void Robot::motorControlPerimeter() {
     //bber30 we are in sonartrigger ,so maybe near station , so avoid 1 wheel reverse because station check is forward
     if (ActualSpeedPeriPWM != MaxSpeedperiPwm)
     {
-     if (rightSpeedperi<0) rightSpeedperi=0;
-     if (leftSpeedperi<0) leftSpeedperi=0;
+      if (rightSpeedperi < 0) rightSpeedperi = 0;
+      if (leftSpeedperi < 0) leftSpeedperi = 0;
     }
-    
+
     if (consoleMode == CONSOLE_TRACKING) {
       Console.print("SLOW;");
       Console.print(millis());
@@ -2368,8 +2377,12 @@ void Robot::checkButton() {
     }
   }
 }
-void Robot::newTagFind(){
-  Console.println("tagtagtag");
+void Robot::newTagFind() {
+  Console.print("Find a tag : ");
+  Console.println(rfidTagFind);
+  if(rfidUse){
+    if (RaspberryPIUse) MyRpi.SendRfidToPi();
+  }
 }
 
 void Robot::readSensors() {
@@ -2525,22 +2538,32 @@ void Robot::readSensors() {
     double batvolt = batFactor * readSensor(SEN_BAT_VOLTAGE) * 3.3 / 4096 ; //readsensor return the ADC value 0 to 4096 so *3.3/4096 voltage on the arduino pin batfactor depend on the resitor on board
     double chgvolt = batChgFactor * readSensor(SEN_CHG_VOLTAGE) * 3.3 / 4096 ;
     double curramp = batSenseFactor * readSensor(SEN_CHG_CURRENT) * 3.3 / 4096 ;
-
+    /*
+    Console.print(millis());
+    Console.print("/batvolt ");
+    Console.print(batvolt);
+    Console.print("/chgvolt ");
+    Console.print(chgvolt);
+    Console.print("/curramp ");
+    Console.println(curramp);
+*/
     // low-pass filter
     //double accel = 0.01;
     double accel = 0.05;
 
-    if (abs(batVoltage - batvolt) > 5)   batVoltage = batvolt; else batVoltage = (1.0 - accel) * batVoltage + accel * batvolt;
-    if (abs(chgVoltage - chgvolt) > 5)   chgVoltage = chgvolt; else chgVoltage = (1.0 - accel) * chgVoltage + accel * chgvolt;
+    if (abs(batVoltage - batvolt) > 8)   batVoltage = batvolt; else batVoltage = (1.0 - accel) * batVoltage + accel * batvolt;
+    if (abs(chgVoltage - chgvolt) > 8)   chgVoltage = chgvolt; else chgVoltage = (1.0 - accel) * chgVoltage + accel * chgvolt;
     if (abs(chgCurrent - curramp) > 0.4) chgCurrent = curramp; else chgCurrent = (1.0 - accel) * chgCurrent + accel * curramp; //Deaktiviert für Ladestromsensor berechnung
     //bber30 tracking not ok with this but can check the chgvoltage
-    /*
+/*
     Console.print(millis());
-    Console.print("/");
+    Console.print("/batVoltage ");
     Console.print(batVoltage);
-    Console.print("/");
-    Console.println(chgVoltage);
-    */
+    Console.print("/chgVoltage ");
+    Console.print(chgVoltage);
+    Console.print("/chgCurrent ");
+    Console.println(chgCurrent);
+*/
   }
 
   if ((rainUse) && (millis() >= nextTimeRain)) {
@@ -4033,7 +4056,7 @@ void Robot::checkBumpersPerimeter() {
   else      //we use only charging voltage to detect station
   {
     //bber30
-    nextTimeBattery=millis();
+    nextTimeBattery = millis();
     readSensors();  //read the chgVoltage immediatly
     if (chgVoltage > 5) {
       motorLeftRpmCurr = motorRightRpmCurr = 0 ;
@@ -4153,8 +4176,8 @@ void Robot::checkSonarPeriTrack() {
     timeToResetSpeedPeri = millis() + 5000; //brake the tracking during 5 secondes
     ActualSpeedPeriPWM = MaxSpeedperiPwm * dockingSpeed / 100;
     trakBlockInnerWheel = 1; //don't want that a wheel reverse just before station check   /bber30
-    
-    
+
+
   }
 }
 
@@ -4464,7 +4487,7 @@ void Robot::loop()  {
       */
 
     }
-    if (gpsUse) {
+    if (gpsUse && gpsReady) {
       gps.run();
       //processGPSData();
     }
@@ -4515,9 +4538,8 @@ void Robot::loop()  {
 
     case STATE_OFF:
       // robot is turned off
-      if (batMonitor && (millis() - stateStartTime > 2000)) {
-        if ((chgVoltage > 5.0)  && (batVoltage > 8)) {
-          setBeeper(400, 50, 50, 200, 0 );//error
+      if ((batMonitor) && (millis() - stateStartTime > 2000)) { //the charger is plug
+        if (chgVoltage > 5.0)   {
           setNextState(STATE_STATION, 0);
         }
       }
@@ -5102,7 +5124,8 @@ void Robot::loop()  {
             if (millis() - stateStartTime > 10000) checkTimer(); //only check timer after 10 second to avoid restart before charging
           }
         }
-        else {
+        else
+        {
           //bber20
           Console.println("We are in station but ChargeVoltage is lost ??? ");
           setNextState(STATE_OFF, 0);
@@ -5117,19 +5140,17 @@ void Robot::loop()  {
     case STATE_STATION_CHARGING:
       // waiting until charging completed
       if (batMonitor) {
-        if ((chgCurrent < batFullCurrent) && (millis() - stateStartTime > 2000)) setNextState(STATE_STATION, 0);
-        else if (millis() - stateStartTime > chargingTimeout) {
+        if ((chgCurrent < batFullCurrent) && (millis() - stateStartTime > 2000)) {
+          setNextState(STATE_STATION, 0);
+        }
+        if (millis() - stateStartTime > chargingTimeout)
+        {
           Console.println("End of charging duration check the batfullCurrent to try to stop before");
           setNextState(STATE_STATION, 0);
-          /*
-            addErrorCounter(ERR_BATTERY);
-            setNextState(STATE_ERROR, 0);
-          */
-
         }
       }
       readDHT22();
-      //motorControl();
+
       break;
 
     case STATE_STOP_ON_BUMPER:
@@ -5627,7 +5648,7 @@ void Robot::loop()  {
           //need to adapt if station is traversante
           if (millis() >= delayToReadVoltageStation) { //wait 1.5 sec after all stop and before read voltage
             //bber30
-            nextTimeBattery=millis();
+            nextTimeBattery = millis();
             readSensors();  //read the chgVoltage immediatly
             if (chgVoltage > 5.0)  {
               Console.println ("Charge Voltage detected ");
@@ -5643,7 +5664,7 @@ void Robot::loop()  {
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {//the motor have not enought power to reach the cible
         Console.println ("Warning can t make the station check in time ");
         if (millis() >= delayToReadVoltageStation) {
-          nextTimeBattery=millis();
+          nextTimeBattery = millis();
           readSensors();  //read the chgVoltage
           if (chgVoltage > 5.0) {
             setNextState(STATE_STATION, rollDir);// we are into the station

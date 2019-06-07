@@ -122,7 +122,7 @@
 
 #define ESP8266_BAUDRATE    115200      // baudrate used for communication with esp8266 Wifi module
 #define BLUETOOTH_PIN       1234
-#define GPS_BAUDRATE  9600  // 9600 for M6n ,19200 or 38400 for other module
+#define GPS_BAUDRATE  38400  // 9600 for M6n ,19200 or 38400 for BN880,M8Nother module
 
 
 // ------ used serial ports for console, Bluetooth, ESP8266 -----------------------------

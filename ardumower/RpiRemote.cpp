@@ -80,6 +80,9 @@ void RpiRemote::RaspberryPISendDebug (String data) {
   writePi(lineToSend);
 }
 
+
+
+
 void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
   //send the timer setting to PI
   if (Setting_page == "Timer") {
@@ -750,6 +753,31 @@ void RpiRemote::SendStatusToPi () {
   writePi(lineToSend);
 }
 
+void RpiRemote::SendRfidToPi () {
+  //Console.print("New Status : ");
+  //Console.println(robot->statusCurr);
+  String lineToSend;
+  lineToSend = "RMRFI,";
+  lineToSend = lineToSend + robot->statusCurr;
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + robot->rfidTagFind;
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + "2";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + "3";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + "4";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + "5";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + "6";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + "7";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + "8";
+  lineToSend = lineToSend + ",";
+  writePi(lineToSend);
+}
 
 void RpiRemote::RaspberryPISendStat () {
   //Console.print(motorPowerMax);
@@ -1119,8 +1147,8 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "stateCurr", 20) == 0)  robot->stateCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "statusCurr", 20) == 0)  robot->statusCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "nextTimeTimer", 20) == 0)  robot->nextTimeTimer = atoi(received_value[i]);
-      
-      
+
+
 
       if (strncmp(variable_name[i], "areaInMowing", 20) == 0) {
         robot->areaInMowing = atoi(received_value[i]);
