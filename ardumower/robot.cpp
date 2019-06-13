@@ -243,7 +243,7 @@ Robot::Robot() {
   motorRightPID.Kp = motorLeftPID.Kp;
   motorRightPID.Ki = motorLeftPID.Ki;
   motorRightPID.Kd = motorLeftPID.Kd;
-  gpsReady=false;
+  gpsReady = false;
 }
 
 
@@ -476,7 +476,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, dockingSpeed);
   //bber35
   eereadwrite(readflag, addr, rfidUse);
-  
+
 
   Console.print(F("UserSettings address Start="));
   Console.println(ADDR_USER_SETTINGS);
@@ -796,12 +796,12 @@ void Robot::printSettingSerial() {
   Console.println(stuckIfGpsSpeedBelow);
   Console.print  (F("gpsSpeedIgnoreTime                         : "));
   Console.println(gpsSpeedIgnoreTime);
-//bber35
- // ----- RFID ----------------------------------------------------------------------
+  //bber35
+  // ----- RFID ----------------------------------------------------------------------
   Console.println(F("---------- RFID -----------------------------------------------"));
   Console.print  (F("rfidUse                                     : "));
   Console.println(rfidUse, 1);
-  
+
 
   // ----- other --------------------------------------------------------------------
   Console.println(F("---------- other ---------------------------------------------"));
@@ -2362,7 +2362,7 @@ void Robot::checkButton() {
         mowPatternCurr = MOW_LANES;
         setNextState(STATE_FORWARD_ODO, 0);
       } else if (buttonCounter == 2) {
-
+        areaToGo=1;
         setNextState(STATE_PERI_FIND, 0);
       }
       else
@@ -2380,7 +2380,7 @@ void Robot::checkButton() {
 void Robot::newTagFind() {
   Console.print("Find a tag : ");
   Console.println(rfidTagFind);
-  if(rfidUse){
+  if (rfidUse) {
     if (RaspberryPIUse) MyRpi.SendRfidToPi();
   }
 }
@@ -2539,14 +2539,14 @@ void Robot::readSensors() {
     double chgvolt = batChgFactor * readSensor(SEN_CHG_VOLTAGE) * 3.3 / 4096 ;
     double curramp = batSenseFactor * readSensor(SEN_CHG_CURRENT) * 3.3 / 4096 ;
     /*
-    Console.print(millis());
-    Console.print("/batvolt ");
-    Console.print(batvolt);
-    Console.print("/chgvolt ");
-    Console.print(chgvolt);
-    Console.print("/curramp ");
-    Console.println(curramp);
-*/
+      Console.print(millis());
+      Console.print("/batvolt ");
+      Console.print(batvolt);
+      Console.print("/chgvolt ");
+      Console.print(chgvolt);
+      Console.print("/curramp ");
+      Console.println(curramp);
+    */
     // low-pass filter
     //double accel = 0.01;
     double accel = 0.05;
@@ -2555,15 +2555,15 @@ void Robot::readSensors() {
     if (abs(chgVoltage - chgvolt) > 8)   chgVoltage = chgvolt; else chgVoltage = (1.0 - accel) * chgVoltage + accel * chgvolt;
     if (abs(chgCurrent - curramp) > 0.4) chgCurrent = curramp; else chgCurrent = (1.0 - accel) * chgCurrent + accel * curramp; //Deaktiviert für Ladestromsensor berechnung
     //bber30 tracking not ok with this but can check the chgvoltage
-/*
-    Console.print(millis());
-    Console.print("/batVoltage ");
-    Console.print(batVoltage);
-    Console.print("/chgVoltage ");
-    Console.print(chgVoltage);
-    Console.print("/chgCurrent ");
-    Console.println(chgCurrent);
-*/
+    /*
+        Console.print(millis());
+        Console.print("/batVoltage ");
+        Console.print(batVoltage);
+        Console.print("/chgVoltage ");
+        Console.print(chgVoltage);
+        Console.print("/chgCurrent ");
+        Console.println(chgCurrent);
+    */
   }
 
   if ((rainUse) && (millis() >= nextTimeRain)) {
@@ -3035,6 +3035,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_WAIT_FOR_SIG2:
       statusCurr = WAITSIG2;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
+      //when the raspberry receive this new status it start the sender with the correct area sigcode
       totalDistDrive = 0; //reset the distance to track on the new area
       perimeterUse = true;
       Console.println("Start to read the Perimeter wire");
@@ -3664,10 +3665,12 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
     case STATE_PERI_FIND:
       //Don't Use accel when start from forward_odo because the 2 wheels are already running
-      //bber13 to be remove after test
-      //statusCurr = TRACK_TO_START;
-      //if (RaspberryPIUse) MyRpi.SendStatusToPi();
-
+      //if status is change in pfod need to refresh it in PI
+      if (RaspberryPIUse) MyRpi.SendStatusToPi();
+      Console.print("Area In Mowing ");
+       Console.print(areaInMowing);
+      Console.print(" Area To Go ");
+       Console.println(areaToGo);
       if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_OBSTACLE_AVOID)) {
         UseAccelRight = 0;
         UseAccelLeft = 0;
@@ -3713,9 +3716,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
   stateLast = stateCurr;
   stateCurr = stateNext;
   perimeterTriggerTime = 0;
-  Console.print ("Status ");
   Console.print (F(statusNames[statusCurr]));
-  Console.print (" New State ");
+  Console.print (" / ");
   Console.print (F(stateNames[stateCurr]));
   Console.print (" Dir ");
   Console.print (rollDir);
@@ -3751,8 +3753,8 @@ void Robot::checkBattery() {
       Console.println(F(" Bat Voltage is low : The mower search the charging Station"));
       setBeeper(100, 25, 25, 200, 0 );
       statusCurr = BACK_TO_STATION;
+      areaToGo=1;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
-
       setNextState(STATE_PERI_FIND, 0);
     }
 
@@ -3870,7 +3872,7 @@ void Robot::checkCurrent() {
   if (motorMowSense >= motorMowPowerMax)
   {
     motorMowSenseCounter++;
-    Console.print("Warning  motorMowSense >= motorMowPowerMax and Counter time is");
+    Console.print("Warning  motorMowSense >= motorMowPowerMax and Counter time is ");
     Console.println(motorMowSenseCounter);
   }
   else
@@ -3893,7 +3895,7 @@ void Robot::checkCurrent() {
   //need to check this
   if (motorMowSenseCounter >= 10) { //ignore motorMowPower for 1 seconds
     motorMowEnable = false;
-    Console.println("Error: Motor mow current");
+    Console.println("Motor mow current overload. Motor STOP and try to start again after 1 minute");
     addErrorCounter(ERR_MOW_SENSE);
     lastTimeMotorMowStuck = millis();
 
@@ -4044,17 +4046,17 @@ void Robot::checkDrop() {  //the drop is used as a contact in front of the robot
 // check bumpers while tracking perimeter
 void Robot::checkBumpersPerimeter() {
   //bber20
-  if (UseBumperDock) {   // we use bumper to detect station
-    if ((bumperLeft || bumperRight)) {
-      motorLeftRpmCurr = motorRightRpmCurr = 0 ;
-      setMotorPWM( 0, 0, false );//stop immediatly and wait 2 sec to see if voltage on pin
-      readSensors();  //read the chgVoltage
-      Console.println("Bump on Something check if it's the station");
-      setNextState(STATE_STATION_CHECK, rollDir);
-    }
+
+  if ((bumperLeft || bumperRight)) { // the bumper is used to detect the station
+    motorLeftRpmCurr = motorRightRpmCurr = 0 ;
+    setMotorPWM( 0, 0, false );//stop immediatly and station check to see if voltage on pin
+    nextTimeBattery = millis();
+    readSensors();  //read the chgVoltage
+    Console.println("Bump on Something check if it's the station");
+    setNextState(STATE_STATION_CHECK, rollDir);
   }
-  else      //we use only charging voltage to detect station
-  {
+  
+  if (!UseBumperDock) {   // run slower because read fast the station voltage but we don't use bumper to detect station we use only charging voltage 
     //bber30
     nextTimeBattery = millis();
     readSensors();  //read the chgVoltage immediatly
@@ -4065,7 +4067,6 @@ void Robot::checkBumpersPerimeter() {
       setNextState(STATE_STATION_CHECK, rollDir);
     }
   }
-
 }
 
 // check perimeter as a boundary
@@ -4144,7 +4145,7 @@ void Robot::checkRain() {
   if (!rainUse) return;
   if (rain) {
     Console.println(F("RAIN"));
-
+    areaToGo=1;
     if (perimeterUse) setNextState(STATE_PERI_FIND, 0);
     else setNextState(STATE_OFF, 0);
   }
@@ -5091,9 +5092,13 @@ void Robot::loop()  {
       if (statusCurr == TRACK_TO_START) {
         //bber11
         //areaToGo need to be use here to avoid start mowing before reach the rfid tag in area1
-        if ((areaToGo == areaInMowing) && (startByTimer) && (totalDistDrive > whereToStart * 100)) {
+        // if ((areaToGo == areaInMowing) && (startByTimer) && (totalDistDrive > whereToStart * 100)) {
+        //bber35
+        if ((areaToGo == areaInMowing) && (totalDistDrive > whereToStart * 100)) {
           startByTimer = false;
-          Console.println("Distance OK, time to start mowing");
+          Console.print("Distance OK, time to start mowing into new area ");
+          Console.println(areaInMowing);
+          areaToGo=1;  //after mowing the mower need to back to station
           setNextState(STATE_PERI_STOP_TOROLL, rollDir);
         }
       }

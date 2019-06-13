@@ -49,20 +49,16 @@ void loop() {
     }
     // If it's a different ID
     else {
+      /*
       //Serial.print(F("New Card Detected"));
       //Serial.print(F("... "));
       Serial2.print("{RFID"); // pfod start message with {
-      /*
-      //i dont use all the byte number 
-      for (int j = 0; j < sizeof(thisUid); j++) {
-        Serial2.print(thisUid[8-j], HEX);
-      }
-      */
       for (int j = 0; j <=3; j++) {
         Serial2.print(thisUid[j], HEX);
       }
       Serial2.println("}"); //pfod stop message with }
       // Update the array that keeps track of most recent ID
+      */
       memcpy(lastUid, thisUid, sizeof(lastUid[0]) * 8);
     }
   }
@@ -79,6 +75,21 @@ void loop() {
         Serial.print(" removed from Reader ");
         Serial.println();
       */
+      Serial2.print("{RFID"); // pfod start message with {
+      /*
+      //i dont use all the byte number 
+      for (int j = 0; j < sizeof(thisUid); j++) {
+        Serial2.print(thisUid[8-j], HEX);
+      }
+      */
+      for (int j = 0; j <=3; j++) {
+        Serial2.print(lastUid[j], HEX);
+      }
+      Serial2.println("}"); //pfod stop message with }
+      // Update the array that keeps track of most recent ID
+
+
+      
       // Update the array that keeps track of last known ID
       memset(lastUid, 0, sizeof(lastUid[0]) * 8);
     }
