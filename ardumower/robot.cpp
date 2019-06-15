@@ -3668,9 +3668,10 @@ void Robot::setNextState(byte stateNew, byte dir) {
       //if status is change in pfod need to refresh it in PI
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
       Console.print("Area In Mowing ");
-       Console.print(areaInMowing);
+      Console.print(areaInMowing);
       Console.print(" Area To Go ");
-       Console.println(areaToGo);
+      Console.println(areaToGo);
+      
       if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_OBSTACLE_AVOID)) {
         UseAccelRight = 0;
         UseAccelLeft = 0;
@@ -3851,8 +3852,8 @@ void Robot::reverseOrBidir(byte aRollDir) {
 void Robot::checkCurrent() {
   if (millis() < nextTimeCheckCurrent) return;
   nextTimeCheckCurrent = millis() + 100;
-  if (statusCurr == NORMAL_MOWING) {
-    if (motorMowSense >= 0.8 * motorMowPowerMax) {  //do not start the spirale if in tracking and motor detect high grass
+  if (statusCurr == NORMAL_MOWING) {  //do not start the spirale if in tracking and motor detect high grass
+    if (motorMowSense >= 0.8 * motorMowPowerMax) {  
       spiraleNbTurn = 0;
       halfLaneNb = 0;
       highGrassDetect = true;
@@ -3868,8 +3869,8 @@ void Robot::checkCurrent() {
     }
   }
 
-
-  if (motorMowSense >= motorMowPowerMax)
+// if (motorMowSense >= motorMowPowerMax)
+  if ((motorMowEnable)&&(motorMowSense >= motorMowPowerMax))
   {
     motorMowSenseCounter++;
     Console.print("Warning  motorMowSense >= motorMowPowerMax and Counter time is ");
@@ -3884,24 +3885,17 @@ void Robot::checkCurrent() {
       if ((stateCurr == STATE_FORWARD_ODO)) { //avoid risq of restart not allowed
         motorMowEnable = true;
         lastTimeMotorMowStuck = 0;
-        Console.println("Time to restart the mow motor after the 30 secondes pause");
+        Console.println("Time to restart the mow motor after the 60 secondes pause");
       }
-
     }
-
-
   }
-
   //need to check this
   if (motorMowSenseCounter >= 10) { //ignore motorMowPower for 1 seconds
     motorMowEnable = false;
     Console.println("Motor mow current overload. Motor STOP and try to start again after 1 minute");
     addErrorCounter(ERR_MOW_SENSE);
     lastTimeMotorMowStuck = millis();
-
   }
-
-
 
   //bb add test current in manual mode and stop immediatly
   if (stateCurr == STATE_MANUAL) {
@@ -4948,7 +4942,7 @@ void Robot::loop()  {
       motorControlOdo();
 
       if (motorLeftPWMCurr == 0 && motorRightPWMCurr == 0)  { //wait until the 2 motors completly stop because rotation is inverted
-        //bber11
+       
         if (millis() >= nextTimeReadSmoothPeriMag) {
           nextTimeReadSmoothPeriMag = millis() + 1000;
           smoothPeriMag = perimeter.getSmoothMagnitude(0);
@@ -4962,6 +4956,7 @@ void Robot::loop()  {
             }
             else
             {
+              areaInMowing=areaToGo;
               statusCurr = TRACK_TO_START;
             }
             if (RaspberryPIUse) MyRpi.SendStatusToPi();
@@ -5094,7 +5089,7 @@ void Robot::loop()  {
         //areaToGo need to be use here to avoid start mowing before reach the rfid tag in area1
         // if ((areaToGo == areaInMowing) && (startByTimer) && (totalDistDrive > whereToStart * 100)) {
         //bber35
-        if ((areaToGo == areaInMowing) && (totalDistDrive > whereToStart * 100)) {
+        if ((areaToGo == areaInMowing) && (totalDistDrive >= whereToStart * 100)) {
           startByTimer = false;
           Console.print("Distance OK, time to start mowing into new area ");
           Console.println(areaInMowing);

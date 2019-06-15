@@ -593,29 +593,17 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
   serialPort->print(robot->perimeterMagRight);
   if (robot->perimeterMag < 0) serialPort->print(" (inside)");
   else serialPort->print(" (outside)");
-  serialPort->print(F("|e09~Change mowing Area: "));
+  serialPort->print(F("|e09~Mowing Area: "));
   serialPort->print(robot->areaInMowing);
   sendSlider("e08", F("Timed-out if below smag"), robot->perimeter.timedOutIfBelowSmag, "", 1, 500);
   sendSlider("e14", F("Timeout (s) if not inside"), robot->perimeter.timeOutSecIfNotInside, "", 1, 20, 1);
   sendSlider("e04", F("Trigger timeout"), robot->perimeterTriggerTimeout, "", 1, 1000);
-  //sendSlider("e05", F("Perimeter out roll time max"), robot->perimeterOutRollTimeMax, "", 1, 8000);
-  //sendSlider("e06", F("Perimeter out roll time min"), robot->perimeterOutRollTimeMin, "", 1, 8000);
-  //sendSlider("e15", F("Perimeter out reverse time"), robot->perimeterOutRevTime, "", 1, 8000);
-  //sendSlider("e16", F("Perimeter tracking roll time"), robot->perimeterTrackRollTime, "", 1, 8000);
-  //sendSlider("e17", F("Perimeter tracking reverse time"), robot->perimeterTrackRevTime, "", 1, 8000);
-  sendSlider("e18", F("Tracking Max Speed PWM"), robot->MaxSpeedperiPwm, "", 1, 255);
-  //sendSlider("e19", F("Reverse (cm) after wire trigger"), robot->DistPeriOutRev, "", 1 , 50, 1);
-  //sendSlider("e24", F("Stop (cm) after wire trigger"), robot->DistPeriOutStop, "", 1 ,30, 1);
+   sendSlider("e18", F("Tracking Max Speed PWM"), robot->MaxSpeedperiPwm, "", 1, 255);
   sendSlider("e20", F("Circle Arc disance (cm) Obstacle while tracking"), robot->DistPeriObstacleAvoid, "", 1 , 250, 1);
   sendSlider("e21", F("Perimeter MAG MAX VALUE"), robot->perimeterMagMaxValue, "", 1 , 2500, 500);
-
   sendSlider("e11", F("Transition timeout"), robot->trackingPerimeterTransitionTimeOut, "", 1, 5000);
   sendSlider("e12", F("Track error timeout"), robot->trackingErrorTimeOut, "", 1, 10000);
-
-
   sendPIDSlider("e07", F("Track"), robot->perimeterPID, 0.1, 52);
-  //serialPort->print(F("|e09~Use differential signal "));
-  //sendYesNo(robot->perimeter.useDifferentialPerimeterSignal);
   serialPort->print(F("|e10~Swap Left coil polarity "));
   sendYesNo(robot->perimeter.swapCoilPolarityLeft);
   serialPort->print(F("|e22~Swap Right coil polarity "));
@@ -630,20 +618,12 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
 void RemoteControl::processPerimeterMenu(String pfodCmd) {
   if (pfodCmd == "e00") robot->perimeterUse = !robot->perimeterUse;
   else if (pfodCmd.startsWith("e04")) processSlider(pfodCmd, robot->perimeterTriggerTimeout, 1);
-  //else if (pfodCmd.startsWith("e05")) processSlider(pfodCmd, robot->perimeterOutRollTimeMax, 1);
-  //else if (pfodCmd.startsWith("e06")) processSlider(pfodCmd, robot->perimeterOutRollTimeMin, 1);
-  //else if (pfodCmd.startsWith("e15")) processSlider(pfodCmd, robot->perimeterOutRevTime, 1);
-  //else if (pfodCmd.startsWith("e16")) processSlider(pfodCmd, robot->perimeterTrackRollTime, 1);
-  //else if (pfodCmd.startsWith("e17")) processSlider(pfodCmd, robot->perimeterTrackRevTime, 1);
   else if (pfodCmd.startsWith("e18")) processSlider(pfodCmd, robot->MaxSpeedperiPwm, 1);
-  //else if (pfodCmd.startsWith("e19")) processSlider(pfodCmd, robot->DistPeriOutRev, 1);
-  //else if (pfodCmd.startsWith("e24")) processSlider(pfodCmd, robot->DistPeriOutStop, 1);
-
   else if (pfodCmd.startsWith("e20")) processSlider(pfodCmd, robot->DistPeriObstacleAvoid, 1);
   else if (pfodCmd.startsWith("e21")) processSlider(pfodCmd, robot->perimeterMagMaxValue, 1);
   else if (pfodCmd.startsWith("e07")) processPIDSlider(pfodCmd, "e07", robot->perimeterPID, 0.1, 100);
   else if (pfodCmd.startsWith("e08")) processSlider(pfodCmd, robot->perimeter.timedOutIfBelowSmag, 1);
-  else if (pfodCmd.startsWith("e09")) {
+  else if ((robot->developerActive) && (pfodCmd.startsWith("e09"))) {
     robot->areaInMowing = robot->areaInMowing + 1;
     if (robot->areaInMowing > 3) robot->areaInMowing = 1;
     robot->perimeter.changeArea(robot->areaInMowing);
@@ -1320,7 +1300,8 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     // cmd: find other tag for new area
     robot->setNextState(STATE_PERI_STOP_TO_NEWAREA, 0);
     sendCommandMenu(true);
-  } else if (pfodCmd == "ru") {
+  }
+  /*else if (pfodCmd == "ru") {
     // cmd: ONLY HERE to  test to track and go to area2 using tag for new area
 
     robot->statusCurr = TRACK_TO_START;
@@ -1342,7 +1323,9 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     robot->setNextState(STATE_PERI_FIND, 0);
     sendCommandMenu(true);
 
-  } else if (pfodCmd == "rz") {
+  }
+  */
+  else if (pfodCmd == "rz") {
     // cmd: find other tag for station
     robot->setNextState(STATE_PERI_STOP_TOROLL, 0);
     sendCommandMenu(true);
@@ -1551,6 +1534,7 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
     robot->setNextState(STATE_TEST_MOTOR, robot->rollDir);
     sendTestOdoMenu(true);
   }
+  /*
   else if (pfodCmd == "yt9") {
 
 
@@ -1577,6 +1561,7 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
 
 
   }
+  */
 }
 
 
