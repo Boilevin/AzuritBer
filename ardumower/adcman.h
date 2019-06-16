@@ -103,5 +103,3 @@ extern ADCManager ADCMan;
 
 
 #endif
-
-

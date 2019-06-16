@@ -5,7 +5,7 @@
   Copyright (c) 2014 by Maxime Carpentieri
   Copyright (c) 2014-2015 by Stefan Manteuffel
   Copyright (c) 2015 by Uwe Zimprich
-  Pri²vate-use only! (you need to ask for a commercial-use)
+  PriÂ²vate-use only! (you need to ask for a commercial-use)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1000,7 +1000,7 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
   /*
     if (stateCurr != STATE_OFF) {
     Console.print(stateNames[stateCurr]);
-    Console.print(" Les valeurs demandées a ");
+    Console.print(" Les valeurs demandÃ©es a ");
     Console.print (millis());
     Console.print(" TaC=");
     Console.print (TaC);
@@ -1138,7 +1138,7 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   }
   else {  // si moins d 1 tour
     if (UseAccelLeft && UseBrakeLeft) { //need 2 ramp
-      OdoStartBrakeLeft = distToMoveLeft / 2; //on freine a la moitié de la distance a parcourir
+      OdoStartBrakeLeft = distToMoveLeft / 2; //on freine a la moitiÃ© de la distance a parcourir
       if (PwmLeftSpeed <= 0) SpeedOdoMaxLeft = map(distToMoveLeft / 2, odometryTicksPerRevolution / 2, 0, PwmLeftSpeed, -SpeedOdoMax); //valeur de vitesse max en fonction de la distance a parcourir
       else SpeedOdoMaxLeft = map(distToMoveLeft / 2, odometryTicksPerRevolution / 2, 0, PwmLeftSpeed, SpeedOdoMax);
     }
@@ -1157,7 +1157,7 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   }
   else {  //if less than 1 rev right wheel
     if (UseAccelRight && UseBrakeRight) {
-      OdoStartBrakeRight = distToMoveRight / 2; //on freine a la moitié de la distance a parcourir
+      OdoStartBrakeRight = distToMoveRight / 2; //on freine a la moitiÃ© de la distance a parcourir
       if (PwmRightSpeed <= 0) SpeedOdoMaxRight = map(distToMoveRight / 2, odometryTicksPerRevolution / 2, 0, PwmRightSpeed, -SpeedOdoMax); //valeur de vitesse max en fonction de la distance a parcourir
       else SpeedOdoMaxRight = map(distToMoveRight / 2, odometryTicksPerRevolution / 2, 0, PwmRightSpeed, SpeedOdoMax);
     }
@@ -1701,7 +1701,7 @@ void Robot::motorControl() {
   nextTimeMotorControl = millis() + 200;  // 10 at the original
   static unsigned long nextMotorControlOutputTime = 0;
 
-  // Regelbereich entspricht maximaler PWM am Antriebsrad (motorSpeedMaxPwm), um auch an Steigungen höchstes Drehmoment für die Solldrehzahl zu gewährleisten
+  // Regelbereich entspricht maximaler PWM am Antriebsrad (motorSpeedMaxPwm), um auch an Steigungen hÃ¶chstes Drehmoment fÃ¼r die Solldrehzahl zu gewÃ¤hrleisten
   motorLeftPID.w = motorLeftSpeedRpmSet;               // SOLL
   motorRightPID.w = motorRightSpeedRpmSet;             // SOLL
 
@@ -1725,7 +1725,7 @@ void Robot::motorControl() {
   if (motorLeftSpeedRpmSet >= 0) leftSpeed = min( max(0, leftSpeed), motorSpeedMaxPwm);
   if (motorLeftSpeedRpmSet < 0) leftSpeed = max(-motorSpeedMaxPwm, min(0, leftSpeed));
 
-  // Regelbereich entspricht maximaler PWM am Antriebsrad (motorSpeedMaxPwm), um auch an Steigungen höchstes Drehmoment für die Solldrehzahl zu gewährleisten
+  // Regelbereich entspricht maximaler PWM am Antriebsrad (motorSpeedMaxPwm), um auch an Steigungen hÃ¶chstes Drehmoment fÃ¼r die Solldrehzahl zu gewÃ¤hrleisten
   motorRightPID.Kp = motorLeftPID.Kp;
   motorRightPID.Ki = motorLeftPID.Ki;
   motorRightPID.Kd = motorLeftPID.Kd;
@@ -2553,7 +2553,7 @@ void Robot::readSensors() {
 
     if (abs(batVoltage - batvolt) > 8)   batVoltage = batvolt; else batVoltage = (1.0 - accel) * batVoltage + accel * batvolt;
     if (abs(chgVoltage - chgvolt) > 8)   chgVoltage = chgvolt; else chgVoltage = (1.0 - accel) * chgVoltage + accel * chgvolt;
-    if (abs(chgCurrent - curramp) > 0.4) chgCurrent = curramp; else chgCurrent = (1.0 - accel) * chgCurrent + accel * curramp; //Deaktiviert für Ladestromsensor berechnung
+    if (abs(chgCurrent - curramp) > 0.4) chgCurrent = curramp; else chgCurrent = (1.0 - accel) * chgCurrent + accel * curramp; //Deaktiviert fÃ¼r Ladestromsensor berechnung
     //bber30 tracking not ok with this but can check the chgvoltage
     /*
         Console.print(millis());

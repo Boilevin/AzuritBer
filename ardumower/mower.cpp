@@ -104,7 +104,7 @@ Mower::Mower() {
   bumperUse         = 0;      // has bumpers?
   //  ------ drop -----------------------------------
   dropUse          = 0;     // has drops?                                                                                              Dropsensor - Absturzsensor vorhanden ?
-  dropcontact      = 0;     //contact 0-openers 1-closers                                                                              Dropsensor - Kontakt 0-Öffner - 1-Schließer betätigt gegen GND
+  dropcontact      = 0;     //contact 0-openers 1-closers                                                                              Dropsensor - Kontakt 0-Ã–ffner - 1-SchlieÃŸer betÃ¤tigt gegen GND
   // ------ rain ------------------------------------
   rainUse          = 0;      // use rain sensor?
 
@@ -204,7 +204,7 @@ Mower::Mower() {
   chargingTimeout = 18000000; // safety timer for charging (ms)  5 hrs
   chgSenseZero    = 511;        // charge current sense zero point
   batSenseFactor  = 1.11;         // charge current conversion factor   - Empfindlichkeit nimmt mit ca. 39/V Vcc ab
-  chgSense        = 185.0;      // mV/A empfindlichkeit des Ladestromsensors in mV/A (Für ACS712 5A = 185)
+  chgSense        = 185.0;      // mV/A empfindlichkeit des Ladestromsensors in mV/A (FÃ¼r ACS712 5A = 185)
   chgChange       = 0;          // Messwertumkehr von - nach +         1 oder 0
   chgNull         = 2;          // Nullduchgang abziehen (1 oder 2)
   // ------  charging station ---------------------------
@@ -372,9 +372,9 @@ void Mower::setup() {
 
   // drops
  // pinMode(pinDropLeft, INPUT);                                                                                                         // Dropsensor - Absturzsensor - Deklariert als Eingang
-  pinMode(pinDropLeft, INPUT_PULLUP);                                                                                                  // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (Auslösung erfolgt gegen GND)
+  pinMode(pinDropLeft, INPUT_PULLUP);                                                                                                  // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (AuslÃ¶sung erfolgt gegen GND)
  // pinMode(pinDropRight, INPUT);                                                                                                        // Dropsensor - Absturzsensor - Deklariert als Eingang
-  pinMode(pinDropRight, INPUT_PULLUP);                                                                                                 // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (Auslösung erfolgt gegen GND)
+  pinMode(pinDropRight, INPUT_PULLUP);                                                                                                 // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (AuslÃ¶sung erfolgt gegen GND)
 
   // rain
   pinMode(pinRain, INPUT);
@@ -443,7 +443,7 @@ void Mower::setup() {
   }
 
   // enable interrupts
-  //-----------------------------------------------------------------------------------------------------------------UweZ geändert Anfang---------------------------------
+  //-----------------------------------------------------------------------------------------------------------------UweZ geÃ¤ndert Anfang---------------------------------
   // Due interrupts
   attachInterrupt(pinOdometryLeft, PCINT2_vect, CHANGE);
   attachInterrupt(pinOdometryLeft2, PCINT2_vect, CHANGE);
@@ -557,14 +557,14 @@ void Mower::setActuator(char type, int value) {
   switch (type) {
 
 
-    case ACT_MOTOR_MOW: setMC33926(pinMotorMowDir, pinMotorMowPWM, value); break;// Motortreiber einstellung - bei Bedarf ändern z.B setL298N auf setMC33926
+    case ACT_MOTOR_MOW: setMC33926(pinMotorMowDir, pinMotorMowPWM, value); break;// Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
     //bb
-    case ACT_MOTOR_LEFT: setMC33926(pinMotorLeftDir, pinMotorLeftPWM, value); break;//   Motortreiber einstellung - bei Bedarf ändern z.B setL298N auf setMC33926
+    case ACT_MOTOR_LEFT: setMC33926(pinMotorLeftDir, pinMotorLeftPWM, value); break;//   Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
 
     case ACT_MOTOR_RIGHT:
       if (value >= 0) setMC33926(pinMotorRightDir, pinMotorRightPWM, value * (1 + (double)motorRightOffsetFwd / 100));
       else setMC33926(pinMotorRightDir, pinMotorRightPWM, value * (1 - (double)motorRightOffsetRev / 100));
-      break; //  Motortreiber einstellung - bei Bedarf ändern z.B setL298N auf setMC33926
+      break; //  Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
 
     case ACT_BUZZER: if (value == 0) Buzzer.noTone(); else Buzzer.tone(value); break;
     case ACT_LED: digitalWrite(pinLED, value); break;

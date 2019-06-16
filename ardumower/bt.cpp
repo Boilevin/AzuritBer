@@ -260,6 +260,3 @@ void BluetoothConfig::setParams(String name, int pin, long baudrate, boolean qui
     }
   }
 }
-
-
-

@@ -462,13 +462,13 @@ class Robot
     unsigned long nextTimeBumper ;
     // --------- drop state ---------------------------
     // bumper state (true = pressed)                                                                                                  // Dropsensor - Absturzsensor vorhanden ?
-    boolean dropUse       ;      // has drops?                                                                                           // Dropsensor - Absturzsensor Zähler links
+    boolean dropUse       ;      // has drops?                                                                                           // Dropsensor - Absturzsensor ZÃ¤hler links
     int dropLeftCounter ;                                                                                                             // Dropsensor - Absturzsensor
-    boolean dropLeft ;                                                                                                                // Dropsensor - Absturzsensor links betätigt ?
+    boolean dropLeft ;                                                                                                                // Dropsensor - Absturzsensor links betÃ¤tigt ?
     int dropRightCounter ;                                                                                                            // Dropsensor - Absturzsensor
-    boolean dropRight ;                                                                                                               // Dropsensor - Absturzsensor rechts betätigt ?
+    boolean dropRight ;                                                                                                               // Dropsensor - Absturzsensor rechts betÃ¤tigt ?
     unsigned long nextTimeDrop ;                                                                                                      // Dropsensor - Absturzsensor
-    boolean dropcontact ; // contact 0-openers 1-closers                                                                                 // Dropsensor Kontakt 0 für Öffner - 1 Schließer
+    boolean dropcontact ; // contact 0-openers 1-closers                                                                                 // Dropsensor Kontakt 0 fÃ¼r Ã–ffner - 1 SchlieÃŸer
     // ------- IMU state --------------------------------
     IMUClass imu;
     boolean imuUse            ;       // use IMU?
@@ -660,7 +660,7 @@ class Robot
     unsigned long chargingTimeout; // safety timer for charging
     float chgSenseZero    ;       // charge current sense zero point
     float batSenseFactor       ;     // charge current conversion factor
-    float chgSense        ;       // mV/A empfindlichkeit des Ladestromsensors in mV/A (Für ACS712 5A = 185)
+    float chgSense        ;       // mV/A empfindlichkeit des Ladestromsensors in mV/A (FÃ¼r ACS712 5A = 185)
     char chgChange        ;       // messwertumkehr von - nach +         1oder 0
     float batVoltage ;  // battery voltage (Volt)
     // byte chgSelection     ;       // Senor Auswahl
