@@ -117,6 +117,24 @@ class STU(TalkerSentence):
 	("Val10", "val10"),
 		
     )
+
+class RFI(TalkerSentence):
+    """ message from DUE to PI  for rfid and status send only when tag is detected....
+    """
+    fields = (
+        ("Status", "status"),
+        ("rfidTagFind", "rfidTagFind"),
+	("Val2", "val2"),
+	("Val3", "val3"),
+	("Val4", "val4"),
+	("Val5", "val5"),
+	("Val6", "val6"),
+	("Val7", "val7"),
+	("Val8", "val8"),
+	("Val9", "val9"),
+	("Val10", "val10"),
+		
+    )
 class DEB(TalkerSentence):
     """ message from DUE TO PI for  debug etc....
     """

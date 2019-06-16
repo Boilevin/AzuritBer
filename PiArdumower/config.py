@@ -26,11 +26,11 @@ if (os.name=='posix'):
     myBaudRate = 250000
     myOS="Linux"
     GpsConnectedOnPi=False
-    GpsIsM6n=True
+    GpsIsM6n=False
     RfidConnectedOnPi=False
-    NanoConnectedOnPi=False
-    Esp32ConnectedOnPi=True
-    DueConnectedOnPi=False
-    AutoRecordBatCharging=False
+    NanoConnectedOnPi=True
+    Esp32ConnectedOnPi=False
+    DueConnectedOnPi=True
+    AutoRecordBatCharging=True
     
 

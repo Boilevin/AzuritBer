@@ -1,21 +1,16 @@
-pour demerrer une appli depuis un terminal
+PC SIDE:
+Install these 2 software on your PC
+Mobaxterm free edition
+VNC
+To have an easy remote acces to the PI screen 
 
- /etc/xdg/lxsession/LXDE-pi/autostart 
 
-/home/pi/.config/lxsession/LXDE-pi/autostart
-@bash /home/pi/Desktop/mower.sh
 
-example de mower.sh
-cd ~
-cd Documents/PiRain
-python3 /home/pi/Documents/PiRain/main.py
 
-example de mower.sh
-cd ~
-cd Documents/PiArdumower
-python3 PiArdu.py
+RASPBERRY SIDE:
 
 HOTSPOT  *********************************************************************************
+Follow this video:
 https://www.youtube.com/watch?v=XgcDipALFOc&t=37s
 SSid ArduWifi
 Pass Ardumower1234
@@ -25,31 +20,6 @@ KST ****************************************************************************
 
 sudo apt-get install kst
 
-PHIDGET RFID MODULE  *****************************************************************
- 
-from https://www.instructables.com/id/Getting-Started-with-Phidgets-on-the-Raspberry-Pi/
-
-sudo apt-get install libusb-1.0-0-dev
-wget http://www.phidgets.com/downloads/libraries/libphidget.tar.gz
-tar zxvf libphidget.tar.gz
-cd libphidget-2.1.9.20190409/        ***********type the correct version number
-./configure
-make        **********************take a long time
-sudo make install
-
-Also
-Download the Python libraries:
-
-cd ~
-wget http://www.phidgets.com/downloads/libraries/PhidgetsPython.zip
-unzip PhidgetsPython.zip
-sudo python3 setup.py install
-And download the examples:
-wget http://www.phidgets.com/downloads/examples/Python.zip
-unzip Python.zip
-cd Python/
-Lets try the HelloWorld example again, but this time in Python:
-sudo python HelloWorld.py
 
 SCREEN   *********************************************************************************
 
@@ -57,3 +27,24 @@ installer LCD
 git clone https://github.com/waveshare/LCD-show.git 
 cd LCD-show/ 
 sudo ./LCD5-show 
+
+
+Autostart of PiArdu **********************************************************************
+It's here
+ /etc/xdg/lxsession/LXDE-pi/autostart 
+or here 
+/home/pi/.config/lxsession/LXDE-pi/autostart
+
+So :
+sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
+Add at the end of the file:
+@bash /home/pi/Desktop/mower.sh
+
+Example de mower.sh *********************************************************************
+cd ~
+cd Documents/PiArdumower
+python3 PiArdu.py
+
+Permission to all file *****************************************************************
+sudo chown -R pi:pi PiArdumower
+sudo chmod -R 755 PiArdumower
