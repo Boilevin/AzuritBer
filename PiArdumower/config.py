@@ -12,11 +12,10 @@ if (os.name=='nt'):
     myOS="Windows"
     GpsConnectedOnPi=False
     GpsIsM6n=True
-    RfidConnectedOnPi=False
     NanoConnectedOnPi=False
-    Esp32ConnectedOnPi=False
     DueConnectedOnPi=False
     AutoRecordBatCharging=False
+    useDebugConsole=True
 
 if (os.name=='posix'):
     print('Linux Platform')
@@ -27,10 +26,9 @@ if (os.name=='posix'):
     myOS="Linux"
     GpsConnectedOnPi=False
     GpsIsM6n=False
-    RfidConnectedOnPi=False
     NanoConnectedOnPi=True
-    Esp32ConnectedOnPi=False
     DueConnectedOnPi=True
     AutoRecordBatCharging=True
+    useDebugConsole=False
     
 

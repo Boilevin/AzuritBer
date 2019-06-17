@@ -22,12 +22,12 @@ import math
 from config import cwd
 from config import myOS
 from config import GpsConnectedOnPi
-from config import RfidConnectedOnPi
 from config import NanoConnectedOnPi
-from config import Esp32ConnectedOnPi
 from config import DueConnectedOnPi
 from config import GpsIsM6n
 from config import AutoRecordBatCharging
+from config import useDebugConsole
+
 
 
 
@@ -367,9 +367,10 @@ if myOS == "Linux":
     myps4 = PS4Controller()
 
 def consoleInsertText(texte):
-    txtConsoleRecu.insert('1.0',' ' + texte)
-    txtConsoleRecu.insert('1.0', time.strftime('%H:%M:%S',time.localtime()))   
-    #txtConsoleRecu.insert('1.0',' ' + texte + '\n')
+    
+        txtConsoleRecu.insert('1.0',' ' + texte)
+        txtConsoleRecu.insert('1.0', time.strftime('%H:%M:%S',time.localtime()))   
+        #txtConsoleRecu.insert('1.0',' ' + texte + '\n')
     
     
     
@@ -377,16 +378,7 @@ def consoleInsertText(texte):
 #################################### MAIN LOOP ###############################################
 
 def checkSerial():  #the main loop is that
-    if Esp32ConnectedOnPi :
-        response3=Esp32_Serial.readline()
-        
-        #print(response3)
-        if str(response3)!="b''":
-            print("recu :" + str(response3))
-            response3=str(response3)
-            #response3=str(response3,'utf8')
-            
-            consoleInsertText(response3 + '\n')
+    
     
     if NanoConnectedOnPi :
         response2=Nano_Serial.readline()
@@ -471,11 +463,11 @@ def checkSerial():  #the main loop is that
     if ((mower.speedIsReduce) & (time.time() > mower.timeToResetSpeed)):
         mower.speedIsReduce=False
         send_var_message('w','motorSpeedMaxPwm',''+str(myRobot.motorSpeedMaxPwm)+'','0','0','0','0','0','0','0')
-        
-    txtRecu.delete('500.0',tk.END) #keep only 500 lines
-    txtSend.delete('500.0',tk.END) #keep only  lines
-    txtConsoleRecu.delete('500.0',tk.END) #keep only  lines
-
+    if useDebugConsole:
+        txtRecu.delete('5000.0',tk.END) #keep only  lines
+        txtSend.delete('5000.0',tk.END) #keep only  lines
+    txtConsoleRecu.delete('2500.0',tk.END) #keep only  lines
+   
 
 
 
@@ -491,8 +483,8 @@ def checkSerial():  #the main loop is that
 
 def decode_message(message):  #decode the nmea message
     #KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow()
-           
-            txtRecu.insert('1.0', str(message)+ '\n')
+            if useDebugConsole:
+                txtRecu.insert('1.0', str(message)+ '\n')
             if message.sentence_type =='TOW': #message from towell
                 mymower.laserSensor1=message.sensor1
                 mymower.laserSensor2=message.sensor2
@@ -718,17 +710,7 @@ def decode_message(message):  #decode the nmea message
                     
                     
                 
-                if RfidConnectedOnPi :                
-                    if myRobot.stateNames[mymower.state]=='PTRK':#active the rfid only when tracking
-                        if not rfid.getAntennaOn() :                   
-                               #print("Turning on the RFID antenna....")
-                               consoleInsertText("Turning ON the RFID antenna...." + '\n')
-                               rfid.setAntennaOn(True)
-                    else:
-                        if rfid.getAntennaOn() :
-                            #print("Turning off the RFID antenna....")
-                            consoleInsertText("Turning OFF the RFID antenna...." + '\n')
-                            rfid.setAntennaOn(False)
+                
    
                 tk_batVoltage.set(mymower.batVoltage)         
                 tk_ImuYaw.set(int(180*float(mymower.yaw)/math.pi))
@@ -1887,39 +1869,18 @@ def send_serial_message(message1):
     
     try:
         if DueConnectedOnPi:
-            checkSerial()
+            #checkSerial()
             Due_Serial.flushOutput()
             Due_Serial.write(bytes(message1,'utf-8'))
             #print("Send Message :" , message1)
-            txtSend.insert('1.0',  message1) 
+            if useDebugConsole:
+                txtSend.insert('1.0',  message1) 
             
     except :
             print("ERREUR while transfert")
             time.sleep(2)
 
-""" ------------------- connecting to the rfid ESp32 ------------ """
-#try:
-if Esp32ConnectedOnPi :
-        
-        if myOS == "Linux":
-            Esp32_Serial = serial.Serial('/dev/ttyUSB0',115200,timeout=0)
-        else:
-            Esp32_Serial = serial.Serial('COM10',115200,timeout=0)
-            
-        #byteResponse=Esp32_Serial.readline()
-        #print(str(byteResponse))
 
-        
-        
-#except:
-#        print(" ")
-#        print("******************************")
-#        print("ERREUR DE CONNECTION WITH ESP32")
-#        print("******************************")
-#        print(" ")
-        
-#        time.sleep(1)
-        #sys.exit("Impossible de continuer")
 """ ------------------- connecting to the laser nano tower ------------ """
 try:
     if NanoConnectedOnPi :
