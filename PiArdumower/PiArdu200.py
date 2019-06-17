@@ -1874,7 +1874,7 @@ def send_serial_message(message1):
     
     try:
         if DueConnectedOnPi:
-            checkSerial()
+            #checkSerial() big bug forget to remove after changing processing
             Due_Serial.flushOutput()
             Due_Serial.write(bytes(message1,'utf-8'))
             #print("Send Message :" , message1)
