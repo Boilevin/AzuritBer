@@ -68,7 +68,8 @@ char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "P
                       "ROLLTOIN", "WAITREPEAT", "FRWODO", "TESTCOMPAS", "ROLLTOTRACK",
                       "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                       "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
-                      "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK"
+                      "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK",
+                      "STOPTOFASTSTART"
                      };
 
 char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT"
@@ -2362,7 +2363,7 @@ void Robot::checkButton() {
         mowPatternCurr = MOW_LANES;
         setNextState(STATE_FORWARD_ODO, 0);
       } else if (buttonCounter == 2) {
-        areaToGo=1;
+        areaToGo = 1;
         setNextState(STATE_PERI_FIND, 0);
       }
       else
@@ -2908,6 +2909,18 @@ void Robot::setNextState(byte stateNew, byte dir) {
         justChangeLaneDir = false; //the first lane need to be distance control
         motorMowEnable = true; //time to start the blade
       }
+
+      UseAccelLeft = 0;
+      UseBrakeLeft = 1;
+      UseAccelRight = 0;
+      UseBrakeRight = 1;
+      motorLeftSpeedRpmSet = motorRightSpeedRpmSet = motorSpeedMaxRpm / 1.5;
+      stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * DistPeriOutStop);
+      stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * DistPeriOutStop);
+      OdoRampCompute();
+      break;
+
+    case STATE_PERI_STOP_TO_FAST_START:
 
       UseAccelLeft = 0;
       UseBrakeLeft = 1;
@@ -3671,7 +3684,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       Console.print(areaInMowing);
       Console.print(" Area To Go ");
       Console.println(areaToGo);
-      
+
       if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_OBSTACLE_AVOID)) {
         UseAccelRight = 0;
         UseAccelLeft = 0;
@@ -3754,7 +3767,7 @@ void Robot::checkBattery() {
       Console.println(F(" Bat Voltage is low : The mower search the charging Station"));
       setBeeper(100, 25, 25, 200, 0 );
       statusCurr = BACK_TO_STATION;
-      areaToGo=1;
+      areaToGo = 1;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
       setNextState(STATE_PERI_FIND, 0);
     }
@@ -3853,7 +3866,7 @@ void Robot::checkCurrent() {
   if (millis() < nextTimeCheckCurrent) return;
   nextTimeCheckCurrent = millis() + 100;
   if (statusCurr == NORMAL_MOWING) {  //do not start the spirale if in tracking and motor detect high grass
-    if (motorMowSense >= 0.8 * motorMowPowerMax) {  
+    if (motorMowSense >= 0.8 * motorMowPowerMax) {
       spiraleNbTurn = 0;
       halfLaneNb = 0;
       highGrassDetect = true;
@@ -3869,8 +3882,8 @@ void Robot::checkCurrent() {
     }
   }
 
-// if (motorMowSense >= motorMowPowerMax)
-  if ((motorMowEnable)&&(motorMowSense >= motorMowPowerMax))
+  // if (motorMowSense >= motorMowPowerMax)
+  if ((motorMowEnable) && (motorMowSense >= motorMowPowerMax))
   {
     motorMowSenseCounter++;
     Console.print("Warning  motorMowSense >= motorMowPowerMax and Counter time is ");
@@ -4049,8 +4062,8 @@ void Robot::checkBumpersPerimeter() {
     Console.println("Bump on Something check if it's the station");
     setNextState(STATE_STATION_CHECK, rollDir);
   }
-  
-  if (!UseBumperDock) {   // run slower because read fast the station voltage but we don't use bumper to detect station we use only charging voltage 
+
+  if (!UseBumperDock) {   // run slower because read fast the station voltage but we don't use bumper to detect station we use only charging voltage
     //bber30
     nextTimeBattery = millis();
     readSensors();  //read the chgVoltage immediatly
@@ -4139,7 +4152,7 @@ void Robot::checkRain() {
   if (!rainUse) return;
   if (rain) {
     Console.println(F("RAIN"));
-    areaToGo=1;
+    areaToGo = 1;
     if (perimeterUse) setNextState(STATE_PERI_FIND, 0);
     else setNextState(STATE_OFF, 0);
   }
@@ -4942,7 +4955,7 @@ void Robot::loop()  {
       motorControlOdo();
 
       if (motorLeftPWMCurr == 0 && motorRightPWMCurr == 0)  { //wait until the 2 motors completly stop because rotation is inverted
-       
+
         if (millis() >= nextTimeReadSmoothPeriMag) {
           nextTimeReadSmoothPeriMag = millis() + 1000;
           smoothPeriMag = perimeter.getSmoothMagnitude(0);
@@ -4956,7 +4969,7 @@ void Robot::loop()  {
             }
             else
             {
-              areaInMowing=areaToGo;
+              areaInMowing = areaToGo;
               statusCurr = TRACK_TO_START;
             }
             if (RaspberryPIUse) MyRpi.SendStatusToPi();
@@ -5093,7 +5106,7 @@ void Robot::loop()  {
           startByTimer = false;
           Console.print("Distance OK, time to start mowing into new area ");
           Console.println(areaInMowing);
-          areaToGo=1;  //after mowing the mower need to back to station
+          areaToGo = 1; //after mowing the mower need to back to station
           setNextState(STATE_PERI_STOP_TOROLL, rollDir);
         }
       }
@@ -5251,6 +5264,19 @@ void Robot::loop()  {
         Console.println ("Warning can t stop to track in time ");
         if (statusCurr == TRACK_TO_START) setNextState(STATE_STATION_ROLL, rollDir);
         else setNextState(STATE_ROLL_TONEXTTAG, rollDir);
+      }
+      break;
+
+    case STATE_PERI_STOP_TO_FAST_START:
+      motorControlOdo();
+      if (((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft)))
+        if (motorLeftPWMCurr == 0 && motorRightPWMCurr == 0)  { //wait until the 2 motors completly stop because rotation is inverted
+          setNextState(STATE_ROLL_TONEXTTAG, rollDir);
+        }
+      if (millis() > (stateStartTime + MaxOdoStateDuration)) {
+        Console.println ("Warning can t stop to track in time ");
+        setNextState(STATE_ROLL_TONEXTTAG, rollDir);
+
       }
       break;
 

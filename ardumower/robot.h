@@ -187,7 +187,9 @@ enum {
 
   STATE_WAIT_FOR_SIG2,  //use when the area 2 wait until sender send the signal
   STATE_STOP_TO_NEWAREA,  //use to stop the mower in straight line after long distance moving with ODO and IMU
-  STATE_PERI_OUT_STOP_ROLL_TOTRACK // after the mower rool to track we need to stop the right motor because it's reverse and the track is forward
+  STATE_PERI_OUT_STOP_ROLL_TOTRACK, // after the mower rool to track we need to stop the right motor because it's reverse and the track is forward
+  STATE_PERI_STOP_TO_FAST_START  // after the mower find a tag for find a new start entry point
+  
   
 };
 

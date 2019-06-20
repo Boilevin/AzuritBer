@@ -1301,30 +1301,13 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     robot->setNextState(STATE_PERI_STOP_TO_NEWAREA, 0);
     sendCommandMenu(true);
   }
-  /*else if (pfodCmd == "ru") {
-    // cmd: ONLY HERE to  test to track and go to area2 using tag for new area
-
-    robot->statusCurr = TRACK_TO_START;
-    // robot->MyRpi.SendStatusToPi();
-    robot->ActualRunningTimer = 0;
-    //motorMowEnable = true;
-    robot->findedYaw = 999;
-    robot->imuDirPID.reset();
-    robot->mowPatternCurr = 1;
-    robot->laneUseNr = 1;
-    robot->rollDir = 0;
-    robot->whereToStart = 2;
-    robot->areaToGo = 2;
-    robot->actualLenghtByLane = 20;
-    robot->startByTimer = true;
-    robot->mowPatternDuration = 0;
-    robot->totalDistDrive = 0;
-    robot->perimeterUse = true;
-    robot->setNextState(STATE_PERI_FIND, 0);
+  else if (pfodCmd == "ru") {
+    // cmd: find other tag for fast start
+    robot->setNextState(STATE_PERI_STOP_TO_FAST_START, 0);
     sendCommandMenu(true);
 
   }
-  */
+  
   else if (pfodCmd == "rz") {
     // cmd: find other tag for station
     robot->setNextState(STATE_PERI_STOP_TOROLL, 0);
@@ -1459,7 +1442,7 @@ void RemoteControl::sendTestOdoMenu(boolean update) {
   serialPort->print(F("|yt6~Rotate 180Deg"));  //to verify and adjust the odometryWheelBaseCm
   serialPort->print(F("|yt5~Rotate 360Deg"));  //to verify and adjust the odometryWheelBaseCm
   serialPort->println(F("|yt7~Rotate Non Stop"));
-  serialPort->println(F("|yt9~Test Drive IMU and ODO"));
+  //serialPort->println(F("|yt9~Test Drive IMU and ODO"));
 
 
   serialPort->println("}");
