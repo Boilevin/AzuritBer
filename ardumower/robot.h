@@ -323,6 +323,7 @@ class Robot
     int motorAccel  ;  // motor wheel acceleration (warning: do not set too high)
     int motorSpeedMaxRpm   ;   // motor wheel max RPM
     int motorSpeedMaxPwm  ;  // motor wheel max Pwm  (8-bit PWM=255, 10-bit PWM=1023)
+    int motorInitialSpeedMaxPwm ;  // motor Initial wheel max Pwm  
     float motorPowerMax   ;    // motor wheel max power (Watt)
     PID motorLeftPID;              // motor left wheel PID controller
     PID motorRightPID;              // motor right wheel PID controller

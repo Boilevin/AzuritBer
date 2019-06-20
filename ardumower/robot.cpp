@@ -477,7 +477,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, dockingSpeed);
   //bber35
   eereadwrite(readflag, addr, rfidUse);
-
+  motorInitialSpeedMaxPwm = motorSpeedMaxPwm; //the Pi can change the speed so keep the init value to restore after PFND
 
   Console.print(F("UserSettings address Start="));
   Console.println(ADDR_USER_SETTINGS);
@@ -2887,7 +2887,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
         statusCurr = BACK_TO_STATION;
         if (RaspberryPIUse) MyRpi.SendStatusToPi();
       }
-
+      //time to reset the speed because the Peri find can use very high speed
+      motorSpeedMaxPwm = motorInitialSpeedMaxPwm;
 
       UseAccelLeft = 0;
       UseBrakeLeft = 1;
