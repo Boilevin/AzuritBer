@@ -4507,7 +4507,7 @@ void Robot::loop()  {
 
   if (millis() >= nextTimeInfo) {
     if ((millis() - nextTimeInfo > 250)) {
-      Console.print("-------------------- LOOP NOT OK DUE IS OVERLOAD ------------------------ Over 1 sec ");
+      Console.print("------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec ");
       Console.println((millis() - nextTimeInfo));
     }
     nextTimeInfo = millis() + 1000; //1000

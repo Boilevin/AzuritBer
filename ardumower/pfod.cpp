@@ -598,7 +598,7 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
   sendSlider("e08", F("Timed-out if below smag"), robot->perimeter.timedOutIfBelowSmag, "", 1, 500);
   sendSlider("e14", F("Timeout (s) if not inside"), robot->perimeter.timeOutSecIfNotInside, "", 1, 20, 1);
   sendSlider("e04", F("Trigger timeout"), robot->perimeterTriggerTimeout, "", 1, 1000);
-   sendSlider("e18", F("Tracking Max Speed PWM"), robot->MaxSpeedperiPwm, "", 1, 255);
+  sendSlider("e18", F("Tracking Max Speed PWM"), robot->MaxSpeedperiPwm, "", 1, 255);
   sendSlider("e20", F("Circle Arc disance (cm) Obstacle while tracking"), robot->DistPeriObstacleAvoid, "", 1 , 250, 1);
   sendSlider("e21", F("Perimeter MAG MAX VALUE"), robot->perimeterMagMaxValue, "", 1 , 2500, 500);
   sendSlider("e11", F("Transition timeout"), robot->trackingPerimeterTransitionTimeOut, "", 1, 5000);
@@ -846,7 +846,9 @@ void RemoteControl::sendRemoteMenu(boolean update) {
 void RemoteControl::processRemoteMenu(String pfodCmd) {
   if (pfodCmd == "h00" ) robot->remoteUse = !robot->remoteUse;
   if (pfodCmd == "h01" ) robot->RaspberryPIUse = !robot->RaspberryPIUse;
-
+  if (pfodCmd == "h02" ) robot->printSettingSerial();  //use by pi to show all the variable in the console
+  if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode 
+  
 
   sendRemoteMenu(true);
 }
@@ -1002,6 +1004,7 @@ void RemoteControl::sendTimerDetailMenu(int timerIdx, boolean update) {
   sendSlider("p3" + sidx, F("Stop hour "), robot->timer[timerIdx].stopTime.hour, "", 1, 23, 0);
   sendSlider("p4" + sidx, F("Stop minute "), robot->timer[timerIdx].stopTime.minute, "", 1, 59, 0);
   sendSlider("p6" + sidx, F("Start Dist/Station: "), robot->timer[timerIdx].startDistance, "", 1, 255, 0);
+  sendSlider("pc" + sidx, F("Use Beacon: "), robot->timer[timerIdx].rfidBeacon, "", 1, 40, 0);
 
 
   serialPort->print("|p7");
@@ -1105,31 +1108,14 @@ void RemoteControl::processTimerDetailMenu(String pfodCmd) {
     processSlider(pfodCmd, robot->timer[timerIdx].startLaneMaxlengh, 1);
     checkStart = true;
   }
-  /*
-    else if (pfodCmd.startsWith("pc")) {
-    // adjust stop time
-    stopmin = max(5, time2minutes(robot->timer[timerIdx].stopTime));
-    minutes2time(stopmin, time);
-    robot->timer[timerIdx].stopTime = time;
-    // check start time
-    startmin = time2minutes(robot->timer[timerIdx].startTime);
-    startmin = min(startmin, stopmin - 5);
-    minutes2time(startmin, time);
-    robot->timer[timerIdx].startTime = time;
-    robot->findedYaw = 999;
-    robot->imuDirPID.reset();
-    robot->mowPatternCurr = robot->timer[timerIdx].startMowPattern;
-    robot->laneUseNr = robot->timer[timerIdx].startNrLane;
-    robot->rollDir = robot->timer[timerIdx].startRollDir;
-    robot->whereToStart = robot->timer[timerIdx].startDistance;
-    robot->areaToGo = robot->timer[timerIdx].startArea;
-    robot->actualLenghtByLane = robot->timer[timerIdx].startLaneMaxlengh;
-    robot->startByTimer = true;
-    robot->totalDistDrive = 0;
-    robot->setNextState(STATE_STATION_REV, 0);
 
-    }
-  */
+  else if (pfodCmd.startsWith("pc")) {
+    // adjust rfid beacon value if 0 when start the mower never read the rfid tag
+    processSlider(pfodCmd, robot->timer[timerIdx].rfidBeacon, 1);
+    checkStart = true;
+
+  }
+
   else if (pfodCmd.startsWith("p9")) {
     robot->timer[timerIdx].startTime = robot->datetime.time; checkStop = true;
     robot->timer[timerIdx].daysOfWeek = (1 << robot->datetime.date.dayOfWeek);
@@ -1302,12 +1288,14 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     sendCommandMenu(true);
   }
   else if (pfodCmd == "ru") {
-    // cmd: find other tag for fast start
-    robot->setNextState(STATE_PERI_STOP_TO_FAST_START, 0);
+    // cmd: find  tag for fast start
+    if (robot->areaToGo!=1) {  // if a distance is set for start point we can't use the fast start
+      robot->setNextState(STATE_PERI_STOP_TO_FAST_START, 0);
+    }
     sendCommandMenu(true);
 
   }
-  
+
   else if (pfodCmd == "rz") {
     // cmd: find other tag for station
     robot->setNextState(STATE_PERI_STOP_TOROLL, 0);
@@ -1518,7 +1506,7 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
     sendTestOdoMenu(true);
   }
   /*
-  else if (pfodCmd == "yt9") {
+    else if (pfodCmd == "yt9") {
 
 
     // cmd: ONLY HERE to  test to track and go to area2 using tag for new area
@@ -1543,7 +1531,7 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
     sendCommandMenu(true);
 
 
-  }
+    }
   */
 }
 

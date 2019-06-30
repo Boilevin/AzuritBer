@@ -777,7 +777,7 @@ class Robot
     //virtual void RaspberryPISendStat ();
     
     virtual void receivePiPfodCommand (String RpiCmd,float v1,float v2,float v3);
-    
+    virtual void printSettingSerial();
     
   protected:
     // convert ppm time to RC slider value
@@ -787,7 +787,7 @@ class Robot
     virtual void loadSaveRobotStats(boolean readflag);
     virtual void loadUserSettings();
     virtual void checkErrorCounter();
-    virtual void printSettingSerial();
+    
 
     // read sensors
     virtual void readSensors();
