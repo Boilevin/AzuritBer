@@ -477,7 +477,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, dockingSpeed);
   //bber35
   eereadwrite(readflag, addr, rfidUse);
-  motorInitialSpeedMaxPwm = motorSpeedMaxPwm; //the Pi can change the speed so keep the init value to restore after PFND
+  if (readflag) motorInitialSpeedMaxPwm = motorSpeedMaxPwm; //the Pi can change the speed so store the initial value to restore after PFND
 
   Console.print(F("UserSettings address Start="));
   Console.println(ADDR_USER_SETTINGS);
@@ -2887,9 +2887,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
         statusCurr = BACK_TO_STATION;
         if (RaspberryPIUse) MyRpi.SendStatusToPi();
       }
-      //time to reset the speed because the Peri find can use very high speed
-      motorSpeedMaxPwm = motorInitialSpeedMaxPwm;
-
+      
       UseAccelLeft = 0;
       UseBrakeLeft = 1;
       UseAccelRight = 0;
@@ -3621,6 +3619,10 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_STATION: //stop immediatly
       statusCurr = IN_STATION;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
+      
+       //time to reset the speed because the Peri find can use very high speed
+      motorSpeedMaxPwm = motorInitialSpeedMaxPwm;
+      
       stateEndOdometryRight = odometryRight;
       stateEndOdometryLeft = odometryLeft ;
       motorLeftSpeedRpmSet = motorRightSpeedRpmSet = 0;
@@ -4401,15 +4403,15 @@ void Robot::readDHT22() {
     humidityDht = dht.readHumidity();
     temperatureDht = dht.readTemperature();
     if (temperatureDht >= maxTemperature) {
-      Console.println("Temperature too high *************** Need to stop all the PCB in 2 minutes");
+      Console.println("Temperature too high *************** Need to stop all the PCB in the next 2 minutes");
       Console.print("Maxi Setting = ");
       Console.print(maxTemperature);
       Console.print(" Actual Temperature = ");
       Console.println(temperatureDht);
 
-
+      nextTimeReadDHT22 = nextTimeReadDHT22 + 180000; // do not read again the temp for the next 3 minute and set the idle bat to 2 minute to poweroff the PCB  
       batSwitchOffIfIdle = 2; //use to switch off after 1 minute
-      setNextState(STATE_OFF, 0);
+      setNextState(STATE_ERROR, 0);
     }
     /*
       Console.print(" Read DHT22 temperature : ");
@@ -4478,7 +4480,7 @@ void Robot::loop()  {
   if  (stateCurr == STATE_OFF)  checkButton(); //read only when needed
   motorMowControl();
   checkTilt();
-  if (stateCurr == STATE_PERI_OUT_STOP) { //read only timer here for fast processing on odo
+  if ((stateCurr == STATE_PERI_OUT_STOP) && (statusCurr == NORMAL_MOWING)) { //read only timer here for fast processing on odo
     checkTimer();
   }
   beeper();
@@ -5135,7 +5137,7 @@ void Robot::loop()  {
           }
           else
           { //bber20
-            if (millis() - stateStartTime > 10000) checkTimer(); //only check timer after 10 second to avoid restart before charging
+            if (millis() - stateStartTime > 10000) checkTimer(); //only check timer after 10 second to avoid restart before charging and check non stop after but real only 60 sec 
           }
         }
         else

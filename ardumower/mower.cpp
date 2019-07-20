@@ -157,6 +157,8 @@ Mower::Mower() {
   DistPeriObstacleAvoid = 100; //distance while arc circle in peri obstacle avoid
   perimeterMagMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
   perimeter.read2Coil = false;
+  areaToGo = 1;//initialise the areatogo to the station area
+  
   // ------ lawn sensor --------------------------------
   lawnSensorUse     = 0;       // use capacitive Sensor
   // ------  IMU (compass/accel/gyro) ----------------------

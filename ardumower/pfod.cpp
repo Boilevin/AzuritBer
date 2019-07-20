@@ -847,8 +847,8 @@ void RemoteControl::processRemoteMenu(String pfodCmd) {
   if (pfodCmd == "h00" ) robot->remoteUse = !robot->remoteUse;
   if (pfodCmd == "h01" ) robot->RaspberryPIUse = !robot->RaspberryPIUse;
   if (pfodCmd == "h02" ) robot->printSettingSerial();  //use by pi to show all the variable in the console
-  if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode 
-  
+  if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode
+
 
   sendRemoteMenu(true);
 }
@@ -1232,7 +1232,8 @@ void RemoteControl::sendInfoMenu(boolean update) {
 
 void RemoteControl::processInfoMenu(String pfodCmd) {
   if (pfodCmd == "v01") robot->developerActive = !robot->developerActive;
-  if (pfodCmd == "v04") robot->statsOverride = !robot->statsOverride; robot->saveUserSettings();
+  if (pfodCmd == "v04") robot->statsOverride = !robot->statsOverride;
+
 
   sendInfoMenu(true);
 }
@@ -1289,7 +1290,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
   }
   else if (pfodCmd == "ru") {
     // cmd: find  tag for fast start
-    if (robot->areaToGo!=1) {  // if a distance is set for start point we can't use the fast start
+    if (robot->areaToGo != 1) { // if a distance is set for start point we can't use the fast start
       robot->setNextState(STATE_PERI_STOP_TO_FAST_START, 0);
     }
     sendCommandMenu(true);
@@ -1310,6 +1311,22 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     // cmd: start auto mowing
     robot->motorMowEnable = true;
     if ((robot->stateCurr == STATE_STATION) || (robot->stateCurr == STATE_STATION_CHARGING)) {
+      //bber40
+      Console.println("MANUAL START FROM STATION");
+      robot->ActualRunningTimer = 0;
+      //motorMowEnable = true;
+      robot->findedYaw = 999;
+      robot->imuDirPID.reset();
+      robot->mowPatternCurr = 1;
+      robot->laneUseNr = 1;
+      robot->rollDir = 0;
+      robot->whereToStart = 0;
+      robot->areaToGo = 1;
+      robot->actualLenghtByLane = 40;
+      robot->beaconToStart = 0;
+      robot->startByTimer = true;
+      robot->mowPatternDuration = 0;
+      robot->totalDistDrive = 0;
       robot->setActuator(ACT_CHGRELAY, 0);
       robot->setNextState(STATE_STATION_REV, 0);
     }
