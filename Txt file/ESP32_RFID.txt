@@ -1,0 +1,7 @@
+The RFID is connected to the ESP32.
+To test it you can use the test software \TEST FILE\ESP32_RFID_PC_TEST
+Simply connect the ESP32 to the PC using USB.
+Using arduino IDE ,Select ESP32 Dev Module as board,download the sketch (maybe you need to push the boot button when upload start).
+Connect the RFID reader. It's powerred by the ESP32.
+Start the console into Arduino IDE at 19200 bps .
+Each time you remove a tag from the reader the UID is show in the console.See example console result : ESP32_RFID_PC_TEST.JPG file 

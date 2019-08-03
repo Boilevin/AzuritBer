@@ -46,10 +46,18 @@ sudo ./LCD5-show
 *****************************************************************************************
 
 
-When you start the raspberry, the PiArdu need to start
+FILE    **************************************************************************************
+Copy the entire PiArdumower folder into home/pi/Documents
+Set permission to all files
+Not sure but maybe by this way :
+sudo chown -R pi:pi PiArdumower
+sudo chmod -R 755 PiArdumower
+
+
+To Autostart the piArdu when the mower powerup
 
 Autostart of PiArdu **********************************************************************
-It's here on the Pi File
+It's locate here on the Pi File
  /etc/xdg/lxsession/LXDE-pi/autostart 
 or here 
 /home/pi/.config/lxsession/LXDE-pi/autostart
@@ -59,6 +67,7 @@ sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
 Add at the end of the file:
 @bash /home/pi/Desktop/mower.sh
 And copy the mower.sh file from PiArdumower to your Pi Desktop
+Do not forget the permission
 
 Example of mower.sh *********************************************************************
 cd ~
