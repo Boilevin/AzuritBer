@@ -8,18 +8,34 @@ To have an easy remote acces to the PI screen
 
 
 RASPBERRY SIDE:
+First you need a fresh install of Raspbian 
+https://www.raspberrypi.org/downloads/raspbian/
+Use the desktop version.
+Create the SD card and test all with HDMI and your Home TV for example to be sure all is OK 
+and try to connect using VNC or Mobaxterm SSH session
+
+
+If you have the WIFI everywhere in your garden the Pi can be connected to your home acces point
+using the defaut setting and you don't need to setup the Hotspot
+
+If you don't have the WIFI into your garden the Mower is used as acces point,you need to instal this:
 
 HOTSPOT  *********************************************************************************
 Follow this video:
 https://www.youtube.com/watch?v=XgcDipALFOc&t=37s
+Set the wifi with this 2 setting value (near the end of the video)
 SSid ArduWifi
 Pass Ardumower1234
+******************************************************************************************
 
+To plot data PiArdumower use KST so you need to install it 
 
 KST *************************************************************************************
-
+Seach KST Plot on Google for more info or simply copy and past this into the Pi terminal:
 sudo apt-get install kst
+*****************************************************************************************
 
+Only if you want to connect the screen to the Pi
 
 SCREEN   *********************************************************************************
 
@@ -27,10 +43,13 @@ installer LCD
 git clone https://github.com/waveshare/LCD-show.git 
 cd LCD-show/ 
 sudo ./LCD5-show 
+*****************************************************************************************
 
+
+When you start the raspberry, the PiArdu need to start
 
 Autostart of PiArdu **********************************************************************
-It's here
+It's here on the Pi File
  /etc/xdg/lxsession/LXDE-pi/autostart 
 or here 
 /home/pi/.config/lxsession/LXDE-pi/autostart
@@ -39,8 +58,9 @@ So :
 sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
 Add at the end of the file:
 @bash /home/pi/Desktop/mower.sh
+And copy the mower.sh file from PiArdumower to your Pi Desktop
 
-Example de mower.sh *********************************************************************
+Example of mower.sh *********************************************************************
 cd ~
 cd Documents/PiArdumower
 python3 PiArdu.py

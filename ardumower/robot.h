@@ -838,6 +838,8 @@ class Robot
     virtual void printOdometry();
     virtual void printMenu();
     virtual void delayInfo(int ms);
+    virtual void delayWithWatchdog(int ms);
+    
    // virtual void testOdometry();
     virtual void testMotors();
     virtual void setDefaults();
