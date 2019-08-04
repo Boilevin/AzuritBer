@@ -260,10 +260,10 @@ char *Robot::mowPatternName() {
   return mowPatternNames[mowPatternCurr];
 }
 /*
-int freeMemory() {
+  int freeMemory() {
   char top;
   return &top - reinterpret_cast<char*>(sbrk(0));
-}
+  }
 */
 
 void watchdogSetup(void) {}
@@ -343,7 +343,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
     Console.println(F("Save EEprom User Setting"));
   }
 
- 
+
   eereadwrite(readflag, addr, developerActive);
   eereadwrite(readflag, addr, motorAccel);
   eereadwrite(readflag, addr, motorSpeedMaxRpm);
@@ -1179,16 +1179,18 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   movingTimeLeft = movingTimeLeft * abs(SpeedOdoMaxRight);
   movingTimeRight = distToMoveRight * odometryTicksPerRevolution / 40000.00;
   movingTimeRight = movingTimeRight * abs(SpeedOdoMaxRight);
-
-
-
   //for small mouvement need to reduce the accel duration
   if (movingTimeLeft >= motorOdoAccel) accelDurationLeft = motorOdoAccel;
   else   accelDurationLeft =  movingTimeLeft / 2;
   if (movingTimeRight >= motorOdoAccel) accelDurationRight = motorOdoAccel;
   else   accelDurationRight =  movingTimeRight / 2;
-
-  MaxOdoStateDuration = 3000 + max(movingTimeRight, movingTimeLeft); //add 3 secondes to the max moving duration of the 2 wheels
+  if (statusCurr == TESTING) {
+    MaxOdoStateDuration = 30000 + max(movingTimeRight, movingTimeLeft); //add 3 secondes to the max moving duration of the 2 wheels
+  }
+  else
+  {
+    MaxOdoStateDuration = 3000 + max(movingTimeRight, movingTimeLeft); //add 3 secondes to the max moving duration of the 2 wheels
+  }
   //check to set the correct heading
   imuDriveHeading = imu.ypr.yaw / PI * 180; //normal mowing heading
   if (statusCurr == BACK_TO_STATION) {  //possible heading change
@@ -1961,8 +1963,8 @@ void Robot::setup()  {
   Console.println(F("  v to change console output (sensor counters, values, perimeter etc.)"));
   Console.println(consoleModeNames[consoleMode]);
   Console.println ();
- // Console.print ("        Free memory is :   ");
- // Console.println (freeMemory ());
+  // Console.print ("        Free memory is :   ");
+  // Console.println (freeMemory ());
 
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
@@ -3556,7 +3558,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_TEST_COMPASS:  // to test the imu
-
+      statusCurr = TESTING;
+      if (RaspberryPIUse) MyRpi.SendStatusToPi(); 
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -3574,6 +3577,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_TEST_MOTOR:
+      statusCurr = TESTING;
+      if (RaspberryPIUse) MyRpi.SendStatusToPi(); 
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -3649,7 +3654,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       //motorMowModulate = false;
       break;
     case STATE_STATION: //stop immediatly
-      areaInMowing=1;
+      areaInMowing = 1;
       statusCurr = IN_STATION;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
 
@@ -4257,7 +4262,7 @@ void Robot::checkSonar() {
   else sonarDistLeft = NO_ECHO ;
   if (sonarCenterUse) sonarDistCenter = readSensor(SEN_SONAR_CENTER);
   else sonarDistCenter = NO_ECHO;
-  
+
   if (stateCurr == STATE_OFF) return; //avoid the mower move when testing
 
   if (sonarDistCenter < 25 || sonarDistCenter > 90) sonarDistCenter = NO_ECHO; //need to be adjust if sonar is directly in front of mower 25Cm in my case
@@ -5089,7 +5094,7 @@ void Robot::loop()  {
 
     case STATE_TEST_MOTOR:
       motorControlOdo();
-      if ((motorRightPWMCurr == 0 ) && (motorLeftPWMCurr == 0 )) { 
+      if ((motorRightPWMCurr == 0 ) && (motorLeftPWMCurr == 0 )) {
         Console.println("Test finish ");
         Console.print("Real State Duration : ");
         Console.println(millis() - stateStartTime);
