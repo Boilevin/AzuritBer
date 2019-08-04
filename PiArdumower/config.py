@@ -26,9 +26,9 @@ if (os.name=='posix'):
     myOS="Linux"
     GpsConnectedOnPi=False
     GpsIsM6n=False
-    NanoConnectedOnPi=True
+    NanoConnectedOnPi=False
     DueConnectedOnPi=True
     AutoRecordBatCharging=True
-    useDebugConsole=False
+    useDebugConsole=True
     
 

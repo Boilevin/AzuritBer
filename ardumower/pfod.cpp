@@ -1279,16 +1279,16 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     robot->statusCurr = BACK_TO_STATION;
     robot->setNextState(STATE_PERI_FIND, 0);
     sendCommandMenu(true);
-  } else if (pfodCmd == "rr") {
+  } else if (pfodCmd == "rr") { //coming from pi
     //use to change the consoleMode
     robot->consoleMode = (robot->consoleMode + 1 ) % 5;
     sendCommandMenu(true);
-  } else if (pfodCmd == "ry") {
+  } else if (pfodCmd == "ry") { //coming from pi
     // cmd: find other tag for new area
     robot->setNextState(STATE_PERI_STOP_TO_NEWAREA, 0);
     sendCommandMenu(true);
   }
-  else if (pfodCmd == "ru") {
+  else if (pfodCmd == "ru") { //coming from pi
     // cmd: find  tag for fast start
     if (robot->areaToGo != 1) { // if a distance is set for start point we can't use the fast start
       robot->setNextState(STATE_PERI_STOP_TO_FAST_START, 0);
@@ -1297,7 +1297,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
 
   }
 
-  else if (pfodCmd == "rz") {
+  else if (pfodCmd == "rz") { //coming from pi
     // cmd: find other tag for station
     robot->setNextState(STATE_PERI_STOP_TOROLL, 0);
     sendCommandMenu(true);
@@ -1319,8 +1319,8 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
       robot->imuDirPID.reset();
       robot->mowPatternCurr = 1;
       robot->laneUseNr = 1;
-      robot->rollDir = 0;
-      robot->whereToStart = 0;
+      robot->rollDir = 1;
+      robot->whereToStart = 2;
       robot->areaToGo = 1;
       robot->actualLenghtByLane = 40;
       robot->beaconToStart = 0;

@@ -137,7 +137,7 @@
 #define Console SerialUSB
 #define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
 
-#define Enable_DueWatchdog true 
+#define Enable_DueWatchdog true
 
 #define RaspberryPIPort SerialUSB
 #define ESP8266port Serial3  //not use and exchange with GPS to avoid workarround (but no issue for me ????????)

@@ -27,6 +27,7 @@ template <class T> int eewrite(int &ee, const T& value)
     unsigned int i;
     for (i = 0; i < sizeof(value); i++)
           Flash.write(ee++, *p++);
+          watchdogReset();
     return i;
 }
 
@@ -36,6 +37,7 @@ template <class T> int eeread(int &ee, T& value)
     unsigned int i;
     for (i = 0; i < sizeof(value); i++)
           *p++ = Flash.read(ee++);
+          watchdogReset();
     return i;
 }
 
@@ -47,6 +49,7 @@ template <class T> int eereadwrite(boolean readflag, int &ee, T& value)
     { 
        if (readflag) *p++ = Flash.read(ee++);
          else Flash.write(ee++, *p++);
+       watchdogReset();
     }
     return i;
 }

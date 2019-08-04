@@ -343,7 +343,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
     Console.println(F("Save EEprom User Setting"));
   }
 
-
+ 
   eereadwrite(readflag, addr, developerActive);
   eereadwrite(readflag, addr, motorAccel);
   eereadwrite(readflag, addr, motorSpeedMaxRpm);
@@ -415,7 +415,6 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, stationRollAngle);
   eereadwrite(readflag, addr, stationForwDist);
   eereadwrite(readflag, addr, stationCheckDist);
-  //bber20
   eereadwrite(readflag, addr, UseBumperDock);
   eereadwrite(readflag, addr, odometryTicksPerRevolution);
   eereadwrite(readflag, addr, odometryTicksPerCm);
@@ -441,7 +440,6 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, tiltUse);
   eereadwrite(readflag, addr, trackingPerimeterTransitionTimeOut);
   eereadwrite(readflag, addr, motorMowForceOff);
-  //bb
   eereadwrite(readflag, addr, MaxSpeedperiPwm);
   ActualSpeedPeriPWM = MaxSpeedperiPwm; //initialise Actual tracking speed
   eereadwrite(readflag, addr, RollTimeFor45Deg);  //unsigned long adress free for something else
@@ -538,7 +536,7 @@ void Robot::printSettingSerial() {
   Console.println(SpeedOdoMax);
   Console.print  (F("motorBiDirSpeedRatio1                      : "));
   Console.println(motorBiDirSpeedRatio1);
-
+  watchdogReset();
   Console.print  (F("motorBiDirSpeedRatio2                      : "));
   Console.println(motorBiDirSpeedRatio2);
 
@@ -2097,7 +2095,7 @@ void Robot::printMenu() {
 void Robot::delayWithWatchdog(int ms) {
   unsigned long endtime = millis() + ms;
   while (millis() < endtime) {
-    delay(1000);
+    delay(500);
     Console.print("Actual Millis : ");
     Console.print(millis());
     Console.print(" Wait until ");
@@ -2111,6 +2109,7 @@ void Robot::delayInfo(int ms) {
   while (millis() < endtime) {
     readSensors();
     printInfo(Console);
+    watchdogReset();
     delay(1000);
     watchdogReset();
   }
@@ -3650,6 +3649,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       //motorMowModulate = false;
       break;
     case STATE_STATION: //stop immediatly
+      areaInMowing=1;
       statusCurr = IN_STATION;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
 
