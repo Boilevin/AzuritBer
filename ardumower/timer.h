@@ -48,7 +48,7 @@ void Robot::checkTimer() {
             if ((stateCurr == STATE_STATION)) {
               Console.print("Timer ");
               Console.print(i);
-              Console.println(F(" timer start triggered"));
+              Console.println(F(" start triggered"));
               ActualRunningTimer = i;
               //motorMowEnable = true;
               findedYaw = 999;
@@ -63,6 +63,10 @@ void Robot::checkTimer() {
               startByTimer = true;
               mowPatternDuration = 0;
               totalDistDrive = 0;
+              Console.print(F(" Track for area "));
+              Console.println(areaToGo);
+              Console.print(F(" Distance before start "));
+              Console.println(whereToStart);
               
               
               setNextState(STATE_STATION_REV, 0);

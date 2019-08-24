@@ -3559,7 +3559,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
     case STATE_TEST_COMPASS:  // to test the imu
       statusCurr = TESTING;
-      if (RaspberryPIUse) MyRpi.SendStatusToPi(); 
+      if (RaspberryPIUse) MyRpi.SendStatusToPi();
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -3578,7 +3578,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
     case STATE_TEST_MOTOR:
       statusCurr = TESTING;
-      if (RaspberryPIUse) MyRpi.SendStatusToPi(); 
+      if (RaspberryPIUse) MyRpi.SendStatusToPi();
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -4955,20 +4955,7 @@ void Robot::loop()  {
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         Console.println ("Warning can t roll in time ");
-        if (rollDir == RIGHT) {
-          if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft) ) {
-            if (motorRightPWMCurr == 0 ) { //wait until the left motor completly stop because rotation is inverted
-              setNextState(STATE_DRIVE2_TO_NEWAREA, rollDir);
-            }
-          }
-        }
-        else {
-          if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) ) {
-            if (motorLeftPWMCurr == 0 ) {
-              setNextState(STATE_DRIVE2_TO_NEWAREA, rollDir);
-            }
-          }
-        }
+        setNextState(STATE_DRIVE2_TO_NEWAREA, rollDir);
       }
       break;
 
