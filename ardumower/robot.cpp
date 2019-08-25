@@ -648,6 +648,7 @@ void Robot::printSettingSerial() {
   Console.print  (F("perimeterMagMaxValue                       : "));
   Console.println(perimeterMagMaxValue);
   Console.print  (F("swapCoilPolarityRight                      : "));
+   watchdogReset();
   Console.println(perimeter.swapCoilPolarityRight);
   Console.print  (F("swapCoilPolarityLeft                       : "));
   Console.println(perimeter.swapCoilPolarityLeft);
@@ -803,6 +804,10 @@ void Robot::printSettingSerial() {
   Console.print  (F("rfidUse                                     : "));
   Console.println(rfidUse, 1);
 
+// ----- RASPBERRY PI ----------------------------------------------------------------------
+  Console.println(F("---------- RASPBERRY PI-----------------------------------------"));
+  Console.print  (F("RaspberryPIUse                                     : "));
+  Console.println(RaspberryPIUse, 1);
 
   // ----- other --------------------------------------------------------------------
   Console.println(F("---------- other ---------------------------------------------"));
@@ -866,13 +871,12 @@ void Robot::saveUserSettings() {
   Console.println(F("USER SETTINGS ARE SAVED"));
 }
 
+
 void Robot::deleteUserSettings() {
-  loadSaveRobotStats(true);
-  int addr = 0;
-  Console.println(F("ALL USER SETTINGS ARE DELETED"));
+  int addr = ADDR_USER_SETTINGS;
+  Console.println(F("ALL USER SETTINGS ARE DELETED PLEASE RESTART THE DUE"));
   eewrite(addr, (short)0); // magic
-  loadSaveRobotStats(false);
-}
+ }
 
 void Robot::deleteRobotStats() {
   statsMowTimeMinutesTrip = statsMowTimeMinutesTotal = statsBatteryChargingCounterTotal =
