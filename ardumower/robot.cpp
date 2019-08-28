@@ -336,14 +336,6 @@ void Robot::loadSaveUserSettings(boolean readflag) {
     return;
   }
 
-  if (readflag) {
-    Console.println(F("Load EEprom User Setting"));
-  }
-  else {
-    Console.println(F("Save EEprom User Setting"));
-  }
-
-
   eereadwrite(readflag, addr, developerActive);
   eereadwrite(readflag, addr, motorAccel);
   eereadwrite(readflag, addr, motorSpeedMaxRpm);
@@ -478,12 +470,22 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, dockingSpeed);
   //bber35
   eereadwrite(readflag, addr, rfidUse);
-  if (readflag) motorInitialSpeedMaxPwm = motorSpeedMaxPwm; //the Pi can change the speed so store the initial value to restore after PFND
+  if (readflag)
+  {
+    Console.print(F("UserSettings are read from EEprom Address : "));
+    Console.print(ADDR_USER_SETTINGS);
+    Console.print(F(" To "));
+    Console.println(addr);
+    motorInitialSpeedMaxPwm = motorSpeedMaxPwm; //the Pi can change the speed so store the initial value to restore after PFND for example
+  }
+  else
+  {
+    Console.print(F("UserSettings are saved from EEprom Address : "));
+    Console.print(ADDR_USER_SETTINGS);
+    Console.print(F(" To "));
+    Console.println(addr);
+  }
 
-  Console.print(F("UserSettings address Start="));
-  Console.println(ADDR_USER_SETTINGS);
-  Console.print(F("UserSettings address Stop="));
-  Console.println(addr);
 }
 
 void Robot::loadUserSettings() {
@@ -648,7 +650,7 @@ void Robot::printSettingSerial() {
   Console.print  (F("perimeterMagMaxValue                       : "));
   Console.println(perimeterMagMaxValue);
   Console.print  (F("swapCoilPolarityRight                      : "));
-   watchdogReset();
+  watchdogReset();
   Console.println(perimeter.swapCoilPolarityRight);
   Console.print  (F("swapCoilPolarityLeft                       : "));
   Console.println(perimeter.swapCoilPolarityLeft);
@@ -804,9 +806,9 @@ void Robot::printSettingSerial() {
   Console.print  (F("rfidUse                                     : "));
   Console.println(rfidUse, 1);
 
-// ----- RASPBERRY PI ----------------------------------------------------------------------
+  // ----- RASPBERRY PI ----------------------------------------------------------------------
   Console.println(F("---------- RASPBERRY PI-----------------------------------------"));
-  Console.print  (F("RaspberryPIUse                                     : "));
+  Console.print  (F("RaspberryPIUse                              : "));
   Console.println(RaspberryPIUse, 1);
 
   // ----- other --------------------------------------------------------------------
@@ -866,9 +868,9 @@ void Robot::printSettingSerial() {
 
 
 void Robot::saveUserSettings() {
-  Console.println(F("SAVE USER SETTINGS PLEASE WAIT"));
+  Console.println(F("START TO SAVE USER SETTINGS PLEASE WAIT"));
   loadSaveUserSettings(false);
-  Console.println(F("USER SETTINGS ARE SAVED"));
+  
 }
 
 
@@ -876,7 +878,7 @@ void Robot::deleteUserSettings() {
   int addr = ADDR_USER_SETTINGS;
   Console.println(F("ALL USER SETTINGS ARE DELETED PLEASE RESTART THE DUE"));
   eewrite(addr, (short)0); // magic
- }
+}
 
 void Robot::deleteRobotStats() {
   statsMowTimeMinutesTrip = statsMowTimeMinutesTotal = statsBatteryChargingCounterTotal =

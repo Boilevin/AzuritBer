@@ -1570,10 +1570,10 @@ def ButtonSchedule_click():
     
     
 def ButtonGyroCal_click():
-    send_pfo_message('ro','1','2','3','4','5','6',)
+    send_pfo_message('g18','1','2','3','4','5','6',)
 
 def ButtonCompasCal_click():
-    send_pfo_message('ro','1','2','3','4','5','6',)
+    send_pfo_message('g19','1','2','3','4','5','6',)
 
 
 

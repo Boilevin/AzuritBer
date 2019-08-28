@@ -826,6 +826,7 @@ void RpiRemote::writePi(String stringLine) {
     lineToSend = lineToSend + String(retour, HEX);
   }
   RaspberryPIPort.println(lineToSend);
+  watchdogReset();
   //Console.println(lineToSend);
 }
 
@@ -834,11 +835,10 @@ void RpiRemote::readPi() {
   if (!RaspberryPIPort.available())
     return;
   int StartTrans = millis();
-
   while (RaspberryPIPort.available()) {
+    watchdogReset();
     char c = RaspberryPIPort.read();
-    if (encode(c)) {
-    }
+    encode(c);
   }
 }
 
