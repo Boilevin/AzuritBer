@@ -219,7 +219,7 @@ Mower::Mower() {
   dockingSpeed   =  60;   //speed docking is (percent of maxspeed) 
   
   // ------ odometry ------------------------------------
-  odometryUse       = 0;       // use odometry?
+  odometryUse       = 1;       // use odometry?
   odometryTicksPerRevolution = 1010;   // encoder ticks per one full resolution
   odometryTicksPerCm = 12.9;  // encoder ticks per cm
   odometryWheelBaseCm = 43;    // wheel-to-wheel distance (cm)
@@ -233,7 +233,7 @@ Mower::Mower() {
 
   // ----- other -----------------------------------------
   buttonUse         = 1;       // has digital ON/OFF button?
-  RaspberryPIUse = true; // a raspberryPi is connected to USBNative port
+  RaspberryPIUse = false; // a raspberryPi is connected to USBNative port
   mowPatternDurationMax = 120; //in minutes
 
   // ----- user-defined switch ---------------------------
