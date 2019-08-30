@@ -1141,12 +1141,15 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "newtagRotAngle1", 20) == 0) robot->newtagRotAngle1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle2", 20) == 0) robot->newtagRotAngle2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorSpeedMaxPwm", 20) == 0)  robot->motorSpeedMaxPwm = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "MaxSpeedperiPwm", 20) == 0)  robot->MaxSpeedperiPwm = atoi(received_value[i]);  
       if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)  robot->newtagDistance1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagDistance2", 20) == 0)  robot->newtagDistance2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "areaToGo", 20) == 0)  robot->areaToGo = atoi(received_value[i]);
       if (strncmp(variable_name[i], "stateCurr", 20) == 0)  robot->stateCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "statusCurr", 20) == 0)  robot->statusCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "nextTimeTimer", 20) == 0)  robot->nextTimeTimer = atoi(received_value[i]);
+
+
 
 
 

@@ -11,10 +11,6 @@ import pickle
 #import webbrowser
 
 
-
-
-
-
 import os
 from tkinter import ttk
 
@@ -159,7 +155,7 @@ def find_rfid_tag():
             mower.timeToResetSpeed=time.time()+5  #reduce speed for 5 secondes
             consoleInsertText('RFID detect reduce speed Tag :' + '\n')
             consoleInsertText('Set new speed: %s' % (mymower.newtagSpeed)+ '\n')
-            send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
+            send_var_message('w','MaxSpeedperiPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
             
         
         if((mymower.newtagToDo=="NEW_AREA")):
@@ -468,7 +464,7 @@ def checkSerial():  #the main loop is that
         
     if ((mower.speedIsReduce) & (time.time() > mower.timeToResetSpeed)):
         mower.speedIsReduce=False
-        send_var_message('w','motorSpeedMaxPwm',''+str(myRobot.motorSpeedMaxPwm)+'','0','0','0','0','0','0','0')
+        send_var_message('w','MaxSpeedperiPwm',''+str(myRobot.MaxSpeedperiPwm)+'','0','0','0','0','0','0','0')
     if useDebugConsole:
         txtRecu.delete('5000.0',tk.END) #keep only  lines
         txtSend.delete('5000.0',tk.END) #keep only  lines
