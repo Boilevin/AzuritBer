@@ -68,7 +68,7 @@ char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "P
                       "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                       "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
                       "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK",
-                      "STOPTOFASTSTART"
+                      "STOPTOFASTSTART", "CALIBMOTORSPEED"
                      };
 
 char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT"
@@ -372,7 +372,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, perimeter.timedOutIfBelowSmag);
   eereadwrite(readflag, addr, perimeterTriggerTimeout);
   eereadwrite(readflag, addr, trackingErrorTimeOut);
-  eereadwrite(readflag, addr, perimeterOutRollTimeMin);   //free can be use with same type of data
+  eereadwrite(readflag, addr, motorTickPerSecond);
   eereadwrite(readflag, addr, perimeterOutRevTime);
   eereadwrite(readflag, addr, perimeterTrackRollTime );
   eereadwrite(readflag, addr, perimeterTrackRevTime);
@@ -536,6 +536,9 @@ void Robot::printSettingSerial() {
   Console.println(SpeedOdoMin);
   Console.print  (F("SpeedOdoMax                                : "));
   Console.println(SpeedOdoMax);
+  Console.print  (F("motorTickPerSecond                         : "));
+  Console.println(motorTickPerSecond);
+
   Console.print  (F("motorBiDirSpeedRatio1                      : "));
   Console.println(motorBiDirSpeedRatio1);
   watchdogReset();
@@ -870,7 +873,7 @@ void Robot::printSettingSerial() {
 void Robot::saveUserSettings() {
   Console.println(F("START TO SAVE USER SETTINGS PLEASE WAIT"));
   loadSaveUserSettings(false);
-  
+
 }
 
 
@@ -1181,16 +1184,23 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   //compute the approximative moving time in millis()
   //warning maybe 40000 need to be adjusted
   //Need to compute in 2 times to avoid overflow  !!!!!
-  movingTimeLeft = distToMoveLeft *  odometryTicksPerRevolution / 40000.00; //0.58= nb ticks/ms at max speed
-  movingTimeLeft = movingTimeLeft * abs(SpeedOdoMaxRight);
-  movingTimeRight = distToMoveRight * odometryTicksPerRevolution / 40000.00;
-  movingTimeRight = movingTimeRight * abs(SpeedOdoMaxRight);
+  /*
+    movingTimeLeft = distToMoveLeft *  odometryTicksPerRevolution / 40000.00; //0.58= nb ticks/ms at max speed
+    movingTimeLeft = movingTimeLeft * abs(SpeedOdoMaxLeft);
+    movingTimeRight = distToMoveRight * odometryTicksPerRevolution / 40000.00;
+    movingTimeRight = movingTimeRight * abs(SpeedOdoMaxRight);
+  */
+  movingTimeLeft = 1000 * distToMoveLeft / motorTickPerSecond ;
+  movingTimeLeft = movingTimeLeft * motorSpeedMaxPwm / abs(SpeedOdoMaxLeft);
+  movingTimeRight = 1000 * distToMoveRight / motorTickPerSecond ;
+  movingTimeRight = movingTimeRight * motorSpeedMaxPwm / abs(SpeedOdoMaxRight);
+
   //for small mouvement need to reduce the accel duration
   if (movingTimeLeft >= motorOdoAccel) accelDurationLeft = motorOdoAccel;
   else   accelDurationLeft =  movingTimeLeft / 2;
   if (movingTimeRight >= motorOdoAccel) accelDurationRight = motorOdoAccel;
   else   accelDurationRight =  movingTimeRight / 2;
-  if (statusCurr == TESTING) {
+  if (statusCurr == TESTING) {  //avoid maxduration stop when use test Odo with Pfod
     MaxOdoStateDuration = 30000 + max(movingTimeRight, movingTimeLeft); //add 3 secondes to the max moving duration of the 2 wheels
   }
   else
@@ -2942,7 +2952,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_PERI_STOP_TOROLL:
-
+      imu.run(); //31/08/19 In peritrack the imu is stop so try to add this to start it now and avoid imu tilt error (occur once per week or less) ??????
       if (statusCurr == TRACK_TO_START) {
         startByTimer = false; // cancel because we have reach the start point and avoid repeat search entry
         justChangeLaneDir = false; //the first lane need to be distance control
@@ -3579,6 +3589,18 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
       OdoRampCompute();
 
+
+      break;
+
+
+    case STATE_CALIB_MOTOR_SPEED:
+      statusCurr = TESTING;
+      if (RaspberryPIUse) MyRpi.SendStatusToPi();
+      UseAccelLeft = 1;
+      UseBrakeLeft = 1;
+      UseAccelRight = 1;
+      UseBrakeRight = 1;
+      OdoRampCompute();
 
       break;
 
@@ -4327,7 +4349,7 @@ void Robot::checkTilt() {
   int pitchAngle = (imu.ypr.pitch / PI * 180.0);
   int rollAngle  = (imu.ypr.roll / PI * 180.0);
 
-  if ( (stateCurr != STATE_OFF) && (stateCurr != STATE_ERROR) && (stateCurr != STATE_STATION) ) {
+  if ( (stateCurr != STATE_OFF) && (stateCurr != STATE_ERROR) && (stateCurr != STATE_STATION) && (stateCurr != STATE_STATION_CHARGING)) {
     if ( (abs(pitchAngle) > 40) || (abs(rollAngle) > 40) ) {
       Console.print(F("Error : IMU Roll / Tilt---------------------------------------------------------------------------- -- > "));
       Console.print(rollAngle);
@@ -4541,7 +4563,6 @@ void Robot::loop()  {
 
   if (bluetoothUse) {
     rc.readSerial();
-    //if (rc.readSerial()) resetIdleTime(); //Be carreful can freeze the DUE if BT module not connected
   }
   readSensors();
   //checkIfStuck();
@@ -4570,12 +4591,13 @@ void Robot::loop()  {
       */
 
     }
-    if (gpsUse && gpsReady) {
-      gps.run();
-      //processGPSData();
-    }
-  }
 
+  }
+  
+  if (gpsUse && gpsReady) {
+    gps.run();
+    //processGPSData();
+  }
 
 
 
@@ -4849,21 +4871,7 @@ void Robot::loop()  {
       checkBumpersPerimeter();
       break;
 
-    /*
-      case STATE_STATION_AVOID:
-      //circle arc
-      motorControlOdo();
 
-      if ((odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft)) {
-      setNextState(STATE_PERI_FIND, 0);
-
-      }
-      checkCurrent();
-      checkBumpersPerimeter();
-
-      break;
-
-    */
     case STATE_REVERSE:
       motorControlOdo();
       if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) )
@@ -5085,6 +5093,28 @@ void Robot::loop()  {
 
       break;
 
+    case STATE_CALIB_MOTOR_SPEED:
+      motorControlOdo();
+      if ((motorRightPWMCurr == 0 ) && (motorLeftPWMCurr == 0 )) {
+        Console.println("Calibration finish ");
+        Console.print("Real State Duration : ");
+        Tempovar = millis() - stateStartTime;
+        Console.println(Tempovar);
+        Console.print("Compute Max State Duration : ");
+        Console.println(MaxOdoStateDuration);
+        motorTickPerSecond = 1000 * stateEndOdometryRight / Tempovar;
+
+        Console.print(" motorTickPerSecond ");
+        Console.println(motorTickPerSecond);
+        setNextState(STATE_OFF, 0);
+      }
+      if (millis() > (stateStartTime + MaxOdoStateDuration)) {
+        Console.println ("Warning can t TestMotor in time please check your Odometry or speed setting ");
+        setNextState(STATE_OFF, rollDir);
+      }
+
+      break;
+
     case STATE_TEST_MOTOR:
       motorControlOdo();
       if ((motorRightPWMCurr == 0 ) && (motorLeftPWMCurr == 0 )) {
@@ -5113,9 +5143,6 @@ void Robot::loop()  {
         setNextState(STATE_STOP_CALIBRATE, rollDir);
       }
 
-      //bber12
-      //01/05/19 to avoid non stop calibrate
-
       if (millis() > (stateStartTime + MaxOdoStateDuration + 6000)) {
         Console.println ("Warning can t roll to find yaw in time The Compass is certainly HS ");
         setNextState(STATE_STOP_CALIBRATE, rollDir);
@@ -5123,13 +5150,15 @@ void Robot::loop()  {
 
       break;
 
-    //bber41 le 20/07/19 need to check if this 2 state are really in use
+    //not use actually
     case STATE_PERI_ROLL:
       // perimeter find  roll
       if (millis() >= stateEndTime) setNextState(STATE_PERI_FIND, 0);
       motorControl();
       break;
 
+
+    //not use actually
     case STATE_PERI_REV:  //obstacle in perifind
       // perimeter tracking reverse
       //bb
@@ -5139,9 +5168,6 @@ void Robot::loop()  {
       motorControlOdo();
 
 
-
-      //if (millis() >= stateEndTime) setNextState(STATE_PERI_ROLL, rollDir);
-      // motorControl();
       break;
 
     case STATE_PERI_FIND:
@@ -5151,10 +5177,10 @@ void Robot::loop()  {
         setNextState(STATE_PERI_STOP_TOTRACK, 0);
         return;
       }
-      //bber1 //le 28/12/18 pas tester
+
       checkSonar();
       checkBumpersPerimeter();
-      //fin ajout
+
       motorControlOdo();
       break;
 
@@ -5181,17 +5207,7 @@ void Robot::loop()  {
         }
       }
 
-      //********************************
-      //bber21
-      /*
-        if (statusCurr == BACK_TO_STATION) {
-        if (batMonitor) {
-          if (chgVoltage > 5.0) {
-            setNextState(STATE_STATION, 0);
-          }
-        }
-        }
-      */
+
       motorControlPerimeter();
       break;
 
@@ -5814,7 +5830,18 @@ void Robot::loop()  {
         }
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {//the motor have not enought power to reach the cible
-        Console.println ("Warning can t make the station rev in time ");
+        Console.print ("Warning station rev not in time Max Compute duration in ms :");
+        Console.println (MaxOdoStateDuration);
+        Console.print (" Odo Left Cible/Actual : ");
+        Console.print (stateEndOdometryLeft);
+        Console.print ("/");
+        Console.println (odometryLeft);
+        Console.print (" Odo Right Cible/Actual : ");
+        Console.print (stateEndOdometryRight);
+        Console.print ("/");
+        Console.println (odometryRight);
+
+
         setNextState(STATE_STATION_ROLL, 1);//if the motor can't reach the odocible in slope
       }
       break;

@@ -80,7 +80,8 @@ Mower::Mower() {
 
   motorRightOffsetFwd = 0;  //percent offset in PWM use for the 2 wheels motor have the same speed a the same PWM
   motorRightOffsetRev = 0;  //use the 1 ml ODO test to find good value the 2 wheels need to stop at the same time
-
+  motorTickPerSecond = 200; // use to compute the maxodostate duration and computed on the calibration motor
+  
   UseAccelLeft = 1;
   UseBrakeLeft = 1;
   UseAccelRight = 1;
@@ -133,7 +134,7 @@ Mower::Mower() {
   perimeterUse       = 0;      // use perimeter?
   perimeterTriggerTimeout = 0;      // perimeter trigger timeout when escaping from inside (ms)
   //perimeterOutRollTimeMax  = 2000;   // free
-  perimeterOutRollTimeMin = 750;    // free
+  //perimeterOutRollTimeMin = 750;    // free
   perimeterOutRevTime   = 2200;   // free
   perimeterTrackRollTime = 1500; //roll time during perimeter tracking
   perimeterTrackRevTime = 2200;  // reverse time during perimeter tracking

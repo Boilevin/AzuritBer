@@ -321,6 +321,7 @@ void RemoteControl::processErrorMenu(String pfodCmd) {
 
 void RemoteControl::sendMotorMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Motor`1000"));
+
   serialPort->println(F("|a00~Overload Counter l, r "));
   serialPort->print(robot->motorLeftSenseCounter);
   serialPort->print(", ");
@@ -377,11 +378,9 @@ void RemoteControl::sendMotorMenu(boolean update) {
   //bb
   sendSlider("a22", F("PWM Right Forward offset in %"), robot->motorRightOffsetFwd, "", 1, 50, -50);
   sendSlider("a23", F("PWM Right Reverse offset in %"), robot->motorRightOffsetRev, "", 1, 50, -50);
-
   sendSlider("a30", F("Speed Odo Minimum"), robot->SpeedOdoMin, "", 1, 70, 0);
   sendSlider("a31", F("Speed Odo Maximum"), robot->SpeedOdoMax, "", 1, 250, 100);
-
-
+  serialPort->print(F("|a32~Calib Ticks/Second"));  //to compute the ticks per second motor speed
   serialPort->println("}");
 }
 
@@ -431,6 +430,15 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("a30")) processSlider(pfodCmd, robot->SpeedOdoMin, 1);
   else if (pfodCmd.startsWith("a31")) processSlider(pfodCmd, robot->SpeedOdoMax, 1);
 
+  else if (pfodCmd == "a32") {
+    robot->odometryRight = robot->odometryLeft = 0;
+    robot->stateEndOdometryRight = robot->odometryRight + robot->odometryTicksPerRevolution;
+    robot->stateEndOdometryLeft = robot->odometryLeft + robot->odometryTicksPerRevolution;
+    robot->motorLeftSpeedRpmSet = robot->motorSpeedMaxRpm;
+    robot->motorRightSpeedRpmSet = robot->motorSpeedMaxRpm;
+    robot->setNextState(STATE_CALIB_MOTOR_SPEED, robot->rollDir);
+    sendTestOdoMenu(true);
+  }
 
   else if (pfodCmd == "a10") {
     testmode = (testmode + 1) % 3;
@@ -1434,11 +1442,12 @@ void RemoteControl::processManualMenu(String pfodCmd) {
 void RemoteControl::sendTestOdoMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->println(F("{.TestOdo`1000"));
 
-  serialPort->println(F("|yt8~Ticks Right / Left "));
+  serialPort->println(F("|yt10~Ticks Right / Left "));
   serialPort->print(robot->odometryRight);
   serialPort->print(F(" / "));
   serialPort->print(robot->odometryLeft);
   serialPort->println();
+  //serialPort->print(F("|yt8~Calib Ticks/Second"));  //to compute the ticks per second motor speed
   serialPort->print(F("|yt0~1 turn Wheel Fwd"));  //to verify and adjust the TicksPerRevolution
   serialPort->print(F("|yt1~5 turns Wheel Fwd"));  //to verify and adjust the TicksPerRevolution  and PWM right OFFSET the 2 wheel need to stop at the same time
   serialPort->print(F("|yt2~1 turn Wheel Rev"));
@@ -1447,7 +1456,6 @@ void RemoteControl::sendTestOdoMenu(boolean update) {
   serialPort->print(F("|yt6~Rotate 180Deg"));  //to verify and adjust the odometryWheelBaseCm
   serialPort->print(F("|yt5~Rotate 360Deg"));  //to verify and adjust the odometryWheelBaseCm
   serialPort->println(F("|yt7~Rotate Non Stop"));
-  //serialPort->println(F("|yt9~Test Drive IMU and ODO"));
 
 
   serialPort->println("}");
@@ -1522,34 +1530,7 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
     robot->setNextState(STATE_TEST_MOTOR, robot->rollDir);
     sendTestOdoMenu(true);
   }
-  /*
-    else if (pfodCmd == "yt9") {
-
-
-    // cmd: ONLY HERE to  test to track and go to area2 using tag for new area
-
-    robot->statusCurr = REMOTE;
-    robot->ActualRunningTimer = 0;
-    //motorMowEnable = true;
-    robot->findedYaw = 999;
-    robot->imuDirPID.reset();
-    robot->mowPatternCurr = 1;
-    robot->laneUseNr = 1;
-    robot->rollDir = 0;
-    robot->whereToStart = 2;
-    robot->areaToGo = 2;
-    robot->actualLenghtByLane = 20;
-    robot->startByTimer = true;
-    robot->mowPatternDuration = 0;
-    robot->totalDistDrive = 0;
-    robot->newtagDistance1 = 300;
-    robot->perimeterUse = true;
-    robot->setNextState(STATE_DRIVE1_TO_NEWAREA, 0);
-    sendCommandMenu(true);
-
-
-    }
-  */
+ 
 }
 
 

@@ -334,7 +334,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->trackingErrorTimeOut;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterOutRollTimeMin;
+    lineToSend = lineToSend + robot->motorTickPerSecond;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->perimeterOutRevTime;
     lineToSend = lineToSend + ",";
@@ -1347,7 +1347,7 @@ void RpiRemote::readWrite_setting()
         robot->perimeter.timedOutIfBelowSmag = val[3];
         robot->perimeterTriggerTimeout = val[4];
         robot->trackingErrorTimeOut = val[5];
-        robot->perimeterOutRollTimeMin = val[6];
+        robot->motorTickPerSecond = val[6];
         robot->perimeterOutRevTime = val[7];
         robot->perimeterTrackRollTime = val[8];
         robot->perimeterTrackRevTime = val[9];
