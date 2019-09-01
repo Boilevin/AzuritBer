@@ -152,7 +152,7 @@ Mower::Mower() {
   //bb
   MaxSpeedperiPwm = 180; // speed max in PWM while perimeter tracking
   ActualSpeedPeriPWM = MaxSpeedperiPwm; //speed in PWM while perimeter tracking
-  timeToResetSpeedPeri = 0; // if millis() > at this var the speed is set to max value
+  //timeToResetSpeedPeri = 0; // if millis() > at this var the speed is set to max value
   RollTimeFor45Deg = 1000; //time while roll in peri obstacle avoid if no Odometry
   circleTimeForObstacle = 4000; //time while arc circle in peri obstacle avoid if no Odometry
   DistPeriObstacleAvoid = 100; //distance while arc circle in peri obstacle avoid

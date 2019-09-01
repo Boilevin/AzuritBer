@@ -1093,7 +1093,7 @@ void RemoteControl::processTimerDetailMenu(String pfodCmd) {
     checkStart = true;
   }
   else if (pfodCmd.startsWith("p7")) {
-    robot->timer[timerIdx].startMowPattern = (robot->timer[timerIdx].startMowPattern + 1 ) % 2;
+    robot->timer[timerIdx].startMowPattern = (robot->timer[timerIdx].startMowPattern + 1 ) % 3;
     checkStart = true;
   }
   else if (pfodCmd.startsWith("pd")) {
@@ -1325,7 +1325,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
       //motorMowEnable = true;
       robot->findedYaw = 999;
       robot->imuDirPID.reset();
-      robot->mowPatternCurr = 1;
+      //robot->mowPatternCurr = 1;
       robot->laneUseNr = 1;
       robot->rollDir = 1;
       robot->whereToStart = 2;
@@ -1361,7 +1361,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     //only for debug remove after
   } else if (pfodCmd == "rp") {
     // cmd: pattern
-    robot->mowPatternCurr = (robot->mowPatternCurr + 1 ) % 2;
+    robot->mowPatternCurr = (robot->mowPatternCurr + 1 ) % 3;
     robot->setNextState(STATE_OFF, 0);
     sendCommandMenu(true);
   } else if (pfodCmd == "rt") {

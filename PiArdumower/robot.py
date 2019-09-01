@@ -9,7 +9,7 @@ class robot:
                             "ROLLSTOPTOTRACK","STOPTOFASTSTART","CALIBMOTORSPEED","INC_01","INC_02","INC_03","INC_04","INC_05","INC_06"]
         self.statusNames = ["WAIT", "NORMAL_MOWING", "SPIRALE_MOWING", "BACK_TO_STATION", 
                       "TRACK_TO_START", "MANUAL", "REMOTE", "IN_ERROR", "IN_STATION",
-                      "TESTING","WAITSIG2"]
+                      "TESTING","WAITSIG2","WIRE_MOWING","INC_01","INC_02","INC_03","INC_04","INC_05","INC_06"]
         self.developerActive=0
         self.motorAccel=0
         self.motorSpeedMaxRpm=0

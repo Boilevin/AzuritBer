@@ -194,13 +194,13 @@ enum {
 };
 
 // status mode
-enum { WAIT,NORMAL_MOWING,SPIRALE_MOWING,BACK_TO_STATION, TRACK_TO_START, MANUAL, REMOTE, IN_ERROR, IN_STATION, TESTING,WAITSIG2 };
+enum { WAIT,NORMAL_MOWING,SPIRALE_MOWING,BACK_TO_STATION, TRACK_TO_START, MANUAL, REMOTE, IN_ERROR, IN_STATION, TESTING,WAITSIG2,WIRE_MOWING };
 
 // roll types
 enum { LEFT, RIGHT };
 
 // mow patterns
-enum { MOW_RANDOM, MOW_LANES, MOW_ZIGZAG, MOW_WIRE };
+enum { MOW_RANDOM, MOW_LANES,MOW_WIRE, MOW_ZIGZAG };
 
 //bb
 // console mode
@@ -427,6 +427,7 @@ class Robot
     boolean motorMowRpmLastState ;
     boolean motorMowEnable ;  // motor can be temporary disabled if stucked etc. with this
     boolean motorMowForceOff ; // user switch for mower motor on/off has highest priority
+   // boolean ignoreRfidTag ; // use to stay on wire when mow perimeter
     boolean highGrassDetect;  //detect that the mow motor is on high load so high grass
     float triggerMotorMowHightGrass ;     // motor mower percent of power vs power Max  trigger to start spirale or half lane
     // boolean motorMowEnableOverride ; // user switch for mower motor on/off has highest priority if true the motor is stop
@@ -567,7 +568,7 @@ class Robot
     int vv;
     unsigned long lastTimeForgetWire;
     unsigned long NextTimeNormalSpeed;
-    unsigned long timeToResetSpeedPeri;
+    //unsigned long timeToResetSpeedPeri;
     int LastPerimeterMag;
     double CiblePeriValue;
     int MaxSpeedperiPwm;
@@ -634,6 +635,8 @@ class Robot
     unsigned long  nextTimeBeeper;// use for beeper
     boolean startByTimer; // use to know if the start is initiate by timer or manual via PFOD
     int whereToStart; // use to know where the mower need to leave the wire and start to mow
+    int whereToResetSpeed; // use with Rfid Speed to know when reset to maxpwm
+    
     int beaconToStart; // use to know where the mower need to leave the wire and start to mow
     byte areaToGo;// use to know the area where to start by timer
     //-------- DHT22 Temperature humidity ------------------
