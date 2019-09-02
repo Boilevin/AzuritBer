@@ -1316,13 +1316,11 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     sendCommandMenu(true);
   } else if (pfodCmd == "ra") {
     robot->mowPatternDuration = 0;
-    // cmd: start auto mowing
     robot->motorMowEnable = true;
     if ((robot->stateCurr == STATE_STATION) || (robot->stateCurr == STATE_STATION_CHARGING)) {
       //bber40
       Console.println("MANUAL START FROM STATION");
       robot->ActualRunningTimer = 0;
-      //motorMowEnable = true;
       robot->findedYaw = 999;
       robot->imuDirPID.reset();
       //robot->mowPatternCurr = 1;
@@ -1339,7 +1337,15 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
       robot->setNextState(STATE_STATION_REV, 0);
     }
     else {
-      robot->setNextState(STATE_FORWARD_ODO, 0);
+      if (robot->mowPatternName() == "WIRE") {
+        robot->statusCurr = TRACK_TO_START; //status change later into STATE_PERI_STOP_TOTRACK
+        robot->setNextState(STATE_PERI_FIND, 0);
+      }
+      else{
+        robot->setNextState(STATE_FORWARD_ODO, 0);
+      }
+        
+      
     }
     sendCommandMenu(true);
   } else if (pfodCmd == "rc") {

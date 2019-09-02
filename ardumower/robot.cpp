@@ -2112,10 +2112,6 @@ void Robot::delayWithWatchdog(int ms) {
   unsigned long endtime = millis() + ms;
   while (millis() < endtime) {
     delay(500);
-    Console.print("Actual Millis : ");
-    Console.print(millis());
-    Console.print(" Wait until ");
-    Console.println(endtime);
     watchdogReset();
   }
 }
@@ -5908,6 +5904,7 @@ void Robot::loop()  {
         }
         else
         {
+          //020919 to check but never call and not sure it's ok
           statusCurr = NORMAL_MOWING;
           if (RaspberryPIUse) MyRpi.SendStatusToPi();
           setNextState(STATE_FORWARD_ODO, rollDir);
