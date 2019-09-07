@@ -21,5 +21,3 @@
 #ifdef USE_SIM
   #include "sim.h"  // simbad simulator - maybe future :)
 #endif
-
-

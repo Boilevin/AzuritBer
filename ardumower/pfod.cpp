@@ -321,6 +321,7 @@ void RemoteControl::processErrorMenu(String pfodCmd) {
 
 void RemoteControl::sendMotorMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Motor`1000"));
+
   serialPort->println(F("|a00~Overload Counter l, r "));
   serialPort->print(robot->motorLeftSenseCounter);
   serialPort->print(", ");
@@ -377,11 +378,9 @@ void RemoteControl::sendMotorMenu(boolean update) {
   //bb
   sendSlider("a22", F("PWM Right Forward offset in %"), robot->motorRightOffsetFwd, "", 1, 50, -50);
   sendSlider("a23", F("PWM Right Reverse offset in %"), robot->motorRightOffsetRev, "", 1, 50, -50);
-
   sendSlider("a30", F("Speed Odo Minimum"), robot->SpeedOdoMin, "", 1, 70, 0);
   sendSlider("a31", F("Speed Odo Maximum"), robot->SpeedOdoMax, "", 1, 250, 100);
-
-
+  serialPort->print(F("|a32~Calib Ticks/Second"));  //to compute the ticks per second motor speed
   serialPort->println("}");
 }
 
@@ -431,6 +430,15 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("a30")) processSlider(pfodCmd, robot->SpeedOdoMin, 1);
   else if (pfodCmd.startsWith("a31")) processSlider(pfodCmd, robot->SpeedOdoMax, 1);
 
+  else if (pfodCmd == "a32") {
+    robot->odometryRight = robot->odometryLeft = 0;
+    robot->stateEndOdometryRight = robot->odometryRight + robot->odometryTicksPerRevolution;
+    robot->stateEndOdometryLeft = robot->odometryLeft + robot->odometryTicksPerRevolution;
+    robot->motorLeftSpeedRpmSet = robot->motorSpeedMaxRpm;
+    robot->motorRightSpeedRpmSet = robot->motorSpeedMaxRpm;
+    robot->setNextState(STATE_CALIB_MOTOR_SPEED, robot->rollDir);
+    sendTestOdoMenu(true);
+  }
 
   else if (pfodCmd == "a10") {
     testmode = (testmode + 1) % 3;
@@ -587,35 +595,24 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Perimeter`1000"));
   serialPort->print(F("|e00~Use "));
   sendYesNo(robot->perimeterUse);
-  serialPort->println(F("|e02~Value Left/Right"));
+  serialPort->print(F("|e09~Actual Mowing Area"));
+  serialPort->print(robot->areaInMowing);
+  serialPort->println(F("|e02~Mag / Smag"));
   serialPort->print(robot->perimeterMag);
   serialPort->print(F("/"));
-  serialPort->print(robot->perimeterMagRight);
-  if (robot->perimeterMag < 0) serialPort->print(" (inside)");
-  else serialPort->print(" (outside)");
-  serialPort->print(F("|e09~Change mowing Area: "));
-  serialPort->print(robot->areaInMowing);
-  sendSlider("e08", F("Timed-out if below smag"), robot->perimeter.timedOutIfBelowSmag, "", 1, 500);
+  serialPort->print(robot->perimeter.getSmoothMagnitude(0));
+  //serialPort->print(robot->perimeterMagRight);
+  //if (robot->perimeterMag < 0) serialPort->print(" (inside)");
+  //else serialPort->print(" (outside)");
+  sendSlider("e08", F("Timed-out if below Smag"), robot->perimeter.timedOutIfBelowSmag, "", 1, 500);
   sendSlider("e14", F("Timeout (s) if not inside"), robot->perimeter.timeOutSecIfNotInside, "", 1, 20, 1);
   sendSlider("e04", F("Trigger timeout"), robot->perimeterTriggerTimeout, "", 1, 1000);
-  //sendSlider("e05", F("Perimeter out roll time max"), robot->perimeterOutRollTimeMax, "", 1, 8000);
-  //sendSlider("e06", F("Perimeter out roll time min"), robot->perimeterOutRollTimeMin, "", 1, 8000);
-  //sendSlider("e15", F("Perimeter out reverse time"), robot->perimeterOutRevTime, "", 1, 8000);
-  //sendSlider("e16", F("Perimeter tracking roll time"), robot->perimeterTrackRollTime, "", 1, 8000);
-  //sendSlider("e17", F("Perimeter tracking reverse time"), robot->perimeterTrackRevTime, "", 1, 8000);
   sendSlider("e18", F("Tracking Max Speed PWM"), robot->MaxSpeedperiPwm, "", 1, 255);
-  //sendSlider("e19", F("Reverse (cm) after wire trigger"), robot->DistPeriOutRev, "", 1 , 50, 1);
-  //sendSlider("e24", F("Stop (cm) after wire trigger"), robot->DistPeriOutStop, "", 1 ,30, 1);
   sendSlider("e20", F("Circle Arc disance (cm) Obstacle while tracking"), robot->DistPeriObstacleAvoid, "", 1 , 250, 1);
   sendSlider("e21", F("Perimeter MAG MAX VALUE"), robot->perimeterMagMaxValue, "", 1 , 2500, 500);
-
   sendSlider("e11", F("Transition timeout"), robot->trackingPerimeterTransitionTimeOut, "", 1, 5000);
   sendSlider("e12", F("Track error timeout"), robot->trackingErrorTimeOut, "", 1, 10000);
-
-
   sendPIDSlider("e07", F("Track"), robot->perimeterPID, 0.1, 52);
-  //serialPort->print(F("|e09~Use differential signal "));
-  //sendYesNo(robot->perimeter.useDifferentialPerimeterSignal);
   serialPort->print(F("|e10~Swap Left coil polarity "));
   sendYesNo(robot->perimeter.swapCoilPolarityLeft);
   serialPort->print(F("|e22~Swap Right coil polarity "));
@@ -630,20 +627,12 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
 void RemoteControl::processPerimeterMenu(String pfodCmd) {
   if (pfodCmd == "e00") robot->perimeterUse = !robot->perimeterUse;
   else if (pfodCmd.startsWith("e04")) processSlider(pfodCmd, robot->perimeterTriggerTimeout, 1);
-  //else if (pfodCmd.startsWith("e05")) processSlider(pfodCmd, robot->perimeterOutRollTimeMax, 1);
-  //else if (pfodCmd.startsWith("e06")) processSlider(pfodCmd, robot->perimeterOutRollTimeMin, 1);
-  //else if (pfodCmd.startsWith("e15")) processSlider(pfodCmd, robot->perimeterOutRevTime, 1);
-  //else if (pfodCmd.startsWith("e16")) processSlider(pfodCmd, robot->perimeterTrackRollTime, 1);
-  //else if (pfodCmd.startsWith("e17")) processSlider(pfodCmd, robot->perimeterTrackRevTime, 1);
   else if (pfodCmd.startsWith("e18")) processSlider(pfodCmd, robot->MaxSpeedperiPwm, 1);
-  //else if (pfodCmd.startsWith("e19")) processSlider(pfodCmd, robot->DistPeriOutRev, 1);
-  //else if (pfodCmd.startsWith("e24")) processSlider(pfodCmd, robot->DistPeriOutStop, 1);
-
   else if (pfodCmd.startsWith("e20")) processSlider(pfodCmd, robot->DistPeriObstacleAvoid, 1);
   else if (pfodCmd.startsWith("e21")) processSlider(pfodCmd, robot->perimeterMagMaxValue, 1);
   else if (pfodCmd.startsWith("e07")) processPIDSlider(pfodCmd, "e07", robot->perimeterPID, 0.1, 100);
   else if (pfodCmd.startsWith("e08")) processSlider(pfodCmd, robot->perimeter.timedOutIfBelowSmag, 1);
-  else if (pfodCmd.startsWith("e09")) {
+  else if ((robot->developerActive) && (pfodCmd.startsWith("e09"))) {
     robot->areaInMowing = robot->areaInMowing + 1;
     if (robot->areaInMowing > 3) robot->areaInMowing = 1;
     robot->perimeter.changeArea(robot->areaInMowing);
@@ -866,6 +855,8 @@ void RemoteControl::sendRemoteMenu(boolean update) {
 void RemoteControl::processRemoteMenu(String pfodCmd) {
   if (pfodCmd == "h00" ) robot->remoteUse = !robot->remoteUse;
   if (pfodCmd == "h01" ) robot->RaspberryPIUse = !robot->RaspberryPIUse;
+  if (pfodCmd == "h02" ) robot->printSettingSerial();  //use by pi to show all the variable in the console
+  if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode
 
 
   sendRemoteMenu(true);
@@ -1022,6 +1013,7 @@ void RemoteControl::sendTimerDetailMenu(int timerIdx, boolean update) {
   sendSlider("p3" + sidx, F("Stop hour "), robot->timer[timerIdx].stopTime.hour, "", 1, 23, 0);
   sendSlider("p4" + sidx, F("Stop minute "), robot->timer[timerIdx].stopTime.minute, "", 1, 59, 0);
   sendSlider("p6" + sidx, F("Start Dist/Station: "), robot->timer[timerIdx].startDistance, "", 1, 255, 0);
+  sendSlider("pc" + sidx, F("Use Beacon: "), robot->timer[timerIdx].rfidBeacon, "", 1, 40, 0);
 
 
   serialPort->print("|p7");
@@ -1102,7 +1094,7 @@ void RemoteControl::processTimerDetailMenu(String pfodCmd) {
     checkStart = true;
   }
   else if (pfodCmd.startsWith("p7")) {
-    robot->timer[timerIdx].startMowPattern = (robot->timer[timerIdx].startMowPattern + 1 ) % 2;
+    robot->timer[timerIdx].startMowPattern = (robot->timer[timerIdx].startMowPattern + 1 ) % 3;
     checkStart = true;
   }
   else if (pfodCmd.startsWith("pd")) {
@@ -1125,31 +1117,14 @@ void RemoteControl::processTimerDetailMenu(String pfodCmd) {
     processSlider(pfodCmd, robot->timer[timerIdx].startLaneMaxlengh, 1);
     checkStart = true;
   }
-  /*
-    else if (pfodCmd.startsWith("pc")) {
-    // adjust stop time
-    stopmin = max(5, time2minutes(robot->timer[timerIdx].stopTime));
-    minutes2time(stopmin, time);
-    robot->timer[timerIdx].stopTime = time;
-    // check start time
-    startmin = time2minutes(robot->timer[timerIdx].startTime);
-    startmin = min(startmin, stopmin - 5);
-    minutes2time(startmin, time);
-    robot->timer[timerIdx].startTime = time;
-    robot->findedYaw = 999;
-    robot->imuDirPID.reset();
-    robot->mowPatternCurr = robot->timer[timerIdx].startMowPattern;
-    robot->laneUseNr = robot->timer[timerIdx].startNrLane;
-    robot->rollDir = robot->timer[timerIdx].startRollDir;
-    robot->whereToStart = robot->timer[timerIdx].startDistance;
-    robot->areaToGo = robot->timer[timerIdx].startArea;
-    robot->actualLenghtByLane = robot->timer[timerIdx].startLaneMaxlengh;
-    robot->startByTimer = true;
-    robot->totalDistDrive = 0;
-    robot->setNextState(STATE_STATION_REV, 0);
 
-    }
-  */
+  else if (pfodCmd.startsWith("pc")) {
+    // adjust rfid beacon value if 0 when start the mower never read the rfid tag
+    processSlider(pfodCmd, robot->timer[timerIdx].rfidBeacon, 1);
+    checkStart = true;
+
+  }
+
   else if (pfodCmd.startsWith("p9")) {
     robot->timer[timerIdx].startTime = robot->datetime.time; checkStop = true;
     robot->timer[timerIdx].daysOfWeek = (1 << robot->datetime.date.dayOfWeek);
@@ -1266,7 +1241,8 @@ void RemoteControl::sendInfoMenu(boolean update) {
 
 void RemoteControl::processInfoMenu(String pfodCmd) {
   if (pfodCmd == "v01") robot->developerActive = !robot->developerActive;
-  if (pfodCmd == "v04") robot->statsOverride = !robot->statsOverride; robot->saveUserSettings();
+  if (pfodCmd == "v04") robot->statsOverride = !robot->statsOverride;
+
 
   sendInfoMenu(true);
 }
@@ -1312,37 +1288,25 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     robot->statusCurr = BACK_TO_STATION;
     robot->setNextState(STATE_PERI_FIND, 0);
     sendCommandMenu(true);
-  } else if (pfodCmd == "rr") {
+  } else if (pfodCmd == "rr") { //coming from pi
     //use to change the consoleMode
     robot->consoleMode = (robot->consoleMode + 1 ) % 5;
     sendCommandMenu(true);
-  } else if (pfodCmd == "ry") {
+  } else if (pfodCmd == "ry") { //coming from pi
     // cmd: find other tag for new area
     robot->setNextState(STATE_PERI_STOP_TO_NEWAREA, 0);
     sendCommandMenu(true);
-  } else if (pfodCmd == "ru") {
-    // cmd: ONLY HERE to  test to track and go to area2 using tag for new area
-
-    robot->statusCurr = TRACK_TO_START;
-    // robot->MyRpi.SendStatusToPi();
-    robot->ActualRunningTimer = 0;
-    //motorMowEnable = true;
-    robot->findedYaw = 999;
-    robot->imuDirPID.reset();
-    robot->mowPatternCurr = 1;
-    robot->laneUseNr = 1;
-    robot->rollDir = 0;
-    robot->whereToStart = 2;
-    robot->areaToGo = 2;
-    robot->actualLenghtByLane = 20;
-    robot->startByTimer = true;
-    robot->mowPatternDuration = 0;
-    robot->totalDistDrive = 0;
-    robot->perimeterUse = true;
-    robot->setNextState(STATE_PERI_FIND, 0);
+  }
+  else if (pfodCmd == "ru") { //coming from pi
+    // cmd: find  tag for fast start
+    if (robot->areaToGo != 1) { // if a distance is set for start point we can't use the fast start
+      robot->setNextState(STATE_PERI_STOP_TO_FAST_START, 0);
+    }
     sendCommandMenu(true);
 
-  } else if (pfodCmd == "rz") {
+  }
+
+  else if (pfodCmd == "rz") { //coming from pi
     // cmd: find other tag for station
     robot->setNextState(STATE_PERI_STOP_TOROLL, 0);
     sendCommandMenu(true);
@@ -1353,14 +1317,36 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     sendCommandMenu(true);
   } else if (pfodCmd == "ra") {
     robot->mowPatternDuration = 0;
-    // cmd: start auto mowing
     robot->motorMowEnable = true;
     if ((robot->stateCurr == STATE_STATION) || (robot->stateCurr == STATE_STATION_CHARGING)) {
+      //bber40
+      Console.println("MANUAL START FROM STATION");
+      robot->ActualRunningTimer = 0;
+      robot->findedYaw = 999;
+      robot->imuDirPID.reset();
+      //robot->mowPatternCurr = 1;
+      robot->laneUseNr = 1;
+      robot->rollDir = 1;
+      robot->whereToStart = 2;
+      robot->areaToGo = 1;
+      robot->actualLenghtByLane = 40;
+      robot->beaconToStart = 0;
+      robot->startByTimer = true;
+      robot->mowPatternDuration = 0;
+      robot->totalDistDrive = 0;
       robot->setActuator(ACT_CHGRELAY, 0);
       robot->setNextState(STATE_STATION_REV, 0);
     }
     else {
-      robot->setNextState(STATE_FORWARD_ODO, 0);
+      if (robot->mowPatternName() == "WIRE") {
+        robot->statusCurr = TRACK_TO_START; //status change later into STATE_PERI_STOP_TOTRACK
+        robot->setNextState(STATE_PERI_FIND, 0);
+      }
+      else{
+        robot->setNextState(STATE_FORWARD_ODO, 0);
+      }
+        
+      
     }
     sendCommandMenu(true);
   } else if (pfodCmd == "rc") {
@@ -1382,7 +1368,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     //only for debug remove after
   } else if (pfodCmd == "rp") {
     // cmd: pattern
-    robot->mowPatternCurr = (robot->mowPatternCurr + 1 ) % 2;
+    robot->mowPatternCurr = (robot->mowPatternCurr + 1 ) % 3;
     robot->setNextState(STATE_OFF, 0);
     sendCommandMenu(true);
   } else if (pfodCmd == "rt") {
@@ -1463,11 +1449,12 @@ void RemoteControl::processManualMenu(String pfodCmd) {
 void RemoteControl::sendTestOdoMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->println(F("{.TestOdo`1000"));
 
-  serialPort->println(F("|yt8~Ticks Right / Left "));
+  serialPort->println(F("|yt10~Ticks Right / Left "));
   serialPort->print(robot->odometryRight);
   serialPort->print(F(" / "));
   serialPort->print(robot->odometryLeft);
   serialPort->println();
+  //serialPort->print(F("|yt8~Calib Ticks/Second"));  //to compute the ticks per second motor speed
   serialPort->print(F("|yt0~1 turn Wheel Fwd"));  //to verify and adjust the TicksPerRevolution
   serialPort->print(F("|yt1~5 turns Wheel Fwd"));  //to verify and adjust the TicksPerRevolution  and PWM right OFFSET the 2 wheel need to stop at the same time
   serialPort->print(F("|yt2~1 turn Wheel Rev"));
@@ -1476,7 +1463,6 @@ void RemoteControl::sendTestOdoMenu(boolean update) {
   serialPort->print(F("|yt6~Rotate 180Deg"));  //to verify and adjust the odometryWheelBaseCm
   serialPort->print(F("|yt5~Rotate 360Deg"));  //to verify and adjust the odometryWheelBaseCm
   serialPort->println(F("|yt7~Rotate Non Stop"));
-  serialPort->println(F("|yt9~Test Drive IMU and ODO"));
 
 
   serialPort->println("}");
@@ -1551,32 +1537,7 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
     robot->setNextState(STATE_TEST_MOTOR, robot->rollDir);
     sendTestOdoMenu(true);
   }
-  else if (pfodCmd == "yt9") {
-
-
-    // cmd: ONLY HERE to  test to track and go to area2 using tag for new area
-
-    robot->statusCurr = REMOTE;
-    robot->ActualRunningTimer = 0;
-    //motorMowEnable = true;
-    robot->findedYaw = 999;
-    robot->imuDirPID.reset();
-    robot->mowPatternCurr = 1;
-    robot->laneUseNr = 1;
-    robot->rollDir = 0;
-    robot->whereToStart = 2;
-    robot->areaToGo = 2;
-    robot->actualLenghtByLane = 20;
-    robot->startByTimer = true;
-    robot->mowPatternDuration = 0;
-    robot->totalDistDrive = 0;
-    robot->newtagDistance1 = 300;
-    robot->perimeterUse = true;
-    robot->setNextState(STATE_DRIVE1_TO_NEWAREA, 0);
-    sendCommandMenu(true);
-
-
-  }
+ 
 }
 
 

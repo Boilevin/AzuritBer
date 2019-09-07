@@ -80,7 +80,8 @@ Mower::Mower() {
 
   motorRightOffsetFwd = 0;  //percent offset in PWM use for the 2 wheels motor have the same speed a the same PWM
   motorRightOffsetRev = 0;  //use the 1 ml ODO test to find good value the 2 wheels need to stop at the same time
-
+  motorTickPerSecond = 200; // use to compute the maxodostate duration and computed on the calibration motor
+  
   UseAccelLeft = 1;
   UseBrakeLeft = 1;
   UseAccelRight = 1;
@@ -104,7 +105,7 @@ Mower::Mower() {
   bumperUse         = 0;      // has bumpers?
   //  ------ drop -----------------------------------
   dropUse          = 0;     // has drops?                                                                                              Dropsensor - Absturzsensor vorhanden ?
-  dropcontact      = 0;     //contact 0-openers 1-closers                                                                              Dropsensor - Kontakt 0-Öffner - 1-Schließer betätigt gegen GND
+  dropcontact      = 0;     //contact 0-openers 1-closers                                                                              Dropsensor - Kontakt 0-Ã–ffner - 1-SchlieÃŸer betÃ¤tigt gegen GND
   // ------ rain ------------------------------------
   rainUse          = 0;      // use rain sensor?
 
@@ -133,7 +134,7 @@ Mower::Mower() {
   perimeterUse       = 0;      // use perimeter?
   perimeterTriggerTimeout = 0;      // perimeter trigger timeout when escaping from inside (ms)
   //perimeterOutRollTimeMax  = 2000;   // free
-  perimeterOutRollTimeMin = 750;    // free
+  //perimeterOutRollTimeMin = 750;    // free
   perimeterOutRevTime   = 2200;   // free
   perimeterTrackRollTime = 1500; //roll time during perimeter tracking
   perimeterTrackRevTime = 2200;  // reverse time during perimeter tracking
@@ -151,12 +152,14 @@ Mower::Mower() {
   //bb
   MaxSpeedperiPwm = 180; // speed max in PWM while perimeter tracking
   ActualSpeedPeriPWM = MaxSpeedperiPwm; //speed in PWM while perimeter tracking
-  timeToResetSpeedPeri = 0; // if millis() > at this var the speed is set to max value
+  //timeToResetSpeedPeri = 0; // if millis() > at this var the speed is set to max value
   RollTimeFor45Deg = 1000; //time while roll in peri obstacle avoid if no Odometry
   circleTimeForObstacle = 4000; //time while arc circle in peri obstacle avoid if no Odometry
   DistPeriObstacleAvoid = 100; //distance while arc circle in peri obstacle avoid
   perimeterMagMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
   perimeter.read2Coil = false;
+  areaToGo = 1;//initialise the areatogo to the station area
+  
   // ------ lawn sensor --------------------------------
   lawnSensorUse     = 0;       // use capacitive Sensor
   // ------  IMU (compass/accel/gyro) ----------------------
@@ -204,7 +207,7 @@ Mower::Mower() {
   chargingTimeout = 18000000; // safety timer for charging (ms)  5 hrs
   chgSenseZero    = 511;        // charge current sense zero point
   batSenseFactor  = 1.11;         // charge current conversion factor   - Empfindlichkeit nimmt mit ca. 39/V Vcc ab
-  chgSense        = 185.0;      // mV/A empfindlichkeit des Ladestromsensors in mV/A (Für ACS712 5A = 185)
+  chgSense        = 185.0;      // mV/A empfindlichkeit des Ladestromsensors in mV/A (FÃ¼r ACS712 5A = 185)
   chgChange       = 0;          // Messwertumkehr von - nach +         1 oder 0
   chgNull         = 2;          // Nullduchgang abziehen (1 oder 2)
   // ------  charging station ---------------------------
@@ -217,7 +220,7 @@ Mower::Mower() {
   dockingSpeed   =  60;   //speed docking is (percent of maxspeed) 
   
   // ------ odometry ------------------------------------
-  odometryUse       = 0;       // use odometry?
+  odometryUse       = 1;       // use odometry?
   odometryTicksPerRevolution = 1010;   // encoder ticks per one full resolution
   odometryTicksPerCm = 12.9;  // encoder ticks per cm
   odometryWheelBaseCm = 43;    // wheel-to-wheel distance (cm)
@@ -372,9 +375,9 @@ void Mower::setup() {
 
   // drops
  // pinMode(pinDropLeft, INPUT);                                                                                                         // Dropsensor - Absturzsensor - Deklariert als Eingang
-  pinMode(pinDropLeft, INPUT_PULLUP);                                                                                                  // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (Auslösung erfolgt gegen GND)
+  pinMode(pinDropLeft, INPUT_PULLUP);                                                                                                  // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (AuslÃ¶sung erfolgt gegen GND)
  // pinMode(pinDropRight, INPUT);                                                                                                        // Dropsensor - Absturzsensor - Deklariert als Eingang
-  pinMode(pinDropRight, INPUT_PULLUP);                                                                                                 // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (Auslösung erfolgt gegen GND)
+  pinMode(pinDropRight, INPUT_PULLUP);                                                                                                 // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (AuslÃ¶sung erfolgt gegen GND)
 
   // rain
   pinMode(pinRain, INPUT);
@@ -443,7 +446,7 @@ void Mower::setup() {
   }
 
   // enable interrupts
-  //-----------------------------------------------------------------------------------------------------------------UweZ geändert Anfang---------------------------------
+  //-----------------------------------------------------------------------------------------------------------------UweZ geÃ¤ndert Anfang---------------------------------
   // Due interrupts
   attachInterrupt(pinOdometryLeft, PCINT2_vect, CHANGE);
   attachInterrupt(pinOdometryLeft2, PCINT2_vect, CHANGE);
@@ -557,14 +560,14 @@ void Mower::setActuator(char type, int value) {
   switch (type) {
 
 
-    case ACT_MOTOR_MOW: setMC33926(pinMotorMowDir, pinMotorMowPWM, value); break;// Motortreiber einstellung - bei Bedarf ändern z.B setL298N auf setMC33926
+    case ACT_MOTOR_MOW: setMC33926(pinMotorMowDir, pinMotorMowPWM, value); break;// Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
     //bb
-    case ACT_MOTOR_LEFT: setMC33926(pinMotorLeftDir, pinMotorLeftPWM, value); break;//   Motortreiber einstellung - bei Bedarf ändern z.B setL298N auf setMC33926
+    case ACT_MOTOR_LEFT: setMC33926(pinMotorLeftDir, pinMotorLeftPWM, value); break;//   Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
 
     case ACT_MOTOR_RIGHT:
       if (value >= 0) setMC33926(pinMotorRightDir, pinMotorRightPWM, value * (1 + (double)motorRightOffsetFwd / 100));
       else setMC33926(pinMotorRightDir, pinMotorRightPWM, value * (1 - (double)motorRightOffsetRev / 100));
-      break; //  Motortreiber einstellung - bei Bedarf ändern z.B setL298N auf setMC33926
+      break; //  Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
 
     case ACT_BUZZER: if (value == 0) Buzzer.noTone(); else Buzzer.tone(value); break;
     case ACT_LED: digitalWrite(pinLED, value); break;

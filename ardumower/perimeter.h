@@ -65,4 +65,3 @@ class PerimeterClass
 extern PerimeterClass Perimeter;
 
 #endif
-

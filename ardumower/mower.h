@@ -118,11 +118,6 @@
 
 // ------- baudrates---------------------------------
 
-#define BLUETOOTH_BAUDRATE  19200      // baudrate used for communication with Bluetooth module (Ardumower default: 19200)
-
-#define ESP8266_BAUDRATE    115200      // baudrate used for communication with esp8266 Wifi module
-#define BLUETOOTH_PIN       1234
-#define GPS_BAUDRATE  38400  // 9600 for M6n ,19200 or 38400 for BN880,M8Nother module
 
 
 // ------ used serial ports for console, Bluetooth, ESP8266 -----------------------------
@@ -135,13 +130,21 @@
 //#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
 
 #define Console SerialUSB
-#define CONSOLE_BAUDRATE    250000       // baudrate used for Raspberry PI console
+#define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
 
-#define RaspberryPIPort SerialUSB
+#define Enable_DueWatchdog true
+
+#define RaspberryPIPort SerialUSB  //The PI is connected on NATIVE USB port over USB cable
+
 #define ESP8266port Serial3  //not use and exchange with GPS to avoid workarround (but no issue for me ????????)
-#define Bluetooth Serial2  // Ardumower default
-#define GpsPort Serial1
+#define ESP8266_BAUDRATE    115200      // baudrate used for communication with esp8266 Wifi module
 
+#define Bluetooth Serial2  // Ardumower default OK for ESP32 or HC05
+#define BLUETOOTH_BAUDRATE  19200      // baudrate used for communication with Bluetooth module (Ardumower default: 19200)
+#define BLUETOOTH_PIN       1234
+
+#define GpsPort Serial1  // connected on P44 Wlan
+#define GPS_BAUDRATE  38400  // set value to 9600 for M6n marotronics shop or 19200 or 38400 for BN880 and M8N other module
 
 
 

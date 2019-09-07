@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.1-Azurit-ber"
+#define VER "1.2-Azurit-ber"
 
 
 // sensors
@@ -187,18 +187,20 @@ enum {
 
   STATE_WAIT_FOR_SIG2,  //use when the area 2 wait until sender send the signal
   STATE_STOP_TO_NEWAREA,  //use to stop the mower in straight line after long distance moving with ODO and IMU
-  STATE_PERI_OUT_STOP_ROLL_TOTRACK // after the mower rool to track we need to stop the right motor because it's reverse and the track is forward
+  STATE_PERI_OUT_STOP_ROLL_TOTRACK, // after the mower rool to track we need to stop the right motor because it's reverse and the track is forward
+  STATE_PERI_STOP_TO_FAST_START,  // after the mower find a tag for find a new start entry point
+  STATE_CALIB_MOTOR_SPEED  // we need to know how may ticks the motor can do in 1 ms to compute the maxododuration 
   
 };
 
 // status mode
-enum { WAIT,NORMAL_MOWING,SPIRALE_MOWING,BACK_TO_STATION, TRACK_TO_START, MANUAL, REMOTE, IN_ERROR, IN_STATION, TESTING,WAITSIG2 };
+enum { WAIT,NORMAL_MOWING,SPIRALE_MOWING,BACK_TO_STATION, TRACK_TO_START, MANUAL, REMOTE, IN_ERROR, IN_STATION, TESTING,WAITSIG2,WIRE_MOWING };
 
 // roll types
 enum { LEFT, RIGHT };
 
 // mow patterns
-enum { MOW_RANDOM, MOW_LANES, MOW_ZIGZAG, MOW_WIRE };
+enum { MOW_RANDOM, MOW_LANES,MOW_WIRE, MOW_ZIGZAG };
 
 //bb
 // console mode
@@ -321,6 +323,7 @@ class Robot
     int motorAccel  ;  // motor wheel acceleration (warning: do not set too high)
     int motorSpeedMaxRpm   ;   // motor wheel max RPM
     int motorSpeedMaxPwm  ;  // motor wheel max Pwm  (8-bit PWM=255, 10-bit PWM=1023)
+    int motorInitialSpeedMaxPwm ;  // motor Initial wheel max Pwm  
     float motorPowerMax   ;    // motor wheel max power (Watt)
     PID motorLeftPID;              // motor left wheel PID controller
     PID motorRightPID;              // motor right wheel PID controller
@@ -373,6 +376,7 @@ class Robot
     //bb
     int motorRightOffsetFwd;
     int motorRightOffsetRev;
+    int motorTickPerSecond;
 
     unsigned long nextTimeMotorOdoControl ;
     unsigned long nextTimePidCompute;
@@ -423,6 +427,7 @@ class Robot
     boolean motorMowRpmLastState ;
     boolean motorMowEnable ;  // motor can be temporary disabled if stucked etc. with this
     boolean motorMowForceOff ; // user switch for mower motor on/off has highest priority
+   // boolean ignoreRfidTag ; // use to stay on wire when mow perimeter
     boolean highGrassDetect;  //detect that the mow motor is on high load so high grass
     float triggerMotorMowHightGrass ;     // motor mower percent of power vs power Max  trigger to start spirale or half lane
     // boolean motorMowEnableOverride ; // user switch for mower motor on/off has highest priority if true the motor is stop
@@ -462,13 +467,13 @@ class Robot
     unsigned long nextTimeBumper ;
     // --------- drop state ---------------------------
     // bumper state (true = pressed)                                                                                                  // Dropsensor - Absturzsensor vorhanden ?
-    boolean dropUse       ;      // has drops?                                                                                           // Dropsensor - Absturzsensor Zähler links
+    boolean dropUse       ;      // has drops?                                                                                           // Dropsensor - Absturzsensor ZÃ¤hler links
     int dropLeftCounter ;                                                                                                             // Dropsensor - Absturzsensor
-    boolean dropLeft ;                                                                                                                // Dropsensor - Absturzsensor links betätigt ?
+    boolean dropLeft ;                                                                                                                // Dropsensor - Absturzsensor links betÃ¤tigt ?
     int dropRightCounter ;                                                                                                            // Dropsensor - Absturzsensor
-    boolean dropRight ;                                                                                                               // Dropsensor - Absturzsensor rechts betätigt ?
+    boolean dropRight ;                                                                                                               // Dropsensor - Absturzsensor rechts betÃ¤tigt ?
     unsigned long nextTimeDrop ;                                                                                                      // Dropsensor - Absturzsensor
-    boolean dropcontact ; // contact 0-openers 1-closers                                                                                 // Dropsensor Kontakt 0 für Öffner - 1 Schließer
+    boolean dropcontact ; // contact 0-openers 1-closers                                                                                 // Dropsensor Kontakt 0 fÃ¼r Ã–ffner - 1 SchlieÃŸer
     // ------- IMU state --------------------------------
     IMUClass imu;
     boolean imuUse            ;       // use IMU?
@@ -536,7 +541,7 @@ class Robot
     // Perimeter perimeter;
     boolean perimeterUse       ;      // use perimeter?
     //int perimeterOutRollTimeMax ;  //free but conserve for eeprom recovery
-    int perimeterOutRollTimeMin ;   //free but conserve for eeprom recovery
+    //int perimeterOutRollTimeMin ;   //free but conserve for eeprom recovery
     int perimeterOutRevTime  ;
     int perimeterTrackRollTime ; // perimeter tracking roll time (ms)
     int perimeterTrackRevTime ; // perimeter tracking reverse time (ms)
@@ -563,7 +568,7 @@ class Robot
     int vv;
     unsigned long lastTimeForgetWire;
     unsigned long NextTimeNormalSpeed;
-    unsigned long timeToResetSpeedPeri;
+    //unsigned long timeToResetSpeedPeri;
     int LastPerimeterMag;
     double CiblePeriValue;
     int MaxSpeedperiPwm;
@@ -630,6 +635,8 @@ class Robot
     unsigned long  nextTimeBeeper;// use for beeper
     boolean startByTimer; // use to know if the start is initiate by timer or manual via PFOD
     int whereToStart; // use to know where the mower need to leave the wire and start to mow
+    int whereToResetSpeed; // use with Rfid Speed to know when reset to maxpwm
+    
     int beaconToStart; // use to know where the mower need to leave the wire and start to mow
     byte areaToGo;// use to know the area where to start by timer
     //-------- DHT22 Temperature humidity ------------------
@@ -660,7 +667,7 @@ class Robot
     unsigned long chargingTimeout; // safety timer for charging
     float chgSenseZero    ;       // charge current sense zero point
     float batSenseFactor       ;     // charge current conversion factor
-    float chgSense        ;       // mV/A empfindlichkeit des Ladestromsensors in mV/A (Für ACS712 5A = 185)
+    float chgSense        ;       // mV/A empfindlichkeit des Ladestromsensors in mV/A (FÃ¼r ACS712 5A = 185)
     char chgChange        ;       // messwertumkehr von - nach +         1oder 0
     float batVoltage ;  // battery voltage (Volt)
     // byte chgSelection     ;       // Senor Auswahl
@@ -774,7 +781,7 @@ class Robot
     //virtual void RaspberryPISendStat ();
     
     virtual void receivePiPfodCommand (String RpiCmd,float v1,float v2,float v3);
-    
+    virtual void printSettingSerial();
     
   protected:
     // convert ppm time to RC slider value
@@ -784,7 +791,7 @@ class Robot
     virtual void loadSaveRobotStats(boolean readflag);
     virtual void loadUserSettings();
     virtual void checkErrorCounter();
-    virtual void printSettingSerial();
+    
 
     // read sensors
     virtual void readSensors();
@@ -835,6 +842,8 @@ class Robot
     virtual void printOdometry();
     virtual void printMenu();
     virtual void delayInfo(int ms);
+    virtual void delayWithWatchdog(int ms);
+    
    // virtual void testOdometry();
     virtual void testMotors();
     virtual void setDefaults();

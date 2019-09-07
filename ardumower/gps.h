@@ -14,4 +14,3 @@ class GPS
 };
 
 #endif
-

@@ -1,27 +1,27 @@
-/*
- * 
- * 
- *      
+/*      
  *      DUE and ODOMETRY MANDATORY VERSION 
  *      PCB1.3 
  *      FOR BY LANE USE, IMU GY-88 MANDATORY 
  *      
- *      Use DUE programming port for programming and console!
+ *      Connect DUE programming port to PC for programming and PC console
+ *      Connect DUE Native USB port to Raspberry Pi 
  *      
+ *      --------------------------------- GPS ----------------------------------------------------
+ *      GPS You need to change speed according to your module and connected to P44
+ *      #define GPS_BAUDRATE  38400  // set to 9600 for marotronic module M6n ,19200 or 38400 for BN880,M8Nother module
  *      
- *      GPS Change speed according to your module
- *      #define GPS_BAUDRATE  38400  // 9600 for M6n ,19200 or 38400 for BN880,M8Nother module
- *      
- *      
- *      If Raspberry PI is not use change into mower.h
- *          RaspberryPIUse = false or true
+ *      ------------------------------ RASPBERRY -------------------------------------------------
+ *      If Raspberry PI is not connected you need to change into mower.h
  *          #define Console Serial
  *          //#define Console SerialUSB
- *      to have access to the Console on the PC else  PI  received the Console Output 
+ *      and into arduremote setting R/C set raspberryPiuse to NO
+ *      then you have access to the Console on the PC 
  *      
- *      
- *      
- *      
+ *      If Raspberry PI is connected you need to change into mower.h
+ *          //#define Console Serial
+ *          #define Console SerialUSB
+ *      and into arduremote setting R/C set raspberryPiuse to YES
+ *      ------------------------------------------------------------------------------------------ 
   Ardumower (www.ardumower.de)
   Copyright (c) 2013-2015 by Alexander Grau
   Copyright (c) 2013-2015 by Sven Gennat

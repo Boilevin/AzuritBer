@@ -28,6 +28,3 @@ void BuzzerClass::noTone() {
   Timer1.stop();
   digitalWrite(pinBuzzer, LOW);
 }
-
-
-

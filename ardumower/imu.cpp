@@ -222,8 +222,9 @@ void IMUClass::calibration() {
     mpu.setXGyroOffset(gx_offset);
     mpu.setYGyroOffset(gy_offset);
     mpu.setZGyroOffset(gz_offset);
-
+    watchdogReset();
     meansensors();
+    watchdogReset();
     Console.println("Wait ...");
 
     if (abs(mean_ax) <= acel_deadzone) ready++;
@@ -253,7 +254,7 @@ void IMUClass::meansensors() {
   while (i < (buffersize + 101)) {  //default buffersize=1000
     // read raw accel/gyro measurements from device
     mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
+    watchdogReset();
     if (i > 100 && i <= (buffersize + 100)) { //First 100 measures are discarded
       buff_ax = buff_ax + ax;
       buff_ay = buff_ay + ay;
@@ -296,14 +297,17 @@ void IMUClass::run() {
   while (fifoCount < packetSize) {  //leave time to the DMP to fill the FIFO
     fifoCount = mpu.getFIFOCount();
   }
+
   while (fifoCount >= packetSize) {  //Immediatly read the fifo and verify that it's not filling during reading
     mpu.getFIFOBytes(fifoBuffer, packetSize);
     fifoCount -= packetSize;
   }
+
   if (fifoCount != 0) {
     //Console.println("////// the DMP fill the fifo during the reading IMU value are skip //////////////");
     return;  ///the DMP fill the fifo during the reading , all the value are false but without interrupt it's the only way i have find to make it work ???certainly i am wrong
   }
+
   mpu.dmpGetQuaternion(&q, fifoBuffer);
   mpu.dmpGetGravity(&gravity, &q);
   mpu.dmpGetYawPitchRoll(yprtest, &q, &gravity);
@@ -482,7 +486,9 @@ void IMUClass::deleteAccelGyroCalib() {
 void IMUClass::calibGyro() {
 
   Console.println("Reading sensors for first time... without any offset");
+  watchdogReset();
   meansensors();
+  watchdogReset();
   Console.print("Reading ax: ");
   Console.print(mean_ax);
   Console.print(" ay: ");
@@ -495,11 +501,13 @@ void IMUClass::calibGyro() {
   Console.print(mean_gy);
   Console.print(" gz: ");
   Console.println(mean_gz);
-  delay(500);
+
   Console.println("\nCalculating offsets...");
+  watchdogReset();
   calibration();
-  delay(500);
+  watchdogReset();
   meansensors();
+  watchdogReset();
   Console.print("FINISHED reading Value with new offset,If all is OK need to be close 0 exept the az close to 16384");
   Console.print(" New reading ax: ");
   Console.print(mean_ax);
@@ -513,6 +521,7 @@ void IMUClass::calibGyro() {
   Console.print(mean_gy);
   Console.print(" gz: ");
   Console.println(mean_gz);
+  watchdogReset();
   Console.print("THE NEW OFFSET ax: ");
   Console.print(ax_offset);
   Console.print(" ay: ");
@@ -525,12 +534,13 @@ void IMUClass::calibGyro() {
   Console.print(gy_offset);
   Console.print(" gz: ");
   Console.println(gz_offset);
+  watchdogReset();
   saveCalib();
 }
 
 
 void IMUClass::calibComStartStop() {
-  while ((!robot.RaspberryPIUse) && (Console.available())) Console.read();
+  while ((!robot.RaspberryPIUse) && (Console.available())) Console.read(); //use to stop the calib
   if (state == IMU_CAL_COM) {
     // stop
     Console.println(F("com calib completed"));
@@ -554,13 +564,13 @@ void IMUClass::calibComStartStop() {
     printCalib();
     useComCalibration = true;
     state = IMU_RUN;
-    // completed sound
-    robot.setBeeper(2000, 30, 0, 160, 0);
+   
 
   } else {
     // start
     Console.println(F("com calib..."));
     Console.println(F("rotate sensor 360 degree around all three axis until NO new data are coming"));
+    watchdogReset();
     foundNewMinMax = false;
     useComCalibration = false;
     state = IMU_CAL_COM;
@@ -572,6 +582,7 @@ void IMUClass::calibComUpdate() {
   comLast = com;
   delay(20);
   readHMC5883L();
+  watchdogReset();
   boolean newfound = false;
   if ( (abs(com.x - comLast.x) < 10) &&  (abs(com.y - comLast.y) < 10) &&  (abs(com.z - comLast.z) < 10) ) {
     if (com.x < comMin.x) {
@@ -600,7 +611,7 @@ void IMUClass::calibComUpdate() {
     }
     if (newfound) {
       foundNewMinMax = true;
-
+      watchdogReset();
       Console.print("x:");
       Console.print(comMin.x);
       Console.print(",");

@@ -88,7 +88,7 @@
 //   Optimized for smaller compiled size (even smaller than sketches that
 //   don't use a library).
 //
-// 07/14/2012 v1.4 - Added support for the Parallax PING)))� sensor. Interface
+// 07/14/2012 v1.4 - Added support for the Parallax PING)))ï¿½ sensor. Interface
 //   with all but the SRF06 sensor using only one Arduino pin. You can also
 //   interface with the SRF06 using one pin if you install a 0.1uf capacitor
 //   on the trigger and echo pins of the sensor then tie the trigger pin to
@@ -146,7 +146,7 @@
 // Shouldn't need to change these values unless you have a specific need to do so.
 //bber
 //#define MAX_SENSOR_DISTANCE 500 // Maximum sensor distance can be as high as 500cm, no reason to wait for ping longer than sound takes to travel this distance and back. Default=500
-#define MAX_SENSOR_DISTANCE 200 // Maximum sensor distance can be as high as 200cm, no reason to wait for ping longer than sound takes to travel this distance and back. Default=500
+#define MAX_SENSOR_DISTANCE 120 // Maximum sensor distance can be as high as 200cm, no reason to wait for ping longer than sound takes to travel this distance and back. Default=500
 #define US_ROUNDTRIP_CM 57      // Microseconds (uS) it takes sound to travel round-trip 1cm (2cm total), uses integer to save compiled code space. Default=57
 #define US_ROUNDTRIP_IN 146     // Microseconds (uS) it takes sound to travel round-trip 1 inch (2 inches total), uses integer to save compiled code space. Defalult=146
 #define ONE_PIN_ENABLED true    // Set to "false" to disable one pin mode which saves around 14-26 bytes of binary size. Default=true

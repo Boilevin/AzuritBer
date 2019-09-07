@@ -334,7 +334,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->trackingErrorTimeOut;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterOutRollTimeMin;
+    lineToSend = lineToSend + robot->motorTickPerSecond;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->perimeterOutRevTime;
     lineToSend = lineToSend + ",";
@@ -826,6 +826,7 @@ void RpiRemote::writePi(String stringLine) {
     lineToSend = lineToSend + String(retour, HEX);
   }
   RaspberryPIPort.println(lineToSend);
+  watchdogReset();
   //Console.println(lineToSend);
 }
 
@@ -834,11 +835,10 @@ void RpiRemote::readPi() {
   if (!RaspberryPIPort.available())
     return;
   int StartTrans = millis();
-
   while (RaspberryPIPort.available()) {
+    watchdogReset();
     char c = RaspberryPIPort.read();
-    if (encode(c)) {
-    }
+    encode(c);
   }
 }
 
@@ -1141,6 +1141,15 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "newtagRotAngle1", 20) == 0) robot->newtagRotAngle1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle2", 20) == 0) robot->newtagRotAngle2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorSpeedMaxPwm", 20) == 0)  robot->motorSpeedMaxPwm = atoi(received_value[i]);
+//bber50     
+      if (strncmp(variable_name[i], "ActualSpeedPeriPWM", 20) == 0) {
+        robot->ActualSpeedPeriPWM = atoi(received_value[i]);
+        Console.print("Set New perimeter tracking speed  ");
+        Console.println(robot->ActualSpeedPeriPWM);
+        
+      }
+
+      
       if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)  robot->newtagDistance1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagDistance2", 20) == 0)  robot->newtagDistance2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "areaToGo", 20) == 0)  robot->areaToGo = atoi(received_value[i]);
@@ -1148,6 +1157,21 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "statusCurr", 20) == 0)  robot->statusCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "nextTimeTimer", 20) == 0)  robot->nextTimeTimer = atoi(received_value[i]);
 
+//bber50
+      if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)
+      {
+        robot->newtagDistance1 = atoi(received_value[i]);
+        robot->whereToResetSpeed =  robot->totalDistDrive + robot->newtagDistance1; // when a speed tag is read it's where the speed is back to maxpwm value
+        Console.print("Change speed for ");
+        Console.print(robot->newtagDistance1);
+        Console.print(" centimeter   actual/Cible  ");
+        Console.print(robot->totalDistDrive);
+        Console.print(" / ");
+        Console.println(robot->whereToResetSpeed);
+        
+        
+        
+      }
 
 
       if (strncmp(variable_name[i], "areaInMowing", 20) == 0) {
@@ -1344,7 +1368,7 @@ void RpiRemote::readWrite_setting()
         robot->perimeter.timedOutIfBelowSmag = val[3];
         robot->perimeterTriggerTimeout = val[4];
         robot->trackingErrorTimeOut = val[5];
-        robot->perimeterOutRollTimeMin = val[6];
+        robot->motorTickPerSecond = val[6];
         robot->perimeterOutRevTime = val[7];
         robot->perimeterTrackRollTime = val[8];
         robot->perimeterTrackRevTime = val[9];

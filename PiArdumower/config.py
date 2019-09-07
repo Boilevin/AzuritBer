@@ -12,11 +12,10 @@ if (os.name=='nt'):
     myOS="Windows"
     GpsConnectedOnPi=False
     GpsIsM6n=True
-    RfidConnectedOnPi=False
     NanoConnectedOnPi=False
-    Esp32ConnectedOnPi=False
     DueConnectedOnPi=False
     AutoRecordBatCharging=False
+    useDebugConsole=True
 
 if (os.name=='posix'):
     print('Linux Platform')
@@ -26,11 +25,10 @@ if (os.name=='posix'):
     myBaudRate = 250000
     myOS="Linux"
     GpsConnectedOnPi=False
-    GpsIsM6n=True
-    RfidConnectedOnPi=False
+    GpsIsM6n=False
     NanoConnectedOnPi=False
-    Esp32ConnectedOnPi=True
-    DueConnectedOnPi=False
-    AutoRecordBatCharging=False
+    DueConnectedOnPi=True
+    AutoRecordBatCharging=True
+    useDebugConsole=True
     
 
