@@ -2488,6 +2488,8 @@ void Robot::readSensors() {
       if (millis() > stateStartTime + 2000) { // far away from perimeter?
         perimeterTriggerTime = millis() + perimeterTriggerTimeout;
       } else {
+        //bber2
+        //use smooth to avoid big area transition      
         perimeterTriggerTime = millis();
       }
     }
