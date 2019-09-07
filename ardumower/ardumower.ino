@@ -3,20 +3,21 @@
  *      PCB1.3 
  *      FOR BY LANE USE, IMU GY-88 MANDATORY 
  *      
- *      Use DUE programming port for programming and PC console!
+ *      Connect DUE programming port to PC for programming and PC console
+ *      Connect DUE Native USB port to Raspberry Pi 
  *      
  *      --------------------------------- GPS ----------------------------------------------------
- *      GPS Change speed according to your module and connected to P44
- *      #define GPS_BAUDRATE  38400  // 9600 for M6n ,19200 or 38400 for BN880,M8Nother module
+ *      GPS You need to change speed according to your module and connected to P44
+ *      #define GPS_BAUDRATE  38400  // set to 9600 for marotronic module M6n ,19200 or 38400 for BN880,M8Nother module
  *      
  *      ------------------------------ RASPBERRY -------------------------------------------------
- *      If Raspberry PI is not connected change into mower.h
+ *      If Raspberry PI is not connected you need to change into mower.h
  *          #define Console Serial
  *          //#define Console SerialUSB
  *      and into arduremote setting R/C set raspberryPiuse to NO
  *      then you have access to the Console on the PC 
  *      
- *      If Raspberry PI is connected change into mower.h
+ *      If Raspberry PI is connected you need to change into mower.h
  *          //#define Console Serial
  *          #define Console SerialUSB
  *      and into arduremote setting R/C set raspberryPiuse to YES

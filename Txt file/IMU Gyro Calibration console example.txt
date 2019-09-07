@@ -1,0 +1,61 @@
+SETUP
+------------------------------- GPS  Initialisation --------------------------------------------
+Send config sentence
+End of Gps Config
+ --> ++++++++++++++++++++++++++++++++++* Start Robot Setup at 3382 --> +++++++++++++++++++++++++++
+Load ErrorCounters
+ErrorCounters address Start=500
+ErrorCounters address Stop=522
+UserSettings are read from EEprom Address : 2000 To 2500
+Load Robot Stats
+Robot Stats address Start = 800
+Robot Stats address Stop = 826
+--------------------------------- IMU INITIALISATION -------------------
+COMPASS HMC5883L ID NEED TO BE 72 IF ALL IS OK ------>  ID=72
+IMU: found calib data
+Load Calibration
+Calibration address Start = 600
+Calibration address Stop = 650
+-------- IMU CALIBRATION  --------
+ACCEL GYRO MPU6050 OFFSET ax: -2057 ay: 272 az: 1156 gx: -21 gy: -10 gz: 1
+COMPASS OFFSET X.Y.Z AND SCALE X.Y.Z   --> comOfs=0.00,0.00,0.00
+comScale=2.00,2.00,2.00
+.
+MPU6050 connection successful
+Initializing DMP...
+Enabling DMP...  Packet size 42
+Wait 3 secondes to stabilize the Drift
+AccelGyro Yaw: 0.00  Compass Yaw: -1.88  Diff between compass and accelGyro in Radian and Deg-1.88 / -107.86
+--------------------------------- IMU READY ------------------------------
+START
+Ardumower 1.2-Azurit-ber
+Config: Ardumower
+press...
+  d for menu
+  v to change console output (sensor counters, values, perimeter etc.)
+off
+
+Starting all the INA219 current mow motor 
+Watchdog is enable and set to 2 secondes
+AccelGyro calibration deleted 
+Reading sensors for first time... without any offset
+Reading ax: 17496 ay: -2377 az: 5239 gx: 13 gy: 7 gz: -1
+
+Calculating offsets...
+Wait ...
+Wait ...
+Wait ...
+Wait ...
+Wait ...
+Wait ...
+Wait ...
+Wait ...
+Wait ...
+Wait ...
+FINISHED reading Value with new offset,If all is OK need to be close 0 exept the az close to 16384 New reading ax: 5 ay: 3 az: 16386 gx: 1 gy: 1 gz: -1
+THE NEW OFFSET ax: -2058 ay: 272 az: 1158 gx: -23 gy: -11 gz: 1
+Save Calibration
+Calibration address Start = 600
+Calibration address Stop = 650
+------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 27548
+------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 264
