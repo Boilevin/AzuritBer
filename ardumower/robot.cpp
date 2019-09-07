@@ -194,6 +194,7 @@ Robot::Robot() {
   consoleMode = CONSOLE_OFF;
   nextTimeButtonCheck = 0;
   nextTimeInfo = 0;
+  nextTimePrintConsole = 0;
   nextTimeMotorSense = 0;
   nextTimeIMU = 0;
   nextTimeCheckTilt = 0;
@@ -368,7 +369,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, sonarTriggerBelow);
   eereadwrite(readflag, addr, perimeterUse);
   eereadwrite(readflag, addr, perimeter.timedOutIfBelowSmag);
-  eereadwrite(readflag, addr, perimeterTriggerTimeout);
+  eereadwrite(readflag, addr, perimeterTriggerMinSmag);
   eereadwrite(readflag, addr, trackingErrorTimeOut);
   eereadwrite(readflag, addr, motorTickPerSecond);
   eereadwrite(readflag, addr, perimeterOutRevTime);
@@ -464,7 +465,6 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, RaspberryPIUse);
   eereadwrite(readflag, addr, sonarToFrontDist);
   eereadwrite(readflag, addr, maxTemperature);
-  //bber20
   eereadwrite(readflag, addr, dockingSpeed);
   //bber35
   eereadwrite(readflag, addr, rfidUse);
@@ -630,8 +630,8 @@ void Robot::printSettingSerial() {
   Console.println(F("---------- perimeter -----------------------------------------"));
   Console.print  (F("perimeterUse                               : "));
   Console.println(perimeterUse, 1);
-  Console.print  (F("perimeterTriggerTimeout                    : "));
-  Console.println(perimeterTriggerTimeout);
+  Console.print  (F("perimeterTriggerMinSmag                    : "));
+  Console.println(perimeterTriggerMinSmag);
   Console.print  (F("MaxSpeedperiPwm                            : "));
   Console.println(MaxSpeedperiPwm);
   Console.print  (F("perimeterTrackRollTime                     : "));
@@ -770,7 +770,6 @@ void Robot::printSettingSerial() {
   Console.println(stationForwDist);
   Console.print  (F("stationCheckDist                           : "));
   Console.println(stationCheckDist);
-  //bber20
   Console.print  (F("UseBumperDock                            : "));
   Console.println(UseBumperDock);
   Console.print  (F("dockingSpeed                               : "));
@@ -1541,7 +1540,7 @@ void Robot::motorControlOdo() {
 void Robot::motorControlPerimeter() {
 
   if (millis() < nextTimeMotorPerimeterControl) return;
-  nextTimeMotorPerimeterControl = millis() + 15; //bb read the perimeter each 50 ms
+  nextTimeMotorPerimeterControl = millis() + 15; //bb read the perimeter each 15 ms
   //never stop the PID compute while turning for the new transition
   //use the PerimeterMag as cible to smooth the tracking
   //Value reference perimeterMagMaxValue , maybe need to be calculate in mower setting up procedure
@@ -1604,7 +1603,6 @@ void Robot::motorControlPerimeter() {
     if (millis() > perimeterLastTransitionTime + trackingErrorTimeOut) {
       Console.println("Error: tracking error");
       addErrorCounter(ERR_TRACKING);
-      //whereToStart = 99999;
       setNextState(STATE_PERI_FIND, 0);
     }
     return;
@@ -1676,6 +1674,8 @@ void Robot::motorControlPerimeter() {
 
   if (abs(perimeterMag) < perimeterMagMaxValue / 4) { //250 can be replace by timedOutIfBelowSmag to be tested
     perimeterLastTransitionTime = millis(); //initialise perimeterLastTransitionTime if perfect sthraith line
+    //bber2  test if can avoid time out error when tracking
+    perimeter.lastInsideTime[0] = millis();
   }
 }
 
@@ -2485,13 +2485,21 @@ void Robot::readSensors() {
 
     if ((!perimeterInside) && (perimeterTriggerTime == 0)) {
       // set perimeter trigger time
-      if (millis() > stateStartTime + 2000) { // far away from perimeter?
-        perimeterTriggerTime = millis() + perimeterTriggerTimeout;
-      } else {
-        //bber2
-        //use smooth to avoid big area transition      
+
+      //bber2
+      //use smooth to avoid big area transition, in the middle of the area with noise the mag can change from + to -
+      smoothPeriMag = perimeter.getSmoothMagnitude(0);
+      if (smoothPeriMag > perimeterTriggerMinSmag) {
         perimeterTriggerTime = millis();
       }
+      else
+      {
+        if (millis() >= nextTimePrintConsole) {
+          nextTimePrintConsole = millis() + 1000;
+          Console.println("Bad reading perimeter In/Out");
+        }
+      }
+
     }
 
 
@@ -2738,7 +2746,6 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_STATION_ROLL:  //when start in auto after mower reverse it roll for this angle
       if (mowPatternCurr == MOW_LANES)       AngleRotate = 90;
       else AngleRotate = random(30, 160);
-      //bber20
       if (startByTimer) AngleRotate = stationRollAngle;
       Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
       UseAccelLeft = 1;
@@ -3282,6 +3289,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_PERI_OUT_REV: //in normal mowing reverse after the wire trigger
       readDHT22(); // here the mower is stop so can spend 250ms  for reading
       setBeeper(0, 0, 0, 0, 0);
+      perimeter.lastInsideTime[0] = millis(); //use to avoid perimetertimeout when mower outside perimeter
       if (mowPatternCurr == MOW_LANES) {
         PrevStateOdoDepassLeft = odometryLeft - stateEndOdometryLeft;
         PrevStateOdoDepassRight = odometryRight - stateEndOdometryRight;
@@ -3346,7 +3354,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_OUT_ROLL_TOINSIDE:  //roll left or right in normal mode
-      //bber17
+      //bber2
+      perimeter.lastInsideTime[0] = millis(); //use to avoid perimetertimeout when mower outside perimeter
       if (stateCurr == STATE_WAIT_AND_REPEAT) {
         RollToInsideQty = RollToInsideQty + 1;
         Console.print("Not Inside roll nb: ");
@@ -4148,8 +4157,6 @@ void Robot::checkDrop() {  //the drop is used as a contact in front of the robot
 
 // check bumpers while tracking perimeter
 void Robot::checkBumpersPerimeter() {
-  //bber20
-
   if ((bumperLeft || bumperRight)) { // the bumper is used to detect the station
     motorLeftRpmCurr = motorRightRpmCurr = 0 ;
     setMotorPWM( 0, 0, false );//stop immediatly and station check to see if voltage on pin
@@ -4183,7 +4190,7 @@ void Robot::checkPerimeterBoundary() {
     Console.print(millis());
     Console.println(" Rotation direction Left / Right change ");
   }
-  //bber17
+  //bber2
   if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_MOW_SPIRALE) ) {
     if (perimeterTriggerTime != 0) {
       if (millis() >= perimeterTriggerTime) {
@@ -4263,10 +4270,10 @@ void Robot::checkSonarPeriTrack() {
   nextTimeCheckSonar = millis() + 200;
 
   /*
-  if (millis() > timeToResetSpeedPeri) {
+    if (millis() > timeToResetSpeedPeri) {
     timeToResetSpeedPeri = 0; //brake the tracking during 6 secondes
     ActualSpeedPeriPWM = MaxSpeedperiPwm ;
-  }
+    }
   */
   if (sonarRightUse) sonarDistRight = readSensor(SEN_SONAR_RIGHT);
   else sonarDistRight = NO_ECHO;
@@ -4286,9 +4293,9 @@ void Robot::checkSonarPeriTrack() {
     //setBeeper(1000, 50, 50, 60, 60);
     Console.println("Sonar reduce speed on tracking for 2 meters");
     whereToResetSpeed =  totalDistDrive + 200; // when a speed tag is read it's where the speed is back to maxpwm value
-      
+
     nextTimeCheckSonar = millis() + 4000;  //wait before next reading
-   // timeToResetSpeedPeri = millis() + 10000; //brake the tracking during 10 secondes
+    // timeToResetSpeedPeri = millis() + 10000; //brake the tracking during 10 secondes
     ActualSpeedPeriPWM = MaxSpeedperiPwm * dockingSpeed / 100;
     trakBlockInnerWheel = 1; //don't want that a wheel reverse just before station check   /bber30
 
@@ -5249,13 +5256,12 @@ void Robot::loop()  {
             return;
           }
           else
-          { //bber20
+          { 
             if (millis() - stateStartTime > 10000) checkTimer(); //only check timer after 10 second to avoid restart before charging and check non stop after but real only 60 sec
           }
         }
         else
         {
-          //bber20
           Console.println("We are in station but ChargeVoltage is lost ??? ");
           setNextState(STATE_OFF, 0);
           return;

@@ -551,7 +551,7 @@ class Robot
     byte areaInMowing;              //it's the area in mowing nr
     boolean perimeterInside ;      // is inside perimeter?
     unsigned long perimeterTriggerTime; // time to trigger perimeter transition (timeout)
-    int perimeterTriggerTimeout;   // perimeter trigger timeout (ms)
+    int perimeterTriggerMinSmag;   // perimeter trigger minimum smag use on center of big area ,the Smag can be 200 and transition can occur
     unsigned long perimeterLastTransitionTime;
     int perimeterCounter ;         // counts perimeter transitions
     unsigned long nextTimePerimeter ;
@@ -680,7 +680,6 @@ class Robot
     byte stationRollAngle    ;    // charge station roll angle
     int stationForwDist    ;    // charge station forward distance cm
     byte stationCheckDist   ;    // charge station check distance cm
-    //bber20
     boolean UseBumperDock ;  //bumper is pressed when docking or not
     byte dockingSpeed ;  //speed docking is (percent of maxspeed) when sonar detect something while tracking
     unsigned long totalDistDrive;  //use to check when to leave the wire in start timer mode
@@ -704,6 +703,7 @@ class Robot
     byte consoleMode ;
     unsigned long nextTimeButtonCheck ;
     unsigned long nextTimeInfo ;
+    unsigned long nextTimePrintConsole;
     byte rollDir;
     unsigned long nextTimeButton ;
     unsigned long nextTimeErrorCounterReset;
@@ -766,7 +766,6 @@ class Robot
     virtual void deleteUserSettings();
     virtual void saveUserSettings();
     virtual void deleteRobotStats();
-    //bber22
     virtual void newTagFind();
 
     // other

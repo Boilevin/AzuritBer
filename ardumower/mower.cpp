@@ -132,7 +132,7 @@ Mower::Mower() {
 
   // ------ perimeter ---------------------------------
   perimeterUse       = 0;      // use perimeter?
-  perimeterTriggerTimeout = 0;      // perimeter trigger timeout when escaping from inside (ms)
+  perimeterTriggerMinSmag = 200;      // perimeter minimum smag to use on big area
   //perimeterOutRollTimeMax  = 2000;   // free
   //perimeterOutRollTimeMin = 750;    // free
   perimeterOutRevTime   = 2200;   // free
@@ -215,7 +215,6 @@ Mower::Mower() {
   stationRollAngle    = 45;    // charge station roll after reverse 
   stationForwDist    = 30;    // charge station accel distance cm
   stationCheckDist   = 2;    // charge station  check distance to be sure voltage is OK cm
-  //bber20
   UseBumperDock=true;  //bumper is pressed when docking or not
   dockingSpeed   =  60;   //speed docking is (percent of maxspeed) 
   

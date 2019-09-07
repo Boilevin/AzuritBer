@@ -330,7 +330,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->perimeter.timedOutIfBelowSmag;  //4
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterTriggerTimeout;
+    lineToSend = lineToSend + robot->perimeterTriggerMinSmag;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->trackingErrorTimeOut;
     lineToSend = lineToSend + ",";
@@ -1366,7 +1366,7 @@ void RpiRemote::readWrite_setting()
         robot->sonarTriggerBelow = val[1];
         robot->perimeterUse = val[2];
         robot->perimeter.timedOutIfBelowSmag = val[3];
-        robot->perimeterTriggerTimeout = val[4];
+        robot->perimeterTriggerMinSmag = val[4];
         robot->trackingErrorTimeOut = val[5];
         robot->motorTickPerSecond = val[6];
         robot->perimeterOutRevTime = val[7];

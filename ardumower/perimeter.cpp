@@ -235,25 +235,6 @@ void PerimeterClass::matchedFilter(byte idx) {
   sigcode = sigcode_diff;
   mag[idx] = corrFilter(sigcode, subSample, sigcode_size, samples, sampleCount - sigcode_size * subSample, filterQuality[idx]);
 
-  /*
-    unsigned long temp2 = 0;
-    unsigned long temp1 = 0;
-    unsigned long temp3 = 0;
-    temp1 = millis();
-    mag[idx] = corrFilter(sigcode, subSample, sigcode_size, samples, sampleCount - sigcode_size * subSample, filterQuality[idx]);
-    temp2 = millis();
-
-    temp3 = temp2 - temp1;
-    if (temp3 > 0)  {
-      Console.print(temp3);
-      Console.print(" mag ");
-      Console.println(mag[idx]);
-      mag[idx] = corrFilter(sigcode, subSample, sigcode_size, samples, sampleCount - sigcode_size * subSample, filterQuality[idx]);
-    }
-
-  */
-
-
   if ((idx == 0) && swapCoilPolarityLeft) mag[idx] *= -1;
   if ((idx == 1) && swapCoilPolarityRight) mag[idx] *= -1;
   // smoothed magnitude used for signal-off detection change from 1 % to 5 % for faster detection and possible use on center big area to avoid in/out transition
