@@ -1337,6 +1337,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     }
     else {
       if (robot->mowPatternName() == "WIRE") {
+        robot->totalDistDrive = 0;
         robot->statusCurr = TRACK_TO_START; //status change later into STATE_PERI_STOP_TOTRACK
         robot->setNextState(STATE_PERI_FIND, 0);
       }

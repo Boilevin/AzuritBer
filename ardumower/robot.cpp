@@ -1601,13 +1601,23 @@ void Robot::motorControlPerimeter() {
     lastTimeForgetWire = millis();
 
     if (millis() > perimeterLastTransitionTime + trackingErrorTimeOut) {
-      Console.println("Error: tracking error");
-      addErrorCounter(ERR_TRACKING);
-      setNextState(STATE_PERI_FIND, 0);
+      if (perimeterInside) {
+        Console.println("Tracking Fail but and we are inside, So start to find again the perimeter");
+        addErrorCounter(ERR_TRACKING);
+        setNextState(STATE_PERI_FIND, 0);
+      }
+      else
+      {
+        Console.println("Tracking Fail and we are outside, So stop all");
+        addErrorCounter(ERR_TRACKING);
+        setNextState(STATE_ERROR, 0);
+      }
+
     }
     return;
   }
-
+ 
+  
   if ((millis() - lastTimeForgetWire ) < trackingPerimeterTransitionTimeOut) {
     //PeriCoeffAccel move gently from 3 to 1 and so perimeterPID.y/PeriCoeffAccel increase during 3 secondes
     PeriCoeffAccel = (3000.00 - (millis() - lastTimeForgetWire)) / 1000.00 ;
@@ -1644,6 +1654,7 @@ void Robot::motorControlPerimeter() {
   {
     rightSpeedperi = max(0, min(ActualSpeedPeriPWM, ActualSpeedPeriPWM / 1.5   + perimeterPID.y));
     leftSpeedperi = max(0, min(ActualSpeedPeriPWM, ActualSpeedPeriPWM / 1.5  - perimeterPID.y));
+
     if (consoleMode == CONSOLE_TRACKING) {
       Console.print("FAST;");
       Console.print(millis());
@@ -1674,8 +1685,7 @@ void Robot::motorControlPerimeter() {
 
   if (abs(perimeterMag) < perimeterMagMaxValue / 4) { //250 can be replace by timedOutIfBelowSmag to be tested
     perimeterLastTransitionTime = millis(); //initialise perimeterLastTransitionTime if perfect sthraith line
-    //bber2  test if can avoid time out error when tracking
-    perimeter.lastInsideTime[0] = millis();
+
   }
 }
 
@@ -2470,7 +2480,7 @@ void Robot::readSensors() {
   }
 
 
-  if ((perimeterUse) && (millis() >= nextTimePerimeter)) {
+  if ((stateCurr != STATE_STATION) && (perimeterUse) && (millis() >= nextTimePerimeter)) {
     //bb
     nextTimePerimeter = millis() +  15; // 50
     if (perimeter.read2Coil) {
@@ -2504,9 +2514,10 @@ void Robot::readSensors() {
 
 
     if (perimeter.signalTimedOut(0) || ((perimeter.read2Coil) && perimeter.signalTimedOut(1) ))  {
-      //if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE))   { // all the other state are distance limited
-      //maybe timeout error if the tracking is perfect, the mower is so near the wire than the mag is near 0 (adjust the timedOutIfBelowSmag)
-      if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_PERI_TRACK) || (stateCurr == STATE_MOW_SPIRALE))   { // all the other state are distance limited
+      //bber2
+      if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE))   { // all the other state are distance limited
+      //need to find a way in tracking mode maybe timeout error if the tracking is perfect, the mower is so near the wire than the mag is near 0 (adjust the timedOutIfBelowSmag)
+      //if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_PERI_TRACK) || (stateCurr == STATE_MOW_SPIRALE))   { // all the other state are distance limited
         Console.println("Error: Timeout , perimeter too far away");
         addErrorCounter(ERR_PERIMETER_TIMEOUT);
         setNextState(STATE_ERROR, 0);
@@ -5256,7 +5267,7 @@ void Robot::loop()  {
             return;
           }
           else
-          { 
+          {
             if (millis() - stateStartTime > 10000) checkTimer(); //only check timer after 10 second to avoid restart before charging and check non stop after but real only 60 sec
           }
         }
@@ -5815,6 +5826,15 @@ void Robot::loop()  {
       break;
 
     case STATE_STATION_CHECK:
+     //bber3
+      if (statusCurr == MOW_WIRE) { //it is the last status
+        Console.print("Total distance drive ");
+        Console.print(totalDistDrive/100);
+        Console.println(" meters ");
+        Console.print("Total duration ");
+        Console.print((stateStartTime-millis())/1000);
+        Console.println(" secondes ");
+      }
       // check for charging voltage here after detect station
       if ((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft)) //move some CM to be sure the contact is OK
       {
