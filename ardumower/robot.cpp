@@ -2480,8 +2480,11 @@ void Robot::readSensors() {
   }
 
 
-  if ((stateCurr != STATE_STATION) && (perimeterUse) && (millis() >= nextTimePerimeter)) {
-    //bb
+  if ((stateCurr != STATE_STATION) && (stateCurr != STATE_STATION_CHARGING) && (perimeterUse) && (millis() >= nextTimePerimeter)) {
+    //bber2
+
+
+    
     nextTimePerimeter = millis() +  15; // 50
     if (perimeter.read2Coil) {
       perimeterMagRight = readSensor(SEN_PERIM_RIGHT);
@@ -2787,6 +2790,15 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_STATION_CHECK:
+    //bber3
+      if (statusCurr == WIRE_MOWING) { //it is the last status
+        Console.print("Total distance drive ");
+        Console.print(totalDistDrive/100);
+        Console.println(" meters ");
+        Console.print("Total duration ");
+        Console.print(int(millis()-stateStartTime)/1000);
+        Console.println(" secondes ");
+      }
       delayToReadVoltageStation = millis() + 1500; //the battery is read only each 500 ms so need a duration to be sure we have the last voltage
       //bber14 no accel here ?????
       UseAccelLeft = 0;
@@ -5826,15 +5838,7 @@ void Robot::loop()  {
       break;
 
     case STATE_STATION_CHECK:
-     //bber3
-      if (statusCurr == MOW_WIRE) { //it is the last status
-        Console.print("Total distance drive ");
-        Console.print(totalDistDrive/100);
-        Console.println(" meters ");
-        Console.print("Total duration ");
-        Console.print((stateStartTime-millis())/1000);
-        Console.println(" secondes ");
-      }
+     
       // check for charging voltage here after detect station
       if ((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft)) //move some CM to be sure the contact is OK
       {
