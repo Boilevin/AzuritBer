@@ -77,7 +77,7 @@ class RemoteControl
     int8_t perimeterCapture[RAW_SIGNAL_SAMPLE_SIZE];
     int perimeterCaptureIdx;
     float stringToFloat(String &s);
-
+    
     // generic
     void sendYesNo(int value);
     void sendOnOff(int value);

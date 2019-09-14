@@ -258,7 +258,7 @@ class Robot
     unsigned long nextTimeGPS ;
     unsigned long nextTimeCheckIfStuck ;
     float stuckIfGpsSpeedBelow ;
-    int gpsSpeedIgnoreTime ; // how long gpsSpeed is ignored when robot switches into a new STATE (in ms)
+    int gpsBaudrate ; 
     int robotIsStuckCounter ;
     // -------- odometry state --------------------------
     boolean odometryUse       ;       // use odometry?
@@ -369,7 +369,7 @@ class Robot
     unsigned long motorRightZeroTimeout;
     boolean rotateLeft;
     unsigned long nextTimeRotationChange;
-
+    unsigned long nextTimeSendTagToPi;
     unsigned long nextTimeMotorControl;
     unsigned long nextTimeMotorImuControl ;
 

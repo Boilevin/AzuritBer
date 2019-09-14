@@ -696,11 +696,12 @@ void RemoteControl::processRainMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("m06")) processSlider(pfodCmd, robot->maxTemperature, 1);
   sendRainMenu(true);
 }
-//bber35
+//bber5
 void RemoteControl::sendGPSMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.GPS RFID`1000"));
   serialPort->print(F("|q00~GPS Use(Need Reboot) "));
   sendYesNo(robot->gpsUse);
+  sendSlider("q03", F("GPS Baudrate"), robot->gpsBaudrate, "", 1 , 38400, 9600);
   serialPort->print(F("|q01~RFID Use : "));
   sendYesNo(robot->rfidUse);
   serialPort->print(F("|q02~Last Rfid : "));
@@ -711,6 +712,7 @@ void RemoteControl::sendGPSMenu(boolean update) {
 void RemoteControl::processGPSMenu(String pfodCmd) {
   if (pfodCmd == "q00") robot->gpsUse = !robot->gpsUse;
   else if (pfodCmd.startsWith("q01")) robot->rfidUse = !robot->rfidUse;
+  else if (pfodCmd.startsWith("q03")) processSlider(pfodCmd, robot->gpsBaudrate, 1);
   sendGPSMenu(true);
 }
 
@@ -1325,7 +1327,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
       //robot->mowPatternCurr = 1;
       robot->laneUseNr = 1;
       robot->rollDir = 1;
-      robot->whereToStart = 2;
+      robot->whereToStart = 1;
       robot->areaToGo = 1;
       robot->actualLenghtByLane = 40;
       robot->beaconToStart = 0;

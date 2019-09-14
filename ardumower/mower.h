@@ -144,9 +144,6 @@
 #define BLUETOOTH_PIN       1234
 
 #define GpsPort Serial1  // connected on P44 Wlan
-#define GPS_BAUDRATE  38400  // set value to 9600 for M6n marotronics shop or 19200 or 38400 for BN880 and M8N other module
-
-
 
 
 // ------- ultrasonic config ---------------------------------------------------------

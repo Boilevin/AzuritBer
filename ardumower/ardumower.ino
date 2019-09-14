@@ -7,9 +7,8 @@
  *      Connect DUE Native USB port to Raspberry Pi 
  *      
  *      --------------------------------- GPS ----------------------------------------------------
- *      GPS You need to change speed according to your module and connected to P44
- *      #define GPS_BAUDRATE  38400  // set to 9600 for marotronic module M6n ,19200 or 38400 for BN880,M8Nother module
- *      
+ *      GPS You need to change speed into pfod setting according to your module and connected to P44
+ *     
  *      ------------------------------ RASPBERRY -------------------------------------------------
  *      If Raspberry PI is not connected you need to change into mower.h
  *          #define Console Serial

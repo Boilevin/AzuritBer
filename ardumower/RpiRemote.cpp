@@ -476,7 +476,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->stuckIfGpsSpeedBelow;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->gpsSpeedIgnoreTime;
+    lineToSend = lineToSend + robot->gpsBaudrate;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->dropUse;
     lineToSend = lineToSend + ",";
@@ -1428,7 +1428,7 @@ void RpiRemote::readWrite_setting()
         robot->rainUse = val[3];
         robot->gpsUse = val[4];
         robot->stuckIfGpsSpeedBelow = val[5];
-        robot->gpsSpeedIgnoreTime = val[6];
+        robot->gpsBaudrate = val[6];
         robot->dropUse = val[7];
         robot->statsOverride = val[8];
         robot->bluetoothUse = val[9];

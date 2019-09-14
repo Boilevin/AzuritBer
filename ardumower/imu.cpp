@@ -311,10 +311,13 @@ void IMUClass::run() {
   mpu.dmpGetQuaternion(&q, fifoBuffer);
   mpu.dmpGetGravity(&gravity, &q);
   mpu.dmpGetYawPitchRoll(yprtest, &q, &gravity);
-  gyroAccYaw = yprtest[0];  // the Gyro Yaw very accurate but drift
+  
+  //bber4
+  //filter to avoid bad reading
   ypr.pitch = yprtest[1];
   ypr.roll = yprtest[2];
-
+  gyroAccYaw = yprtest[0];  // the Gyro Yaw very accurate but drift
+  
   // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
   readHMC5883L();
   //tilt compensed yaw ????????????
