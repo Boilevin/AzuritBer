@@ -19,10 +19,10 @@ if (os.name=='nt'):
 
 if (os.name=='posix'):
     print('Linux Platform')
-    myComPort = '/dev/ttyACM0'
+    #myComPort = '/dev/ttyACM0'
     myFrameWidth = 800
     myFrameHeight = 430
-    myBaudRate = 250000
+    #myBaudRate = 250000
     myOS="Linux"
     GpsConnectedOnPi=False
     GpsIsM6n=False
@@ -30,5 +30,6 @@ if (os.name=='posix'):
     DueConnectedOnPi=True
     AutoRecordBatCharging=True
     useDebugConsole=True
+    myCamAngle = 0 # Possible= 0, 90, 180, 270 
     
 

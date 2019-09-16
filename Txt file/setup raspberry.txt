@@ -43,6 +43,15 @@ you need to instal this:
 HOTSPOT  *********************************************************************************
 Follow this video:
 https://www.youtube.com/watch?v=XgcDipALFOc&t=37s
+
+If tou are connected over WIFI It's better to do this with the Pi connected on a TV using HDMI to see the Ip adress no issue with cable
+So:
+sudo apt install network-manager network-manager-gnome openvpn \openvpn-systemd-resolved network-manager-openvpn \network-manager-openvpn-gnome
+At the end of this process VNC is Kill ,The IP adress change to next one or other (Use the TV to see it)
+sudo apt purge openresolv dhcpcd5
+At the end of this process VNC is Kill ,The IP adress don't change but wait and retry
+sudo ln -sf /lib/systemd/resolv.conf /etc/resolv.conf
+Reboot and use TV ,mouse keyboard on PI or VNC if you can ?
 Set the wifi with this 2 setting value (near the end of the video)
 SSid ArduWifi
 Pass Ardumower1234

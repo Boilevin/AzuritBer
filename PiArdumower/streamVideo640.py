@@ -6,6 +6,7 @@ import logging
 import socketserver
 from threading import Condition
 from http import server
+from config import myCamAngle
 
 PAGE="""\
 <html>
@@ -81,6 +82,7 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
     output = StreamingOutput()
+    camera.rotation = myCamAngle
     camera.start_recording(output, format='mjpeg')
     try:
         address = ('', 8000)

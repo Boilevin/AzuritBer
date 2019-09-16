@@ -1164,12 +1164,7 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
         robot->whereToResetSpeed =  robot->totalDistDrive + robot->newtagDistance1; // when a speed tag is read it's where the speed is back to maxpwm value
         Console.print("Change speed for ");
         Console.print(robot->newtagDistance1);
-        Console.print(" centimeter   actual/Cible  ");
-        Console.print(robot->totalDistDrive);
-        Console.print(" / ");
-        Console.println(robot->whereToResetSpeed);
-        
-        
+        Console.println(" centimeters");
         
       }
 

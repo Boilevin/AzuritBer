@@ -539,7 +539,7 @@ int Mower::readSensor(char type) {
     // rtc--------------------------------------------------------------------------------------------------------
     case SEN_RTC:
       if (!readDS1307(datetime)) {
-        //Console.println("RTC data error!");
+        Console.println("RTC data error!");
         addErrorCounter(ERR_RTC_DATA);
         setNextState(STATE_ERROR, 0);
       }
@@ -575,7 +575,7 @@ void Mower::setActuator(char type, int value) {
     case ACT_USER_SW3: digitalWrite(pinUserSwitch3, value); break;
     case ACT_RTC:
       if (!setDS1307(datetime)) {
-        //Console.println("RTC comm error!");
+        Console.println("RTC comm error!");
         addErrorCounter(ERR_RTC_COMM);
         setNextState(STATE_ERROR, 0);
       }

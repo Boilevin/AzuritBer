@@ -928,7 +928,11 @@ void Robot::checkErrorCounter() {
   if (stateCurr != STATE_OFF) {
     for (int i = 0; i < ERR_ENUM_COUNT; i++) {
       // set to fatal error if any temporary error counter reaches 10
-      if (errorCounter[i] > 10) setNextState(STATE_ERROR, 0);
+      if (errorCounter[i] > 10) {
+        Console.print("Error Counter > 10 for counter num ");
+        Console.println(i);
+        setNextState(STATE_ERROR, 0);
+      }
     }
   }
 }
@@ -2529,7 +2533,7 @@ void Robot::readSensors() {
       if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE))   { // all the other state are distance limited
         //need to find a way in tracking mode maybe timeout error if the tracking is perfect, the mower is so near the wire than the mag is near 0 (adjust the timedOutIfBelowSmag)
         //if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_PERI_TRACK) || (stateCurr == STATE_MOW_SPIRALE))   { // all the other state are distance limited
-        Console.println("Error: Timeout , perimeter too far away");
+        Console.println("Error: perimeter too far away");
         addErrorCounter(ERR_PERIMETER_TIMEOUT);
         setNextState(STATE_ERROR, 0);
         return;
@@ -2806,6 +2810,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
         Console.print("Total duration ");
         Console.print(int(millis() - stateStartTime) / 1000);
         Console.println(" secondes ");
+        nextTimeTimer = millis() + 1200000; // only check again the timer after 20 minutes to avoid repetition
       }
       delayToReadVoltageStation = millis() + 1500; //the battery is read only each 500 ms so need a duration to be sure we have the last voltage
       //bber14 no accel here ?????
@@ -4543,8 +4548,8 @@ void Robot::readDHT22() {
   //read only the temperature when no motor control.
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  if ((DHT22Use) && (millis() > nextTimeReadDHT22)) { //read only each 10 Secondes
-    nextTimeReadDHT22 = nextTimeReadDHT22 + 10000;
+  if ((DHT22Use) && (millis() > nextTimeReadDHT22)) { //read only each 60 Secondes
+    nextTimeReadDHT22 = nextTimeReadDHT22 + 60000;
     humidityDht = dht.readHumidity();
     temperatureDht = dht.readTemperature();
     if (temperatureDht >= maxTemperature) {
@@ -4560,10 +4565,13 @@ void Robot::readDHT22() {
       return;
     }
     /*
+    //to check if the 8 minutes overload can be caused by dht 
+    if (developerActive) {
       Console.print(" Read DHT22 temperature : ");
       Console.print(temperatureDht);
       Console.print("   Humidity : ");
       Console.println(humidityDht);
+    }
     */
     if (isnan(humidityDht) || isnan(temperatureDht) ) {
       Console.println("Failed to read from DHT sensor!");
@@ -5731,7 +5739,7 @@ void Robot::loop()  {
       motorControlOdo();
       //bber17
       if (RollToInsideQty >= 10) {
-        Console.println("ERROR Mower is lost out the wire and can't find the signal Roll to inside occur more than 10 Time");
+        Console.println("ERROR Mower is lost out the wire and can't find the signal. Roll to inside occur more than 10 Time");
         setNextState(STATE_ERROR, rollDir);
         return;
       }
