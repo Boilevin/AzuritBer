@@ -188,9 +188,12 @@ Mower::Mower() {
   yawCiblePos = 90;
   yawCibleNeg = -90;
   DistBetweenLane = 38;
-  maxLenghtByLane = 9;
+  maxLenghtByLane = 9;  // distance to run in bylane before simulate a wire detection
   justChangeLaneDir = true;
   mowPatternCurr = MOW_LANES;
+  compassRollSpeedCoeff = 40; //speed used when the mower search the compass yaw it's percent of motorSpeedMaxRpm ,Avoid to roll to fast for a correct detection
+
+  
   // ------ model R/C ------------------------------------
   remoteUse         = 0;       // use model remote control (R/C)?
   // ------ battery -------------------------------------

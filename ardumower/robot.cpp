@@ -466,8 +466,8 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, sonarToFrontDist);
   eereadwrite(readflag, addr, maxTemperature);
   eereadwrite(readflag, addr, dockingSpeed);
-  //bber35
   eereadwrite(readflag, addr, rfidUse);
+  eereadwrite(readflag, addr, compassRollSpeedCoeff);
   if (readflag)
   {
     Console.print(F("UserSettings are read from EEprom Address : "));
@@ -665,7 +665,7 @@ void Robot::printSettingSerial() {
   Console.println(DistPeriObstacleRev);
   Console.print  (F("DistPeriOutForw                            : "));
   Console.println(DistPeriOutForw);
-  Console.print  (F("DistPeriObstacleForw                        : "));
+  Console.print  (F("DistPeriObstacleForw                       : "));
   Console.println(DistPeriObstacleForw);
   watchdogReset();
 
@@ -717,6 +717,9 @@ void Robot::printSettingSerial() {
   Console.println(delayBetweenTwoDmpAutocalib);
   Console.print  (F("maxDurationDmpAutocalib                    : "));
   Console.println(maxDurationDmpAutocalib);
+  Console.print  (F("compassRollSpeedCoeff                      : "));
+  Console.println(compassRollSpeedCoeff);
+  
   watchdogReset();
   // ------ model R/C -------------------------------------------------------------
   Console.println(F("---------- model R/C -----------------------------------------"));
@@ -798,7 +801,7 @@ void Robot::printSettingSerial() {
   Console.println(gpsUse, 1);
   Console.print  (F("stuckIfGpsSpeedBelow                       : "));
   Console.println(stuckIfGpsSpeedBelow);
-  Console.print  (F("gpsBaudrate                         : "));
+  Console.print  (F("gpsBaudrate                                : "));
   Console.println(gpsBaudrate);
   //bber35
   // ----- RFID ----------------------------------------------------------------------
@@ -3606,7 +3609,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
         UseAccelRight = 0;
         UseBrakeRight = 1;
         motorLeftSpeedRpmSet = motorSpeedMaxRpm ;
-        motorRightSpeedRpmSet = -motorLeftSpeedRpmSet;
+        motorRightSpeedRpmSet = -motorSpeedMaxRpm;
         stateEndOdometryRight = odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
         stateEndOdometryLeft = odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
 
@@ -3616,7 +3619,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
         UseAccelRight = 1;
         UseBrakeRight = 0;
         motorRightSpeedRpmSet = motorSpeedMaxRpm ;
-        motorLeftSpeedRpmSet = -motorRightSpeedRpmSet;
+        motorLeftSpeedRpmSet = -motorSpeedMaxRpm;
         stateEndOdometryRight = odometryRight + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
         stateEndOdometryLeft = odometryLeft - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
       }
@@ -3633,8 +3636,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 2 ;
-      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 2;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm*compassRollSpeedCoeff/100;
+      motorRightSpeedRpmSet = -motorSpeedMaxRpm*compassRollSpeedCoeff/100;
       stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm * 2 * PI * odometryWheelBaseCm );
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 2 *  PI * odometryWheelBaseCm );
 
@@ -3687,8 +3690,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       if (distancePI(imu.comYaw, yawCiblePos * PI / 180) > 0) { //rotate in the nearest direction
         actualRollDirToCalibrate = RIGHT;
         Console.println(" >>> >>> >>> >>> >>> >>> 0");
-        motorLeftSpeedRpmSet = motorSpeedMaxRpm / 2 ;
-        motorRightSpeedRpmSet = -motorSpeedMaxRpm / 2;
+        motorLeftSpeedRpmSet = motorSpeedMaxRpm*compassRollSpeedCoeff/100 ;
+        motorRightSpeedRpmSet = -motorSpeedMaxRpm*compassRollSpeedCoeff/100;
         stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
         stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
       }
@@ -3696,8 +3699,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       {
         actualRollDirToCalibrate = LEFT;
         Console.println(" <<< <<< <<< <<< <<< << 0");
-        motorLeftSpeedRpmSet = -motorSpeedMaxRpm / 2 ;
-        motorRightSpeedRpmSet = motorSpeedMaxRpm / 2;
+        motorLeftSpeedRpmSet = -motorSpeedMaxRpm*compassRollSpeedCoeff/100 ;
+        motorRightSpeedRpmSet = motorSpeedMaxRpm*compassRollSpeedCoeff/100;
         stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
         stateEndOdometryLeft = odometryLeft - (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
       }

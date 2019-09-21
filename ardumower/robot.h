@@ -499,7 +499,7 @@ class Robot
     boolean needDmpAutoCalibration;
     //float lastLaneYawMedian; //use to know the last lane direction in bylaneodo mowing
     float YawActualDeg;
-
+    byte compassRollSpeedCoeff;
     RunningMedian compassYawMedian = RunningMedian(60);
     RunningMedian accelGyroYawMedian = RunningMedian(60);
     //bb 5
