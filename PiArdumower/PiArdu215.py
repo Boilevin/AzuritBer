@@ -103,7 +103,7 @@ class PlotterKst_class(object):
 
     def start(self,fileNameKst):
         self.stop()
-        self.PlotterKst=subprocess.Popen(["kst2",fileNameKst,"shell=True","stdout=subprocess.PIPE"])
+        self.PlotterKst=subprocess.Popen(["kst2",fileNameKst,"show=maximize","shell=True","stdout=subprocess.PIPE"])
         
     def stop(self):
         if self.PlotterKst:
@@ -151,11 +151,11 @@ def find_rfid_tag():
             
         if(mymower.newtagToDo=="SPEED"): #find the station for example
             
-            mower.speedIsReduce=True
-            mower.timeToResetSpeed=time.time()+5  #reduce speed for 5 secondes
-            consoleInsertText('RFID detect reduce speed Tag :' + '\n')
-            consoleInsertText('Set new speed: %s' % (mymower.newtagSpeed)+ '\n')
-            send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
+            #mower.speedIsReduce=True
+            #mower.timeToResetSpeed=time.time()+5  #reduce speed for 5 secondes
+            consoleInsertText('RFID change tracking speed'+'\n')
+            send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
+            send_var_message('w','ActualSpeedPeriPWM',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
             
         
         if((mymower.newtagToDo=="NEW_AREA")):
@@ -247,11 +247,11 @@ tk_lastRfidFind=tk.DoubleVar()
 
 """variable use into refreh plot"""
 tk_millis=tk.IntVar()
-tk_motorLeftSenseCurrent=tk.DoubleVar()
-tk_motorRightSenseCurrent=tk.DoubleVar()
+tk_motorLeftPower=tk.DoubleVar()
+tk_motorRightPower=tk.DoubleVar()
 tk_motorLeftPWMCurr=tk.IntVar()
 tk_motorRightPWMCurr=tk.IntVar()
-tk_motorMowSense=tk.DoubleVar()
+tk_motorMowPower=tk.DoubleVar()
 tk_motorMowPWMCurr=tk.IntVar()
 #tk_batVoltage=tk.IntVar()
 tk_chgVoltage=tk.DoubleVar()
@@ -317,11 +317,13 @@ class mower:
         mower.statsBatteryChargingCapacityTrip=0
         mower.statsBatteryChargingCapacityTotal=0
         mower.statsBatteryChargingCapacityAverage=0
-        mower.motorLeftSenseCurrent=0
-        mower.motorRightSenseCurrent=0
+        #mower.motorLeftSenseCurrent=0
+        #mower.motorRightSenseCurrent=0
+        mower.motorLeftPower=0
+        mower.motorRightPower=0
         mower.motorLeftPWMCurr=0
         mower.motorRightPWMCurr=0
-        mower.motorMowSense=0
+        mower.motorMowPower=0
         mower.motorMowPWMCurr=0
         mower.mowPatternCurr=0
         mower.Dht22Temp=0
@@ -464,7 +466,7 @@ def checkSerial():  #the main loop is that
         
     if ((mower.speedIsReduce) & (time.time() > mower.timeToResetSpeed)):
         mower.speedIsReduce=False
-        send_var_message('w','motorSpeedMaxPwm',''+str(myRobot.motorSpeedMaxPwm)+'','0','0','0','0','0','0','0')
+        send_var_message('w','MaxSpeedperiPwm',''+str(myRobot.MaxSpeedperiPwm)+'','0','0','0','0','0','0','0')
     if useDebugConsole:
         txtRecu.delete('5000.0',tk.END) #keep only  lines
         txtSend.delete('5000.0',tk.END) #keep only  lines
@@ -596,40 +598,41 @@ def decode_message(message):  #decode the nmea message
                 global firstplotMotx
                 
                 mymower.millis=int(message.millis)
-                mymower.motorLeftSenseCurrent=message.motorLeftSenseCurrent
-                mymower.motorRightSenseCurrent=message.motorRightSenseCurrent
+                #time.localtime()
+                mymower.motorLeftPower=message.motorLeftPower
+                mymower.motorRightPower=message.motorRightPower
                 mymower.motorLeftPWMCurr=message.motorLeftPWMCurr
                 mymower.motorRightPWMCurr=message.motorRightPWMCurr
                 mymower.batVoltage=message.batVoltage
                 if firstplotMotx==0:
                     firstplotMotx=int(mymower.millis)
                 tk_millis.set(mymower.millis)
-                tk_motorLeftSenseCurrent.set(mymower.motorLeftSenseCurrent)
-                tk_motorRightSenseCurrent.set(mymower.motorRightSenseCurrent)
+                tk_motorLeftPower.set(mymower.motorLeftPower)
+                tk_motorRightPower.set(mymower.motorRightPower)
                 tk_motorLeftPWMCurr.set(mymower.motorLeftPWMCurr)
                 tk_motorRightPWMCurr.set(mymower.motorRightPWMCurr)
 
-                f=open(cwd + "/log/PlotMot.txt",'a+')
-                f.write("{};{};{};{};{}\n".format((int(mymower.millis)-firstplotMotx)/1000,float(mymower.motorLeftSenseCurrent) , float(mymower.motorRightSenseCurrent),float(mymower.motorLeftPWMCurr) , float(mymower.motorRightPWMCurr)))
+                f=open(cwd + "/plot/PlotMot.txt",'a+')
+                f.write("{};{};{};{};{}\n".format((int(mymower.millis)-firstplotMotx)/1000,float(mymower.motorLeftPower) , float(mymower.motorRightPower),float(mymower.motorLeftPWMCurr) , float(mymower.motorRightPWMCurr)))
                 f.close()
                 
             if message.sentence_type =='MOW': #to refresh the plot page of motor mow
                 global firstplotMowx
                 
                 mymower.millis=int(message.millis)
-                mymower.motorMowSense=message.motorMowSense
+                mymower.motorMowPower=message.motorMowPower
                 mymower.motorMowPWMCurr=message.motorMowPWMCurr
                 mymower.batVoltage=message.batVoltage
                 
                 if firstplotMowx==0:
                     firstplotMowx=int(mymower.millis)
                 tk_millis.set(mymower.millis)
-                tk_motorMowSense.set(mymower.motorMowSense)
+                tk_motorMowPower.set(mymower.motorMowPower)
                 tk_motorMowPWMCurr.set(mymower.motorMowPWMCurr)
                 tk_batVoltage.set(mymower.batVoltage)
 
-                f=open(cwd + "/log/PlotMow.txt",'a+')
-                f.write("{};{};{}\n".format((int(mymower.millis)-firstplotMowx)/1000,float(mymower.motorMowSense) , float(mymower.motorMowPWMCurr)))
+                f=open(cwd + "/plot/PlotMow.txt",'a+')
+                f.write("{};{};{}\n".format((int(mymower.millis)-firstplotMowx)/1000,float(mymower.motorMowPower) , float(mymower.motorMowPWMCurr)))
                 f.close()
                
                 
@@ -648,7 +651,7 @@ def decode_message(message):  #decode the nmea message
                 tk_chgSense.set(mymower.chgSense)
                 tk_batVoltage.set(mymower.batVoltage)
                 
-                f=open(cwd + "/log/PlotBat.txt",'a+')
+                f=open(cwd + "/plot/PlotBat.txt",'a+')
                 f.write("{};{};{};{}\n".format((int(mymower.millis)-firstplotBatx)/1000,float(mymower.chgVoltage) , float(mymower.chgSense), float(mymower.batVoltage)))
                 f.close()
 
@@ -668,7 +671,7 @@ def decode_message(message):  #decode the nmea message
                 tk_perimeterMag.set(mymower.perimeterMag)
                 tk_perimeterMagRight.set(mymower.perimeterMagRight)
                 
-                f=open(cwd + "/log/PlotPeri.txt",'a+')
+                f=open(cwd + "/plot/PlotPeri.txt",'a+')
                 f.write("{};{};{}\n".format((int(mymower.millis)-firstplotPerx)/1000,float(mymower.perimeterMag) , float(mymower.perimeterMagRight)))
                 f.close()
          
@@ -1189,17 +1192,19 @@ def BtnMowPlotStopRec_click():
     
     send_req_message('MOW','1','0','0','0','0','0',) #arduino stop sending data
     
-    filename=cwd + "/log/Plotmow" + time.strftime("%Y%m%d%H%M") + ".CSV"
+    filename=cwd + "/plot/Plotmow" + time.strftime("%Y%m%d%H%M") + ".CSV"
     try:  #avoid error if file not exit 
-        os.rename(cwd + "/log/PlotMow.txt",filename) #keep a copy of the plot and clear the last kst file
+        os.rename(cwd + "/plot/PlotMow.txt",filename) #keep a copy of the plot and clear the last kst file
+        messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
+        print("Error when rename file ")
         pass
     
     
 
     """recreate an empty txt file to have correct auto legend into the graph """
-    f=open(cwd + "/log/PlotMow.txt",'w')
-    f.write("{};{};{}\n".format("Time","motorMowSense","motorMowPWMCurr"))
+    f=open(cwd + "/plot/PlotMow.txt",'w')
+    f.write("{};{};{}\n".format("Time","motorMowPower","motorMowPWMCurr"))
     f.write("{};{};{}\n".format("0","0","0"))
     f.close()
     
@@ -1215,14 +1220,15 @@ def BtnPeriPlotStopRec_click():
     
     send_req_message('PERI','1','0','0','0','0','0',)
     
-    filename=cwd + "/log/PlotPeri" + time.strftime("%Y%m%d%H%M") + ".CSV"
+    filename=cwd + "/plot/PlotPeri" + time.strftime("%Y%m%d%H%M") + ".CSV"
     try:
-        os.rename(cwd + "/log/PlotPeri.txt",filename) #keep a copy of the plot and clear the last kst file
-        messagebox.showinfo('Info',"File " + filename + " created in log directory")
+        os.rename(cwd + "/plot/PlotPeri.txt",filename) #keep a copy of the plot and clear the last kst file
+        messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
+        
         pass
     """recreate an empty txt file to have correct auto legend into the graph """
-    f=open(cwd + "/log/PlotPeri.txt",'w')
+    f=open(cwd + "/plot/PlotPeri.txt",'w')
     f.write("{};{};{}\n".format("Time","perimeterMag","perimeterMagRight"))
     f.write("{};{};{}\n".format("0","0","0"))
     f.close()
@@ -1240,16 +1246,16 @@ def BtnBatPlotStopRec_click():
     
     send_req_message('BAT','1','0','0','0','0','0',)
     
-    filename=cwd + "/log/PlotBattery" + time.strftime("%Y%m%d%H%M") + ".CSV"
+    filename=cwd + "/plot/PlotBattery" + time.strftime("%Y%m%d%H%M") + ".CSV"
     try:
-        os.rename(cwd + "/log/PlotBat.txt",filename) #keep a copy of the plot and clear the last kst file
+        os.rename(cwd + "/plot/PlotBat.txt",filename) #keep a copy of the plot and clear the last kst file
         #//bber17
         if(mymower.autoRecordBatChargeOn==False): #it's not the auto record so send a message
-            messagebox.showinfo('Info',"File " + filename + " created in log directory")
+            messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
         pass
     """recreate an empty txt file to have correct auto legend into the graph """
-    f=open(cwd + "/log/PlotBat.txt",'w')
+    f=open(cwd + "/plot/PlotBat.txt",'w')
     f.write("{};{};{};{}\n".format("Time","chgVoltage","chgSense","batVoltage"))
     f.write("{};{};{};{}\n".format("0","0","0","0"))
     f.close()
@@ -1269,15 +1275,15 @@ def BtnMotPlotStopRec_click():
     firstplotMotx=0
     motPlotterKst.stop() #close the kst prog
     send_req_message('MOT','1','0','0','0','0','0',)
-    filename=cwd + "/log/PlotMotor" + time.strftime("%Y%m%d%H%M") + ".CSV"
+    filename=cwd + "/plot/PlotMotor" + time.strftime("%Y%m%d%H%M") + ".CSV"
     try:
-        os.rename(cwd + "/log/PlotMot.txt",filename) #keep a copy of the plot and clear the last kst file
-        messagebox.showinfo('Info',"File " + filename + " created in log directory")
+        os.rename(cwd + "/plot/PlotMot.txt",filename) #keep a copy of the plot and clear the last kst file
+        messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
         pass
     """recreate an empty txt file to have correct auto legend into the graph """
-    f=open(cwd + "/log/PlotMot.txt",'w')
-    f.write("{};{};{};{};{}\n".format("Time","motorLeftSenseCurrent","motorRightSenseCurrent","motorLeftPWMCurr","motorRightPWMCurr"))
+    f=open(cwd + "/plot/PlotMot.txt",'w')
+    f.write("{};{};{};{};{}\n".format("Time","motorLeftPower","motorRightPower","motorLeftPWMCurr","motorRightPWMCurr"))
     f.write("{};{};{};{};{}\n".format("0","0","0","0","0"))
     f.close()
 
@@ -1919,7 +1925,12 @@ except:
 try:
     if DueConnectedOnPi :
         if myOS == "Linux":
-            Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=0)
+            if os.path.exists('/dev/ttyACM0') == True:
+                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=0)
+                print("Find Serial on ttyACM0")
+            if os.path.exists('/dev/ttyACM1') == True:
+                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=0)
+                print("Find Serial on ttyACM1")
         else:
             Due_Serial = serial.Serial('COM9',115200,timeout=0)
             
@@ -2631,7 +2642,7 @@ Frame1.place(x=10, y=20, height=150, width=130)
 tk.Label(Frame1,text="MOW PATTERN",fg='green').pack(side='top',anchor='w')
 RdBtn_Random=tk.Radiobutton(Frame1, text="Random", variable=tk_mowingPattern, value=0).pack(side='top',anchor='w')
 RdBtn_ByLane=tk.Radiobutton(Frame1, text="By Lane", variable=tk_mowingPattern, value=1).pack(side='top',anchor='w')
-RdBtn_Perimeter=tk.Radiobutton(Frame1, text="Perimeter", variable=tk_mowingPattern, value=2).pack(side='top',anchor='w')
+RdBtn_Perimeter=tk.Radiobutton(Frame1, text="Wire", variable=tk_mowingPattern, value=2).pack(side='top',anchor='w')
 ButtonStartMow = tk.Button(AutoPage, image=imgstartMow, command = ButtonStartMow_click)
 ButtonStartMow.place(x=130,y=0,width=100, height=130)
 Buttonhome = tk.Button(AutoPage, image=imgHome, command = button_home_click)
@@ -2864,11 +2875,11 @@ SldMainWheelRefresh = tk.Scale(Frame12, from_=1, to=10, label='Refresh Rate per 
 SldMainWheelRefresh.place(x=70,y=0,width=250, height=50)
 
 
-tk.Label(Frame12, text='Sence',fg='green').place(x=400,y=0)
+tk.Label(Frame12, text='Power',fg='green').place(x=400,y=0)
 tk.Label(Frame12, text='Left',fg='green').place(x=350,y=15)
-tk.Label(Frame12, textvariable=tk_motorLeftSenseCurrent).place(x=400,y=15)
+tk.Label(Frame12, textvariable=tk_motorLeftPower).place(x=400,y=15)
 tk.Label(Frame12, text='Right',fg='green').place(x=350,y=35)
-tk.Label(Frame12, textvariable=tk_motorRightSenseCurrent).place(x=400,y=35)
+tk.Label(Frame12, textvariable=tk_motorRightPower).place(x=400,y=35)
 tk.Label(Frame12, text='PWM',fg='green').place(x=550,y=0)
 tk.Label(Frame12, textvariable=tk_motorLeftPWMCurr).place(x=550,y=15)
 tk.Label(Frame12, textvariable=tk_motorRightPWMCurr).place(x=550,y=35)
@@ -2885,8 +2896,8 @@ BtnMowPlotStopRec.place(x=0,y=25, height=25, width=60)
 SldMainMowRefresh = tk.Scale(Frame13, from_=1, to=10, label='Refresh Rate per second',relief=tk.SOLID,orient='horizontal')
 SldMainMowRefresh.place(x=70,y=0,width=250, height=50)
 
-tk.Label(Frame13, text='Sense',fg='green').place(x=400,y=0)
-tk.Label(Frame13, textvariable=tk_motorMowSense).place(x=400,y=15)
+tk.Label(Frame13, text='Power',fg='green').place(x=400,y=0)
+tk.Label(Frame13, textvariable=tk_motorMowPower).place(x=400,y=15)
 tk.Label(Frame13, text='PWM',fg='green').place(x=550,y=0)
 tk.Label(Frame13, textvariable=tk_motorMowPWMCurr).place(x=550,y=15)
 
@@ -2955,6 +2966,10 @@ LabInfoline = tk.Label(InfoPage, textvariable=Infoline5)
 LabInfoline.place(x=10,y=130, height=25, width=300)
 ButtonBackHome = tk.Button(InfoPage, image=imgBack, command = ButtonBackToMain_click)
 ButtonBackHome.place(x=680, y=280, height=120, width=120)
+def ButtonReboot_click():
+    print("reboot")
+ButtonReboot = tk.Button(InfoPage, image=imgBack, command = ButtonReboot_click)
+ButtonReboot.place(x=100, y=280, height=120, width=120)
 
 #myWindows.loadPageInfo()
 """ THE GPS PAGE ***************************************************"""
@@ -3093,7 +3108,7 @@ def OnClick(app):
         txtTagDist2.insert('1.0', rfid_list[tree.item(item,"text")][7])
       
     except:
-        print("click on correct line")
+        print("Please click on correct line")
 
 
     
@@ -3147,18 +3162,21 @@ def save_rfid():
 def del_rfid_tag():
     curr = tree.focus()
     if '' == curr: return
-    search=txtTagNr.get("1.0",'end-1c')
-    
+    #search=txtTagNr.get("1.0",'end-1c')
+    search_code=txtTagNr.get("1.0",'end-1c')
+    search_status=txtTagMowerState.get("1.0",'end-1c')
+ 
     for i in range(0,len(rfid_list)):
-        if rfid_list[i][0]==search:
+        if (str(rfid_list[i][0])== str(search_code)) & (str(rfid_list[i][1])== str(search_status)):
             for value in rfid_list[:]:
-                if value[0] == search:
+                if (value[0] == search_code) & (value[1] == search_status):
                     rfid_list.remove(value)
+                    print("remov")
                 
             break
     
     rebuild_treeview()
-
+        
 
 def add_rfid_tag():
     #print(rfid_list)
@@ -3637,6 +3655,7 @@ Statustext.place(x=240,y=400, height=25, width=400)
 ################## DESACTIVATE THE BT TO SAVE BATTERY
 #subprocess.call(["rfkill","block","bluetooth"])
 subprocess.Popen("sudo rfkill block bluetooth", shell=True)
+subprocess.Popen("sudo iw wlan0 set power_save off", shell=True)
 #subprocess.Popen("sudo rfkill block wifi", shell=True)
 #sudo rfkill block wifi
 #sudo rfkill unblock wifi
@@ -3685,7 +3704,6 @@ read_all_setting()
 read_time_setting()
 send_req_message('PERI','1000','1','1','0','0','0',)
 BtnGpsRecordStop_click()
-
 
 
 

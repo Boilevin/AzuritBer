@@ -129,7 +129,7 @@ Robot::Robot() {
   motorMowPWMCurr = 0;
   motorMowSenseADC = 0;
   motorMowSenseCurrent  = 0;
-  motorMowSense = 0;
+  motorMowPower = 0;
   motorMowSenseCounter = 0;
   motorMowSenseErrorCounter = 0;
   motorMowRpmCurr = 0;
@@ -719,7 +719,7 @@ void Robot::printSettingSerial() {
   Console.println(maxDurationDmpAutocalib);
   Console.print  (F("compassRollSpeedCoeff                      : "));
   Console.println(compassRollSpeedCoeff);
-  
+
   watchdogReset();
   // ------ model R/C -------------------------------------------------------------
   Console.println(F("---------- model R/C -----------------------------------------"));
@@ -940,6 +940,21 @@ void Robot::checkErrorCounter() {
   }
 }
 
+
+void Robot::autoReboot() {
+  //this feature use the watchdog to perform a restart of the due
+  if (RaspberryPIUse) {
+    Console.println(F("Due reset after 1 secondes, send a command to Pi for restart also"));
+    MyRpi.sendCommandToPi("RestartPi");
+  }
+  else
+  {
+    Console.println(F("Due reset after 1 secondes"));
+  }
+  delay(1000);
+  watchdogReset();
+  delay(5000);
+}
 
 // ---- motor RPM (interrupt) --------------------------------------------------------------
 // mower motor RPM driver
@@ -2076,7 +2091,7 @@ void Robot::printInfo(Stream & s) {
       Streamprint(s, "spd %4d %4d %4d ", (int)motorLeftSpeedRpmSet, (int)motorRightSpeedRpmSet, (int)motorMowRpmCurr);
       if (consoleMode == CONSOLE_SENSOR_VALUES) {
         // sensor values
-        Streamprint(s, "sen %4d %4d %4d ", (int)motorLeftPower, (int)motorRightPower, (int)motorMowSense);
+        Streamprint(s, "sen %4d %4d %4d ", (int)motorLeftPower, (int)motorRightPower, (int)motorMowPower);
         Streamprint(s, "bum %4d %4d ", bumperLeft, bumperRight);
         Streamprint(s, "dro %4d %4d ", dropLeft, dropRight);                                                                                      // Dropsensor - Absturzsensor
         Streamprint(s, "son %4d %4d %4d ", sonarDistLeft, sonarDistCenter, sonarDistRight);
@@ -2472,12 +2487,12 @@ void Robot::readSensors() {
     if (batVoltage > 8) {
       motorRightPower = motorRightSenseCurrent * batVoltage / 1000;  // conversion to power in Watt
       motorLeftPower  = motorLeftSenseCurrent  * batVoltage / 1000;
-      motorMowSense   = motorMowSenseCurrent   * batVoltage / 1000;
+      motorMowPower   = motorMowSenseCurrent   * batVoltage / 1000;
     }
     else {
       motorRightPower = motorRightSenseCurrent * batFull / 1000;  // conversion to power in Watt in absence of battery voltage measurement
       motorLeftPower  = motorLeftSenseCurrent  * batFull / 1000;
-      motorMowSense   = motorMowSenseCurrent   * batFull / 1000;
+      motorMowPower   = motorMowSenseCurrent   * batFull / 1000;
     }
 
     if ((millis() - lastMotorMowRpmTime) >= 500) {
@@ -3636,8 +3651,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorSpeedMaxRpm*compassRollSpeedCoeff/100;
-      motorRightSpeedRpmSet = -motorSpeedMaxRpm*compassRollSpeedCoeff/100;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm * compassRollSpeedCoeff / 100;
+      motorRightSpeedRpmSet = -motorSpeedMaxRpm * compassRollSpeedCoeff / 100;
       stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm * 2 * PI * odometryWheelBaseCm );
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 2 *  PI * odometryWheelBaseCm );
 
@@ -3690,8 +3705,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       if (distancePI(imu.comYaw, yawCiblePos * PI / 180) > 0) { //rotate in the nearest direction
         actualRollDirToCalibrate = RIGHT;
         Console.println(" >>> >>> >>> >>> >>> >>> 0");
-        motorLeftSpeedRpmSet = motorSpeedMaxRpm*compassRollSpeedCoeff/100 ;
-        motorRightSpeedRpmSet = -motorSpeedMaxRpm*compassRollSpeedCoeff/100;
+        motorLeftSpeedRpmSet = motorSpeedMaxRpm * compassRollSpeedCoeff / 100 ;
+        motorRightSpeedRpmSet = -motorSpeedMaxRpm * compassRollSpeedCoeff / 100;
         stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
         stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
       }
@@ -3699,8 +3714,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       {
         actualRollDirToCalibrate = LEFT;
         Console.println(" <<< <<< <<< <<< <<< << 0");
-        motorLeftSpeedRpmSet = -motorSpeedMaxRpm*compassRollSpeedCoeff/100 ;
-        motorRightSpeedRpmSet = motorSpeedMaxRpm*compassRollSpeedCoeff/100;
+        motorLeftSpeedRpmSet = -motorSpeedMaxRpm * compassRollSpeedCoeff / 100 ;
+        motorRightSpeedRpmSet = motorSpeedMaxRpm * compassRollSpeedCoeff / 100;
         stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
         stateEndOdometryLeft = odometryLeft - (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
       }
@@ -3996,11 +4011,11 @@ void Robot::checkCurrent() {
   if (millis() < nextTimeCheckCurrent) return;
   nextTimeCheckCurrent = millis() + 100;
   if (statusCurr == NORMAL_MOWING) {  //do not start the spirale if in tracking and motor detect high grass
-    if (motorMowSense >= 0.8 * motorMowPowerMax) {
+    if (motorMowPower >= 0.8 * motorMowPowerMax) {
       spiraleNbTurn = 0;
       halfLaneNb = 0;
       highGrassDetect = true;
-      Console.println("Warning  motorMowSense >= 0.8 * motorMowPowerMax ");
+      Console.println("Warning  motorMowPower >= 0.8 * motorMowPowerMax ");
       ////  http://forums.parallax.com/discussion/comment/1326585#Comment_1326585
     }
     else {
@@ -4012,11 +4027,11 @@ void Robot::checkCurrent() {
     }
   }
 
-  // if (motorMowSense >= motorMowPowerMax)
-  if ((motorMowEnable) && (motorMowSense >= motorMowPowerMax))
+  // if (motorMowPower >= motorMowPowerMax)
+  if ((motorMowEnable) && (motorMowPower >= motorMowPowerMax))
   {
     motorMowSenseCounter++;
-    Console.print("Warning  motorMowSense >= motorMowPowerMax and Counter time is ");
+    Console.print("Warning  motorMowPower >= motorMowPowerMax and Counter time is ");
     Console.println(motorMowSenseCounter);
   }
   else
@@ -4035,7 +4050,7 @@ void Robot::checkCurrent() {
   //need to check this
   if (motorMowSenseCounter >= 10) { //ignore motorMowPower for 1 seconds
     motorMowEnable = false;
-    Console.println("Motor mow current overload. Motor STOP and try to start again after 1 minute");
+    Console.println("Motor mow power overload. Motor STOP and try to start again after 1 minute");
     addErrorCounter(ERR_MOW_SENSE);
     lastTimeMotorMowStuck = millis();
   }
@@ -4043,14 +4058,14 @@ void Robot::checkCurrent() {
   //bb add test current in manual mode and stop immediatly
   if (statusCurr == MANUAL) {
     if (motorLeftPower >= 0.8 * motorPowerMax) {
-      Console.print("Motor Left current is 80 % of the max, value --> ");
+      Console.print("Motor Left power is 80 % of the max, value --> ");
       Console.println(motorLeftPower);
       setMotorPWM( 0, 0, false );
       setNextState(STATE_OFF, 0);
 
     }
     if (motorRightPower >= 0.8 * motorPowerMax) {
-      Console.print("Motor Right current is 80 % of the max, value --> ");
+      Console.print("Motor Right power is 80 % of the max, value --> ");
       Console.println(motorRightPower);
       setMotorPWM( 0, 0, false );
       setNextState(STATE_OFF, 0);
@@ -4069,7 +4084,7 @@ void Robot::checkCurrent() {
       motorRightSenseCounter++;
       setBeeper(1000, 50, 50, 200, 100);
       setMotorPWM( 0, 0, false );
-      Console.print("Motor Right current is 80 % of the max, value --> ");
+      Console.print("Motor Right power is 80 % of the max, value --> ");
       Console.println(motorRightPower);
 
       if (stateCurr != STATE_ERROR) {
@@ -4088,7 +4103,7 @@ void Robot::checkCurrent() {
       //setMotorPWM( 0, 0, false );
       //addErrorCounter(ERR_MOTOR_RIGHT);
       //setNextState(STATE_ERROR, 0);
-      Console.print("Warning: Motor Right current over 100% , Max possible 10 time in 1 seconde. Actual count --> ");
+      Console.print("Warning: Motor Right power over 100% , Max possible 10 time in 1 seconde. Actual count --> ");
       Console.println(motorRightSenseCounter);
 
     }
@@ -4101,8 +4116,9 @@ void Robot::checkCurrent() {
       motorLeftSenseCounter++;
       setBeeper(1000, 50, 50, 100, 50);
       setMotorPWM( 0, 0, false );
-      Console.print("Motor Left current is 80 % of the max, value --> ");
+      Console.print("Motor Left power is 80 % of the max, value --> ");
       Console.println(motorLeftPower);
+
       if (stateCurr != STATE_ERROR) {
         if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
         else reverseOrBidir(RIGHT);
@@ -4119,19 +4135,19 @@ void Robot::checkCurrent() {
       //setMotorPWM( 0, 0, false );
       //addErrorCounter(ERR_MOTOR_LEFT);
       //setNextState(STATE_ERROR, 0);
-      Console.print("Warning: Motor Left current over 100% , Max possible 10 time in 1 seconde. Actual count --> ");
+      Console.print("Warning: Motor Left power over 100% , Max possible 10 time in 1 seconde. Actual count --> ");
       Console.println(motorLeftSenseCounter);
     }
     //final test on the counter to generate the error and stop the mower
     if (motorLeftSenseCounter >= 10) { //the motor is stuck for more than 1 seconde 10 * 100 ms go to error.
-      Console.print("Fatal Error: Motor Left current over 100% for more than 1 seconde last power --> ");
+      Console.print("Fatal Error: Motor Left power over 100% for more than 1 seconde last power --> ");
       Console.println(motorLeftPower);
       addErrorCounter(ERR_MOTOR_LEFT);
       setMotorPWM( 0, 0, false );
       setNextState(STATE_ERROR, 0);
     }
     if (motorRightSenseCounter >= 10) { //the motor is stuck for more than 1 seconde go to error.
-      Console.print("Fatal Error: Motor Right current over 100% for more than 1 seconde last power --> ");
+      Console.print("Fatal Error: Motor Right power over 100% for more than 1 seconde last power --> ");
       Console.println(motorRightPower);
       addErrorCounter(ERR_MOTOR_RIGHT);
       setMotorPWM( 0, 0, false );
@@ -4568,13 +4584,13 @@ void Robot::readDHT22() {
       return;
     }
     /*
-    //to check if the 8 minutes overload can be caused by dht 
-    if (developerActive) {
+      //to check if the 8 minutes overload can be caused by dht
+      if (developerActive) {
       Console.print(" Read DHT22 temperature : ");
       Console.print(temperatureDht);
       Console.print("   Humidity : ");
       Console.println(humidityDht);
-    }
+      }
     */
     if (isnan(humidityDht) || isnan(temperatureDht) ) {
       Console.println("Failed to read from DHT sensor!");

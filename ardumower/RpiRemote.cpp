@@ -607,7 +607,7 @@ void RpiRemote::RaspberryPISendMow () {
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + millis();
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->motorMowSense;
+  lineToSend = lineToSend + robot->motorMowPower;
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->motorMowPWMCurr;
   lineToSend = lineToSend + ",";
@@ -621,9 +621,9 @@ void RpiRemote::RaspberryPISendMot () {
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + millis();
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->motorLeftSenseCurrent;
+  lineToSend = lineToSend + robot->motorLeftPower;
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->motorRightSenseCurrent;
+  lineToSend = lineToSend + robot->motorRightPower;
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->motorLeftPWMCurr;
   lineToSend = lineToSend + ",";

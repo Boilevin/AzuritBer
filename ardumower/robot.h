@@ -448,7 +448,7 @@ class Robot
     int motorMowPWMCurr ;         // current speed
     int motorMowSenseADC ;
     float motorMowSenseCurrent ;
-    float motorMowSense ;       // motor power (range 0..MAX_MOW_POWER)
+    float motorMowPower ;       // motor power (range 0..MAX_MOW_POWER)
     int motorMowSenseCounter ;
     int motorMowSenseErrorCounter ;
     int motorMowRpmCurr ;            // motor rpm (range 0..MOW_RPM)
@@ -767,7 +767,7 @@ class Robot
     virtual void saveUserSettings();
     virtual void deleteRobotStats();
     virtual void newTagFind();
-
+    virtual void autoReboot();
     // other
     // virtual void beep(int numberOfBeeps, boolean shortbeep);
     virtual void printInfo(Stream &s);

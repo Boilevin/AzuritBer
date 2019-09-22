@@ -63,8 +63,8 @@ class MOT(TalkerSentence):
     """
     fields = (
         ("Millis", "millis"),
-        ("motorLeftSenseCurrent", "motorLeftSenseCurrent"),
-        ("motorRightSenseCurrent", "motorRightSenseCurrent"),
+        ("motorLeftPower", "motorLeftPower"),
+        ("motorRightPower", "motorRightPower"),
 	("motorLeftPWMCurr", "motorLeftPWMCurr"),
 	("motorRightPWMCurr", "motorRightPWMCurr"),
         ("BatVoltage", "batVoltage"),
@@ -76,7 +76,7 @@ class MOW(TalkerSentence):
     """
     fields = (
         ("Millis", "millis"),
-        ("motorMowSense", "motorMowSense"),
+        ("motorMowPower", "motorMowPower"),
         ("motorMowPWMCurr", "motorMowPWMCurr"),
         ("BatVoltage", "batVoltage"),
         

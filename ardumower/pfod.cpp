@@ -466,7 +466,7 @@ void RemoteControl::sendMowMenu(boolean update) {
   serialPort->print(F("|o00~Overload Counter "));
   serialPort->print(robot->motorMowSenseCounter);
   serialPort->print(F("|o01~Power in Watt "));
-  serialPort->print(robot->motorMowSense);
+  serialPort->print(robot->motorMowPower);
   serialPort->print(F("|o11~current in mA "));
   serialPort->print(robot->motorMowSenseCurrent);
   sendSlider("o02", F("Power max"), robot->motorMowPowerMax, "", 0.1, 100, 1);
@@ -871,6 +871,8 @@ void RemoteControl::processRemoteMenu(String pfodCmd) {
   if (pfodCmd == "h01" ) robot->RaspberryPIUse = !robot->RaspberryPIUse;
   if (pfodCmd == "h02" ) robot->printSettingSerial();  //use by pi to show all the variable in the console
   if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode
+  if (pfodCmd == "h04" ) robot->autoReboot();  //use by pi to reset due and pi
+
 
 
   sendRemoteMenu(true);
@@ -1597,7 +1599,7 @@ void RemoteControl::run() {
     serialPort->print(",");
     serialPort->print(robot->motorRightPower);
     serialPort->print(",");
-    serialPort->print(robot->motorMowSense);
+    serialPort->print(robot->motorMowPower);
     serialPort->print(",");
     serialPort->print(robot->sonarDistLeft);
     serialPort->print(",");
@@ -1730,7 +1732,7 @@ void RemoteControl::run() {
       serialPort->print(",");
       serialPort->print(robot->motorRightPower);
       serialPort->print(",");
-      serialPort->print(robot->motorMowSense);
+      serialPort->print(robot->motorMowPower);
       serialPort->print(",");
       serialPort->print(robot->sonarDistLeft);
       serialPort->print(",");
