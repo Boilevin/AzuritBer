@@ -410,7 +410,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, odometryTicksPerRevolution);
   eereadwrite(readflag, addr, odometryTicksPerCm);
   eereadwrite(readflag, addr, odometryWheelBaseCm);
-  eereadwrite(readflag, addr, odometryLeftSwapDir);   // bool adress free for something else
+  eereadwrite(readflag, addr, autoResetActive);   
   eereadwrite(readflag, addr, odometryRightSwapDir);     // bool adress free for something else
   eereadwrite(readflag, addr, twoWayOdometrySensorUse);   // char YES NO adress free for something else
   eereadwrite(readflag, addr, buttonUse);
@@ -773,10 +773,13 @@ void Robot::printSettingSerial() {
   Console.println(stationForwDist);
   Console.print  (F("stationCheckDist                           : "));
   Console.println(stationCheckDist);
-  Console.print  (F("UseBumperDock                            : "));
+  Console.print  (F("UseBumperDock                              : "));
   Console.println(UseBumperDock);
   Console.print  (F("dockingSpeed                               : "));
   Console.println(dockingSpeed);
+  Console.print  (F("autoResetActive                            : "));
+  Console.println(autoResetActive);
+  
   watchdogReset();
 
 
@@ -790,8 +793,7 @@ void Robot::printSettingSerial() {
   Console.println( odometryWheelBaseCm);
   Console.print  (F("odometryRightSwapDir                       : "));
   Console.println(odometryRightSwapDir);
-  Console.print  (F("odometryLeftSwapDir                        : "));
-  Console.println(odometryLeftSwapDir);
+  
 
   watchdogReset();
 
@@ -5358,12 +5360,22 @@ void Robot::loop()  {
       // waiting until charging completed
       if (batMonitor) {
         if ((chgCurrent < batFullCurrent) && (millis() - stateStartTime > 2000)) {
+          if (autoResetActive){
+            Console.println("Time to Restart PI and Due");
+            autoReboot();
+          }
           setNextState(STATE_STATION, 0);
           return;
         }
         if (millis() - stateStartTime > chargingTimeout)
         {
           Console.println("End of charging duration check the batfullCurrent to try to stop before");
+          if (autoResetActive){
+            Console.println("Time to Restart PI and Due");
+            autoReboot();
+          }
+          
+          
           setNextState(STATE_STATION, 0);
           return;
         }

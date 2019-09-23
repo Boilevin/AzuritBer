@@ -85,7 +85,7 @@ class robot:
         self.odometryTicksPerRevolution=0
         self.odometryTicksPerCm=0
         self.odometryWheelBaseCm=0
-        self.odometryLeftSwapDir=0
+        self.autoResetActive=0
         self.odometryRightSwapDir=0
         self.twoWayOdometrySensorUse=0
         self.buttonUse=0

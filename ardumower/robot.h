@@ -267,7 +267,6 @@ class Robot
     float odometryTicksPerCm ;  // encoder ticks per cm
     float odometryWheelBaseCm ;    // wheel-to-wheel distance (cm)
     boolean odometryRightSwapDir;       // inverse right encoder direction?
-    boolean odometryLeftSwapDir;       // inverse left encoder direction?
     int odometryLeft ;   // left wheel counter
     int odometryRight ;  // right wheel counter
     boolean odometryLeftLastState;
@@ -681,6 +680,7 @@ class Robot
     int stationForwDist    ;    // charge station forward distance cm
     byte stationCheckDist   ;    // charge station check distance cm
     boolean UseBumperDock ;  //bumper is pressed when docking or not
+    boolean autoResetActive;       // at the edn of the charging all is rebbot to avoid error after 1 or 2 weeks ON
     byte dockingSpeed ;  //speed docking is (percent of maxspeed) when sonar detect something while tracking
     unsigned long totalDistDrive;  //use to check when to leave the wire in start timer mode
     unsigned long nextTimeBattery ;
@@ -692,6 +692,7 @@ class Robot
     float statsBatteryChargingCapacityTotal;
     float statsBatteryChargingCapacityAverage;
     float lastTimeBatCapacity;
+    
     // --------- error counters --------------------------
     byte errorCounterMax[ERR_ENUM_COUNT];
     byte errorCounter[ERR_ENUM_COUNT];

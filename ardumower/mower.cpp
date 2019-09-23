@@ -81,7 +81,7 @@ Mower::Mower() {
   motorRightOffsetFwd = 0;  //percent offset in PWM use for the 2 wheels motor have the same speed a the same PWM
   motorRightOffsetRev = 0;  //use the 1 ml ODO test to find good value the 2 wheels need to stop at the same time
   motorTickPerSecond = 200; // use to compute the maxodostate duration and computed on the calibration motor
-  
+
   UseAccelLeft = 1;
   UseBrakeLeft = 1;
   UseAccelRight = 1;
@@ -111,24 +111,24 @@ Mower::Mower() {
 
   // ------ DHT22Use ------------------------------------
   DHT22Use          = 0;      // use DHT22 sensor?
-  maxTemperature    =55;      // max temp before switch off
-//bber35
+  maxTemperature    = 55;     // max temp before switch off
+  //bber35
   // ------ RFID ------------------------------------
   rfidUse          = 0;      // use rfid
-  newtagRotAngle1=-90;
-  newtagRotAngle2=0;
-  newtagDistance1=10;
-  newtagDistance2=0;
-    
+  newtagRotAngle1 = -90;
+  newtagRotAngle2 = 0;
+  newtagDistance1 = 10;
+  newtagDistance2 = 0;
+
   // ------ sonar ------------------------------------
   sonarUse                   = 0;          // use ultra sonic sensor? (WARNING: robot will slow down, if enabled but not connected!)
   sonarLeftUse               = 1;
   sonarRightUse              = 1;
   sonarCenterUse             = 0;
   sonarTriggerBelow          = 87;       // ultrasonic sensor trigger distance in cm (0=off)
-  sonarToFrontDist           = 30;        // ultrasonic sensor distance to front mower in cm 
-  
- 
+  sonarToFrontDist           = 30;        // ultrasonic sensor distance to front mower in cm
+
+
 
   // ------ perimeter ---------------------------------
   perimeterUse       = 0;      // use perimeter?
@@ -159,7 +159,7 @@ Mower::Mower() {
   perimeterMagMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
   perimeter.read2Coil = false;
   areaToGo = 1;//initialise the areatogo to the station area
-  
+
   // ------ lawn sensor --------------------------------
   lawnSensorUse     = 0;       // use capacitive Sensor
   // ------  IMU (compass/accel/gyro) ----------------------
@@ -193,7 +193,7 @@ Mower::Mower() {
   mowPatternCurr = MOW_LANES;
   compassRollSpeedCoeff = 40; //speed used when the mower search the compass yaw it's percent of motorSpeedMaxRpm ,Avoid to roll to fast for a correct detection
 
-  
+
   // ------ model R/C ------------------------------------
   remoteUse         = 0;       // use model remote control (R/C)?
   // ------ battery -------------------------------------
@@ -215,20 +215,22 @@ Mower::Mower() {
   chgNull         = 2;          // Nullduchgang abziehen (1 oder 2)
   // ------  charging station ---------------------------
   stationRevDist     = 50;    // charge station reverse 50 cm
-  stationRollAngle    = 45;    // charge station roll after reverse 
+  stationRollAngle    = 45;    // charge station roll after reverse
   stationForwDist    = 30;    // charge station accel distance cm
   stationCheckDist   = 2;    // charge station  check distance to be sure voltage is OK cm
-  UseBumperDock=true;  //bumper is pressed when docking or not
-  dockingSpeed   =  60;   //speed docking is (percent of maxspeed) 
-  
+  UseBumperDock = true; //bumper is pressed when docking or not
+  dockingSpeed   =  60;   //speed docking is (percent of maxspeed)
+  autoResetActive  = 0;       // after charging reboot or not
+
+
   // ------ odometry ------------------------------------
   odometryUse       = 1;       // use odometry?
   odometryTicksPerRevolution = 1010;   // encoder ticks per one full resolution
   odometryTicksPerCm = 12.9;  // encoder ticks per cm
   odometryWheelBaseCm = 43;    // wheel-to-wheel distance (cm)
   odometryRightSwapDir = 0;       // inverse right encoder direction?
-  odometryLeftSwapDir  = 0;       // inverse left encoder direction?
-  
+
+
   // ----- GPS -------------------------------------------
   gpsUse            = 0;       // use GPS?
   stuckIfGpsSpeedBelow = 0.2; // if Gps speed is below given value the mower is stuck
@@ -371,14 +373,14 @@ void Mower::setup() {
 
   // bumpers
   //pinMode(pinBumperLeft, INPUT);
-  pinMode(pinBumperLeft, INPUT_PULLUP); //it's contact 
+  pinMode(pinBumperLeft, INPUT_PULLUP); //it's contact
   //pinMode(pinBumperRight, INPUT);
   pinMode(pinBumperRight, INPUT_PULLUP);
 
   // drops
- // pinMode(pinDropLeft, INPUT);                                                                                                         // Dropsensor - Absturzsensor - Deklariert als Eingang
+  // pinMode(pinDropLeft, INPUT);                                                                                                         // Dropsensor - Absturzsensor - Deklariert als Eingang
   pinMode(pinDropLeft, INPUT_PULLUP);                                                                                                  // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (AuslÃ¶sung erfolgt gegen GND)
- // pinMode(pinDropRight, INPUT);                                                                                                        // Dropsensor - Absturzsensor - Deklariert als Eingang
+  // pinMode(pinDropRight, INPUT);                                                                                                        // Dropsensor - Absturzsensor - Deklariert als Eingang
   pinMode(pinDropRight, INPUT_PULLUP);                                                                                                 // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (AuslÃ¶sung erfolgt gegen GND)
 
   // rain
@@ -476,19 +478,19 @@ void checkMotorFault() {
     robot.addErrorCounter(ERR_MOTOR_LEFT);
     Console.println(F("Error: motor left fault"));
     robot.setNextState(STATE_ERROR, 0);
-    
+
   }
   if  (digitalRead(pinMotorRightFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_RIGHT);
     Console.println(F("Error: motor right fault"));
     robot.setNextState(STATE_ERROR, 0);
-    
+
   }
   if (digitalRead(pinMotorMowFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_MOW);
     Console.println(F("Error: motor mow fault"));
     robot.setNextState(STATE_ERROR, 0);
-    
+
   }
 }
 
