@@ -311,13 +311,38 @@ void IMUClass::run() {
   mpu.dmpGetQuaternion(&q, fifoBuffer);
   mpu.dmpGetGravity(&gravity, &q);
   mpu.dmpGetYawPitchRoll(yprtest, &q, &gravity);
-  
+
   //bber4
   //filter to avoid bad reading
-  ypr.pitch = yprtest[1];
-  ypr.roll = yprtest[2];
+
+  if ((abs(yprtest[1]) - abs(ypr.pitch)) > 0.3490)
+  {
+    Console.print("Last pitch : ");
+    Console.print(ypr.pitch / PI * 180);
+    Console.print(" Actual pitch : ");
+    Console.println(yprtest[1] / PI * 180);
+    Console.println("pitch change 20 deg in less than 50 ms ????????? value is skip");
+  }
+  else
+  {
+    ypr.pitch = yprtest[1];
+  }
+
+  if ((abs(yprtest[2]) - abs(ypr.roll)) > 0.3490)
+  {
+    Console.print("Last roll : ");
+    Console.print(ypr.roll / PI * 180);
+    Console.print(" Actual roll : ");
+    Console.println(yprtest[2] / PI * 180);
+    Console.println("roll change 20 deg in less than 50 ms ????????? value is skip");
+  }
+  else
+  {
+    ypr.roll = yprtest[2];
+  }
+
   gyroAccYaw = yprtest[0];  // the Gyro Yaw very accurate but drift
-  
+
   // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
   readHMC5883L();
   //tilt compensed yaw ????????????
@@ -567,7 +592,7 @@ void IMUClass::calibComStartStop() {
     printCalib();
     useComCalibration = true;
     state = IMU_RUN;
-   
+
 
   } else {
     // start
