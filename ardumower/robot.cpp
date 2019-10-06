@@ -410,7 +410,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, odometryTicksPerRevolution);
   eereadwrite(readflag, addr, odometryTicksPerCm);
   eereadwrite(readflag, addr, odometryWheelBaseCm);
-  eereadwrite(readflag, addr, autoResetActive);   
+  eereadwrite(readflag, addr, autoResetActive);
   eereadwrite(readflag, addr, odometryRightSwapDir);     // bool adress free for something else
   eereadwrite(readflag, addr, twoWayOdometrySensorUse);   // char YES NO adress free for something else
   eereadwrite(readflag, addr, buttonUse);
@@ -779,7 +779,7 @@ void Robot::printSettingSerial() {
   Console.println(dockingSpeed);
   Console.print  (F("autoResetActive                            : "));
   Console.println(autoResetActive);
-  
+
   watchdogReset();
 
 
@@ -793,7 +793,7 @@ void Robot::printSettingSerial() {
   Console.println( odometryWheelBaseCm);
   Console.print  (F("odometryRightSwapDir                       : "));
   Console.println(odometryRightSwapDir);
-  
+
 
   watchdogReset();
 
@@ -2612,8 +2612,8 @@ void Robot::readSensors() {
       dropRight = true;                                                                                                     // Dropsensor - Absturzsensor
     }
   }
-
-  if ((timerUse) && (millis() >= nextTimeRTC)) {
+  if (millis() >= nextTimeRTC) {
+    // if ((timerUse) && (millis() >= nextTimeRTC)) {
     nextTimeRTC = millis() + 20000;
     readSensor(SEN_RTC);       // read RTC
     //Console.print(F("RTC date received: "));
@@ -3919,8 +3919,9 @@ void Robot::checkBattery() {
     }
 
 
-    // if robot is OFF , Error or in station without the timer we can start to count before shutdown
-    if ( (stateCurr == STATE_OFF) || (stateCurr == STATE_ERROR) || ((stateCurr == STATE_STATION) && !timerUse)) {
+    // if robot is OFF or Error  we can start to count before shutdown
+    if ( (stateCurr == STATE_OFF) || (stateCurr == STATE_ERROR)) {
+      //if ( (stateCurr == STATE_OFF) || (stateCurr == STATE_ERROR) || ((stateCurr == STATE_STATION) && !timerUse)) {
       /*
         Console.print("Count before power OFF  ");
         Console.print(idleTimeSec);
@@ -3934,8 +3935,7 @@ void Robot::checkBattery() {
           if (RaspberryPIUse) {
             Console.println(F("PCB power OFF after 30 secondes, need to wait until PI Stop power the USB Native Port"));
             MyRpi.sendCommandToPi("PowerOffPi");
-            //delay(30000); //wait 30Sec  until pi is OFF or the USB native power again the due and the undervoltage never switch OFF
-            delayWithWatchdog(30000);
+            delayWithWatchdog(30000);//wait 30Sec  until pi is OFF or the USB native power again the due and the undervoltage never switch OFF
           }
           else
           {
@@ -5360,7 +5360,7 @@ void Robot::loop()  {
       // waiting until charging completed
       if (batMonitor) {
         if ((chgCurrent < batFullCurrent) && (millis() - stateStartTime > 2000)) {
-          if (autoResetActive){
+          if (autoResetActive) {
             Console.println("Time to Restart PI and Due");
             autoReboot();
           }
@@ -5370,12 +5370,12 @@ void Robot::loop()  {
         if (millis() - stateStartTime > chargingTimeout)
         {
           Console.println("End of charging duration check the batfullCurrent to try to stop before");
-          if (autoResetActive){
+          if (autoResetActive) {
             Console.println("Time to Restart PI and Due");
             autoReboot();
           }
-          
-          
+
+
           setNextState(STATE_STATION, 0);
           return;
         }
