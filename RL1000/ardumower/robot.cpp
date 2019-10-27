@@ -3510,13 +3510,13 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseAccelRight = 1;
       UseBrakeRight = 1;
       if (dir == RIGHT) {
-        motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5 ; //reduce the roll speed to help  the IMU
-        motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
+        motorLeftSpeedRpmSet = motorSpeedMaxRpm ; 
+        motorRightSpeedRpmSet = -motorSpeedMaxRpm ;
         stateEndOdometryRight =  odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight ;
         stateEndOdometryLeft =  odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft ;
       } else {
-        motorLeftSpeedRpmSet = -motorSpeedMaxRpm / 1.5 ;
-        motorRightSpeedRpmSet = motorSpeedMaxRpm / 1.5 ;
+        motorLeftSpeedRpmSet = -motorSpeedMaxRpm  ;
+        motorRightSpeedRpmSet = motorSpeedMaxRpm ;
         stateEndOdometryRight = odometryRight + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight;
         stateEndOdometryLeft = odometryLeft - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft;
       }
@@ -3560,13 +3560,13 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeRight = 1;
 
       if (dir == RIGHT) {
-        motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5 ; //reduce the roll speed to help  the IMU
-        motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5 ;
+        motorLeftSpeedRpmSet = motorSpeedMaxRpm  ; 
+        motorRightSpeedRpmSet = -motorSpeedMaxRpm  ;
         stateEndOdometryRight =  odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight ;
         stateEndOdometryLeft =  odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft ;
       } else {
-        motorLeftSpeedRpmSet = -motorSpeedMaxRpm / 1.5 ; //reduce the roll speed to help  the IMU
-        motorRightSpeedRpmSet = motorSpeedMaxRpm / 1.5 ;
+        motorLeftSpeedRpmSet = -motorSpeedMaxRpm  ; 
+        motorRightSpeedRpmSet = motorSpeedMaxRpm ;
         stateEndOdometryRight = odometryRight + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight;
         stateEndOdometryLeft = odometryLeft - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft;
       }

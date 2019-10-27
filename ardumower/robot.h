@@ -664,7 +664,7 @@ class Robot
     float batFullCurrent   ; // current flowing when battery is fully charged
     float startChargingIfBelow; // start charging if battery Voltage is below
     unsigned long chargingTimeout; // safety timer for charging
-    float chgSenseZero    ;       // charge current sense zero point
+    float chgSenseZero    ;       // charge current sense zero point NOT USE
     float batSenseFactor       ;     // charge current conversion factor
     float chgSense        ;       // mV/A empfindlichkeit des Ladestromsensors in mV/A (FÃ¼r ACS712 5A = 185)
     char chgChange        ;       // messwertumkehr von - nach +         1oder 0

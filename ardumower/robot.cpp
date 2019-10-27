@@ -398,7 +398,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, batSwitchOffIfIdle);
   eereadwrite(readflag, addr, batFactor);
   eereadwrite(readflag, addr, batChgFactor);
-  eereadwrite(readflag, addr, chgSenseZero);
+  eereadwrite(readflag, addr, chgSenseZero);  //float adress free for something else
   eereadwrite(readflag, addr, batSenseFactor);
   eereadwrite(readflag, addr, batFullCurrent);
   eereadwrite(readflag, addr, startChargingIfBelow);
@@ -2639,7 +2639,7 @@ void Robot::readSensors() {
 
 
 
-    double batvolt = batFactor * readSensor(SEN_BAT_VOLTAGE) * 3.3 / 4096 ; //readsensor return the ADC value 0 to 4096 so *3.3/4096 voltage on the arduino pin batfactor depend on the resitor on board
+    double batvolt = batFactor * readSensor(SEN_BAT_VOLTAGE) * 3.3 / 4096 ; //readsensor return the ADC value 0 to 4096 so *3.3/4096=voltage on the arduino pin batfactor depend on the resitor on board
     double chgvolt = batChgFactor * readSensor(SEN_CHG_VOLTAGE) * 3.3 / 4096 ;
     double curramp = batSenseFactor * readSensor(SEN_CHG_CURRENT) * 3.3 / 4096 ;
     /*
