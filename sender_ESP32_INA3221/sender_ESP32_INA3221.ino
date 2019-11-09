@@ -1,53 +1,67 @@
+/*
+WIFI Communicating sender
+Adjust IP according to your ESP32 value 10.42.0.253 in this example
+On your browser send :
+http://10.42.0.253/0   *********** to stop the sender
+http://10.42.0.253/1   *********** to start the sender
+http://10.42.0.253/sigCode/2 ******* to change the sigcode in use possible value are 0,1,2,3,4 ,see sigcode list
+http://10.42.0.253/?   *********** to see the state of the sender
+http://10.42.0.253/sigDuration/104    *********** to change the speed sender to 104 microsecondes
+http://10.42.0.253/sigDuration/50    *********** to change the speed sender to 50 microsecondes
+
+If USE_STATION : the sender start and stop automaticly if the mower is in the station or not
+
+
+*/
 #include <Wire.h>
 #include "SDL_Arduino_INA3221.h"
-//#include <U8x8lib.h>
 #include "ACROBOTIC_SSD1306.h"
 #include <WiFi.h>
+
+//********************* user setting **********************************
+const char* ssid     = "RL1000";   // put here your acces point ssid 
+const char* password = "Ardumower1234";  // put here the password
+#define USE_STATION     1 // a station is connected and is used to charge the mower
+#define USE_PERI_CURRENT      1     // use pinFeedback for perimeter current measurements? (set to '0' if not connected!)
+#define USE_BUTTON      1     // use button to start mowing or send mower to station
+#define USE_RAINFLOW    0     // check the amount of rain 
+#define WORKING_TIMEOUT_MINS 300  // timeout for perimeter switch-off if robot not in station (minutes)
+#define PERI_CURRENT_MIN    100    // minimum milliAmpere for cutting wire detection
+
+
+//********************* setting for current sensor **********************************
+float DcDcOutVoltage = 9.0;  //Use to have a correct value on perricurrent (Need to change the value each time you adjust the DC DC )
 #define I2C_SDA 4
 #define I2C_SCL 15
+#define PERI_CURRENT_CHANNEL 1
+#define MOWER_STATION_CHANNEL 2
 
-const char* ssid     = "Arduwifi";   // put here your phone acces point ssid
-const char* password = "Ardumower1234";  // put here the password
 
-
+byte sigCodeInUse = 1;  //1 is the original ardumower sigcode
+int sigDuration = 104;  // send the bits each 104 microsecond (Also possible 50)
 int8_t sigcode_norm[128];
-int16_t sigcode_size;
+int sigcode_size;
+
 
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 
-// ---- choose only one perimeter signal code ----
-//#define SIGCODE_0  // test scope signal
-#define SIGCODE_1  // Ardumower default perimeter signal
-//#define SIGCODE_2  // BB alternative perimeter signal
-//#define SIGCODE_3  // Ardumower alternative perimeter signal
-//#define SIGCODE_4  // Raindancer perimeter signal
 
 #define pinIN1       12  // M1_IN1         ( connect this pin to L298N-IN1)
 #define pinIN2       13  // M1_IN2         ( connect this pin to L298N-IN2)
-#define pinEnable    23  // EN             (connect to motor driver enable)    
-
-
+#define pinEnable    23  // EN             (connect this pin to L298N-EN)    
 #define pinPushButton      34  //           (connect to Button) //R1 2.2K R2 3.3K
 #define pinRainFlow       35  //           (connect to Rain box) //R3 2.2K R4 3.3K
 
-#define USE_PERI_CURRENT      1     // use pinFeedback for perimeter current measurements? (set to '0' if not connected!)
-#define PERI_CURRENT_MIN    0.1    // minimum Ampere for perimeter-is-closed detection 
-
-#define USE_BUTTON      1     // use button to start mowing or send mower to station
-#define USE_RAINFLOW    0     // check the amount of rain 
-
-#define WORKING_TIMEOUT_MINS 300  // timeout for perimeter switch-off if robot not in station (minutes)
 
 
 // code version
-#define VER "ESP32 1.0"
+#define VER "ESP32 2.0"
 
 volatile int step = 0;
 boolean enableSender = false; //OFF on start to autorise the reset
-//boolean WiffiRequestOn = true;
-
+boolean WiffiRequestOn = true;
 
 
 int timeSeconds = 0;
@@ -56,58 +70,54 @@ unsigned long nextTimeInfo = 0;
 unsigned long nextTimeSec = 0;
 unsigned long nextTimeCheckButton = 0;
 int workTimeMins = 0;
-int periCurrentAnalogIn;
+boolean StartButtonProcess = false;
+
 int Button_pressed = 0;
 
+
+float PeriCurrent = 0;
+float ChargeCurrent = 0;
+float shuntvoltage1 = 0;
+float busvoltage1 = 0;
+float loadvoltage1 = 0;
+float shuntvoltage2 = 0;
+float busvoltage2 = 0;
+float loadvoltage2 = 0;
+
+//*********************  Sigcode list *********************************************
 // must be multiple of 2 !
 // http://grauonline.de/alexwww/ardumower/filter/filter.html
 // "pseudonoise4_pw" signal (sender)
-#if defined (SIGCODE_0)
-int8_t sigcode[] = { 1, -1 };
-#elif defined (SIGCODE_1)
-int8_t sigcode[] = { 1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1 };
-#elif defined (SIGCODE_2)
-int8_t sigcode[] = { 1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1 };
-#elif defined (SIGCODE_3)
-int8_t sigcode[] = { 1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, -1, -1, 1, -1 };
-#elif defined (SIGCODE_4)
-int8_t sigcode[] = { 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1,
-                     -1, 1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, 1
-                   }; // 128 Zahlen from Roland
-
-
-#endif
-
-
-
-int8_t sigcode0[] = { 1, -1 };
-int8_t sigcode1[] = { 1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1 };
+int8_t sigcode0[] = { 1, -1 };  //simple square test code
+int8_t sigcode1[] = { 1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1 };  //ardumower signal code
 int8_t sigcode2[] = { 1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1 };
-int8_t sigcode3[] = { 1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, -1, -1, 1, -1 };
-int8_t sigcode4[] = { 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1,
+int8_t sigcode3[] = { 1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1,
                       -1, 1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, -1, 1
                     }; // 128 Zahlen from Roland
+int8_t sigcode4[] = { 1, 1, 1, -1, -1, -1};  //extend square test code
 
 WiFiServer server(80);
-
+SDL_Arduino_INA3221 ina3221;
 
 void IRAM_ATTR onTimer()
 { // management of the signal
   portENTER_CRITICAL_ISR(&timerMux);
   if (enableSender) {
-    if (sigcode[step] == 1) {
+
+    if (sigcode_norm[step] == 1) {
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, HIGH);
 
-    } else if (sigcode[step] == -1) {
+    } else if (sigcode_norm[step] == -1) {
       digitalWrite(pinIN1, HIGH);
       digitalWrite(pinIN2, LOW);
 
     } else {
-      digitalWrite(pinEnable, LOW);  //if there is a 0 in the sigcode
+      Serial.println("errreur");
+      //digitalWrite(pinEnable, LOW);
     }
     step ++;
-    if (step == sizeof sigcode) {
+    if (step == sigcode_size) {
       step = 0;
     }
   }
@@ -124,53 +134,62 @@ String IPAddress2String(IPAddress address)
 }
 
 
-
 void changeArea(byte areaInMowing) {  // not finish to dev
+  step = 0;
+  enableSender = false;
   Serial.print("Change to Area : ");
   Serial.println(areaInMowing);
   for (int uu = 0 ; uu <= 128; uu++) { //clear the area
     sigcode_norm[uu] = 0;
-
   }
+  sigcode_size = 0;
   switch (areaInMowing) {
-
+    case 0:
+      sigcode_size = sizeof sigcode0;
+      for (int uu = 0 ; uu <= (sigcode_size - 1); uu++) {
+        sigcode_norm[uu] = sigcode0[uu];
+      }
+      break;
     case 1:
       sigcode_size = sizeof sigcode1;
       for (int uu = 0 ; uu <= (sigcode_size - 1); uu++) {
         sigcode_norm[uu] = sigcode1[uu];
-
       }
-
       break;
     case 2:
       sigcode_size = sizeof sigcode2;
       for (int uu = 0 ; uu <= (sigcode_size - 1); uu++) {
         sigcode_norm[uu] = sigcode2[uu];
-
       }
-
       break;
     case 3:
       sigcode_size = sizeof sigcode3;
       for (int uu = 0 ; uu <= (sigcode_size - 1); uu++) {
         sigcode_norm[uu] = sigcode3[uu];
-
       }
-
       break;
+    case 4:
+      sigcode_size = sizeof sigcode4;
+      for (int uu = 0 ; uu <= (sigcode_size - 1); uu++) {
+        sigcode_norm[uu] = sigcode4[uu];
+      }
+      break;
+
 
   }
 
   Serial.print("New sigcode in use  : ");
+  Serial.println(sigCodeInUse);
 
   for (int uu = 0 ; uu <= (sigcode_size - 1); uu++) {
     Serial.print(sigcode_norm[uu]);
     Serial.print(",");
   }
   Serial.println();
-
+  Serial.print("New sigcode size  : ");
+  Serial.println(sigcode_size);
+  enableSender = true;
 }
-
 
 void setup()
 {
@@ -184,84 +203,64 @@ void setup()
   pinMode(pinIN1, OUTPUT);
   pinMode(pinIN2, OUTPUT);
   pinMode(pinEnable, OUTPUT);
-
   pinMode(pinPushButton, INPUT);
   pinMode(pinRainFlow, INPUT);
 
   Serial.println("START");
   Serial.print("Ardumower Sender ");
   Serial.println(VER);
-#if defined (SIGCODE_1)
-  Serial.println("SIGCODE_1");
-#elif defined (SIGCODE_2)
-  Serial.println("SIGCODE_2");
-#elif defined (SIGCODE_3)
-  Serial.println("SIGCODE_3");
-#elif defined (SIGCODE_4)
-  Serial.println("SIGCODE_4");
-#endif
-
-
   Serial.print("USE_PERI_CURRENT=");
   Serial.println(USE_PERI_CURRENT);
 
+  changeArea(sigCodeInUse);
   if (enableSender) {
     digitalWrite(pinEnable, HIGH);
   }
-
-
   //------------------------  WIFI parts  ----------------------------------------
-
-
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
   WiFi.mode(WIFI_STA);
-  //WIFI_ALL_CHANNEL_SCAN
-  //esp_wifi_set_config()
-
-
   WiFi.disconnect();
   delay(100);
-
-  oled.init();                      // Initialze SSD1306 OLED display
+  //------------------------  SCREEN parts  ----------------------------------------
+  oled.init();    // Initialze SSD1306 OLED display
+  delay(500);
   oled.clearDisplay();              // Clear screen
+  delay(500);
   oled.setTextXY(0, 0);             // Set cursor position, start of line 0
   oled.putString("ARDUMOWER");
   oled.setTextXY(1, 0);             // Set cursor position, start of line 1
   oled.putString("BB SENDER");
   oled.setTextXY(2, 0);             // Set cursor position, start of line 2
-  oled.putString("V3.0");
+  oled.putString("V3.1");
   oled.setTextXY(3, 0);           // Set cursor position, line 2 10th character
   oled.putString("USE INA3221");
-  /*
-    u8x8.begin();
-    u8x8.setFont(u8x8_font_chroma48medium8_r);
-  */
-
+  //------------------------  current sensor parts  ----------------------------------------
+  Serial.println("Measuring voltage and current using ina3221 ...");
+  ina3221.begin();
+  Serial.print("Manufactures ID=0x");
+  int MID;
+  MID = ina3221.getManufID();
+  Serial.println(MID, HEX);
+  delay(5000);
 }
+
 void connection()
 {
-
-
   oled.clearDisplay();
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
   //WiFi.setAutoReconnect(true);
   WiFi.begin(ssid, password);
-
   for (int i = 0; i < 60; i++)
   {
     if ( WiFi.status() != WL_CONNECTED )
     {
-      //u8x8.drawString(0, 0, "Try connecting");
       oled.setTextXY(0, 0);
       oled.putString("Try connecting");
-
       delay (250);
-
     }
   }
-
 
   if ( WiFi.status() == WL_CONNECTED )
   {
@@ -270,91 +269,88 @@ void connection()
     Serial.println(WiFi.localIP());
     String ipAddress = IPAddress2String(WiFi.localIP());
     oled.clearDisplay();
-    //u8x8.drawString(0, 0, "Mower Connected");
     oled.setTextXY(0, 0);
     oled.putString("Mower Connected");
-
-    //u8x8.setCursor(0, 1);
-    //u8x8.print(ipAddress);
     oled.setTextXY(1, 0);
     oled.putString(ipAddress);
     server.begin();
   }
-
-
-
 }
 static void ScanNetwork()
 {
   oled.clearDisplay();
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  //u8x8.drawString(0, 0, "Hotspot Lost");
   oled.setTextXY(0, 0);
   oled.putString("Hotspot Lost");
   if (enableSender) {
-
-    //u8x8.drawString(0, 3, "Sender ON ");
     oled.setTextXY(3, 0);
     oled.putString("Sender ON ");
   }
   else
   {
-    //u8x8.drawString(0, 3, );
     oled.setTextXY(3, 0);
     oled.putString("Sender OFF");
   }
-  //u8x8.drawString(0, 4, "worktime= ");
+
   oled.setTextXY(4, 0);
   oled.putString("worktime= ");
-  //u8x8.setCursor(10, 4);
-  //u8x8.print("     ");
   oled.setTextXY(4, 10);
   oled.putString("     ");
-  // u8x8.setCursor(10, 4);
-  // u8x8.print(workTimeMins);
   oled.setTextXY(4, 10);
-  oled.putFloat(workTimeMins);
+  oled.putFloat(workTimeMins, 0);
 
+  if (USE_PERI_CURRENT) {
+    busvoltage1 = ina3221.getBusVoltage_V(PERI_CURRENT_CHANNEL);
+    PeriCurrent = ina3221.getCurrent_mA(PERI_CURRENT_CHANNEL);
+    PeriCurrent = PeriCurrent - 300.0; //the DC/DC,ESP32,LN298N can drain up to 300 ma when scanning network
+    if (PeriCurrent <= 5) PeriCurrent = 0; //
+    PeriCurrent = PeriCurrent * busvoltage1 / DcDcOutVoltage; // it's 3.2666 = 29.4/9.0 the power is read before the DC/DC converter so the current change according : 29.4V is the Power supply 9.0V is the DC/DC output voltage (Change according your setting)
+    oled.setTextXY(5, 0);
+    oled.putString("Pericurr ");
+    oled.setTextXY(5, 10);
+    oled.putString("     ");
+    oled.setTextXY(5, 10);
+    oled.putFloat(PeriCurrent, 0);
+  }
+
+
+  if (USE_STATION) {
+    ChargeCurrent = ina3221.getCurrent_mA(MOWER_STATION_CHANNEL);
+    if (ChargeCurrent <= 5) ChargeCurrent = 0;
+    oled.setTextXY(6, 0);
+    oled.putString("Charcurr ");
+    oled.setTextXY(6, 10);
+    oled.putString("     ");
+    oled.setTextXY(6, 10);
+    oled.putFloat(ChargeCurrent, 0);
+  }
   delay(5000);  // wait until all is disconnect
-
   int n = WiFi.scanNetworks();
-
   if (n == -1)
   {
-
-    //u8x8.drawString(0, 0, ");
     oled.setTextXY(0, 0);
     oled.putString("Scan running ???");
-    //u8x8.drawString(0, 1, );
     oled.setTextXY(1, 0);
     oled.putString("Need Reset ?? ? ");
-    //u8x8.drawString(0, 2, );
     oled.setTextXY(2, 0);
     oled.putString("If sender is OFF");
-
-
     delay(5000);
     if (!enableSender) ESP.restart(); // do not reset if sender is ON
   }
   if (n == -2)
   {
-    //u8x8.drawString(0, 0, "Scan Fail.");
     oled.setTextXY(0, 0);
     oled.putString("Scan Fail.");
-    //u8x8.drawString(0, 1, "Need Reset ?? ? ");
     oled.setTextXY(1, 0);
     oled.putString("Need Reset ?? ? ");
-    //u8x8.drawString(0, 2, "If sender is Off");
     oled.setTextXY(2, 0);
     oled.putString("If sender is Off");
-
     delay(5000);
     if (!enableSender) ESP.restart();
   }
   if (n == 0)
   {
-    //u8x8.drawString(0, 0, );
     oled.setTextXY(0, 0);
     oled.putString("No networks.");
   }
@@ -362,7 +358,6 @@ static void ScanNetwork()
   {
     Serial.print("find ");
     Serial.println(n);
-    // u8x8.drawString(0, 0, );
     oled.setTextXY(0, 0);
     oled.putString("Find ");
     for (int i = 0; i < n; ++i) {
@@ -371,7 +366,6 @@ static void ScanNetwork()
       WiFi.SSID(i).toCharArray(currentSSID, 64);
       Serial.print("find Wifi : ");
       Serial.println(currentSSID);
-      //u8x8.drawString(5, 0, currentSSID);
       oled.setTextXY(0, 5);
       oled.putString(currentSSID);
       delay (1500);
@@ -381,50 +375,43 @@ static void ScanNetwork()
       }
     }
   }
-
-
 }
-
 
 void loop()
 {
-
-
   if (millis() >= nextTimeControl) {
     nextTimeControl = millis() + 2000;  //after debug can set this to 10 secondes
-    // u8x8.drawString(0, 4, );
+    StartButtonProcess = false;
     oled.setTextXY(4, 0);
     oled.putString("worktime = ");
-    //  u8x8.setCursor(10, 4);
-    //  u8x8.print();
     oled.setTextXY(4, 10);
     oled.putString("     ");
-    //  u8x8.setCursor(10, 4);
-    //  u8x8.print(workTimeMins);
     oled.setTextXY(4, 10);
-    oled.putFloat(workTimeMins);
-
-
-
-
-
+    oled.putFloat(workTimeMins, 0);
     if (USE_PERI_CURRENT) {
-      //periCurrentAnalogIn = analogRead(pinFeedback);
-      // u8x8.drawString(0, 5, );
-      oled.setTextXY(5, 0);
-      oled.putString("Pericurr = ");
-      //  u8x8.setCursor(10, 5);
-      //  u8x8.print();
-      oled.setTextXY(5, 10);
-      oled.putString("     ");
-      //  u8x8.setCursor(10, 5);
-      //  u8x8.print(periCurrentAnalogIn);
-      oled.setTextXY(5, 10);
-      oled.putFloat(periCurrentAnalogIn);
+      busvoltage1 = ina3221.getBusVoltage_V(PERI_CURRENT_CHANNEL);
+      shuntvoltage1 = ina3221.getShuntVoltage_mV(PERI_CURRENT_CHANNEL);
+      PeriCurrent = ina3221.getCurrent_mA(PERI_CURRENT_CHANNEL);
+      PeriCurrent = PeriCurrent - 60.0; //the DC/DC,ESP32,LN298N drain 60 ma when nothing is ON and a wifi access point is found (To confirm ????)
+      if (PeriCurrent <= 5) PeriCurrent = 0; //
+      PeriCurrent = PeriCurrent * busvoltage1 / DcDcOutVoltage; // it's 3.2666 = 29.4/9.0 the power is read before the DC/DC converter so the current change according : 29.4V is the Power supply 9.0V is the DC/DC output voltage (Change according your setting)
+      loadvoltage1 = busvoltage1 + (shuntvoltage1 / 1000);
+
+      if ((enableSender) && (PeriCurrent < PERI_CURRENT_MIN)) {
+        oled.setTextXY(5, 0);
+        oled.putString("  Wire is Cut  ");
+      }
+      else
+      {
+        oled.setTextXY(5, 0);
+        oled.putString("Pericurr ");
+        oled.setTextXY(5, 10);
+        oled.putString("     ");
+        oled.setTextXY(5, 10);
+        oled.putFloat(PeriCurrent, 0);
+      }
     }
 
-
-    // if ((!enableSender) && (WiFi.status() != WL_CONNECTED)) ScanNetwork();
     if ( (WiFi.status() != WL_CONNECTED)) ScanNetwork();
     if  ( workTimeMins >= WORKING_TIMEOUT_MINS ) {
       // switch off perimeter
@@ -437,21 +424,59 @@ void loop()
     }
 
   }
+
   if (millis() >= nextTimeSec) {
     nextTimeSec = millis() + 1000;
+
+    oled.setTextXY(7, 0);
+    oled.putString("                ");
+    oled.setTextXY(7, 0);
+    oled.putString("Area : ");
+    oled.setTextXY(7, 7);
+    oled.putFloat(sigCodeInUse, 0);
+
+
+    if (USE_STATION) {
+      busvoltage2 = ina3221.getBusVoltage_V(MOWER_STATION_CHANNEL);
+      shuntvoltage2 = ina3221.getShuntVoltage_mV(MOWER_STATION_CHANNEL);
+      ChargeCurrent = ina3221.getCurrent_mA(MOWER_STATION_CHANNEL);
+      if (ChargeCurrent <= 5) ChargeCurrent = 0;
+      loadvoltage2 = busvoltage2 + (shuntvoltage2 / 1000);
+      oled.setTextXY(6, 0);
+      oled.putString("Charcurr ");
+      oled.setTextXY(6, 10);
+      oled.putString("     ");
+      oled.setTextXY(6, 10);
+      oled.putFloat(ChargeCurrent, 0);
+
+      if (ChargeCurrent > 200) { //mower is into the station ,in my test 410 ma are drained so possible to stop sender
+        
+        workTimeMins = 0;
+        enableSender = false;
+        digitalWrite(pinEnable, LOW);
+        digitalWrite(pinIN1, LOW);
+        digitalWrite(pinIN2, LOW);
+      }
+      else
+      {
+        workTimeMins = 0;
+        enableSender = true;
+        digitalWrite(pinEnable, HIGH);
+        digitalWrite(pinIN1, LOW);
+        digitalWrite(pinIN2, LOW);
+      }
+    }
     timeSeconds++;
     if ((enableSender) && (timeSeconds >= 60)) {
       if (workTimeMins < 1440) workTimeMins++;
       timeSeconds = 0;
     }
     if (enableSender) {
-      //u8x8.drawString(0, 2, );
       oled.setTextXY(2, 0);
       oled.putString("Sender ON ");
     }
     else
     {
-      //u8x8.drawString(0, 2, );
       oled.setTextXY(2, 0);
       oled.putString("Sender OFF");
     }
@@ -460,10 +485,7 @@ void loop()
   if (millis() >= nextTimeInfo) {
     nextTimeInfo = millis() + 500;
     float v = 0;
-
-
   }
-
   // Check if a client has connected
   WiFiClient client = server.available();
   if (client) {
@@ -472,28 +494,22 @@ void loop()
     Serial.print("Client say  ");
     Serial.println(req);
     Serial.println("------------------------ - ");
-
-
     //client.flush();
-
     // Match the request
-
-    if (req.indexOf("/area2/0") != -1) {
+    if (req.indexOf("/0") != -1) {
       // WiffiRequestOn = false;
       enableSender = false;
       workTimeMins = 0;
       digitalWrite(pinEnable, LOW);
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, LOW);
-
       String sResponse;
       sResponse = "SENDER IS OFF";
       // Send the response to the client
       client.print(sResponse);
       client.flush();
-
     }
-    if (req.indexOf("/area2/1") != -1) {
+    if (req.indexOf("/1") != -1) {
       //WiffiRequestOn = 1;
       workTimeMins = 0;
       enableSender = true;
@@ -506,48 +522,152 @@ void loop()
       // Send the response to the client
       client.print(sResponse);
       client.flush();
-
     }
+
     if (req.indexOf("/?") != -1) {
       String sResponse, sHeader;
-      sResponse = "WORKING DURATION = ";
+      sResponse = "WORKING DURATION= ";
       sResponse += workTimeMins ;
-      sResponse += "    PERI CURRENT Milli Amps = ";
-      sResponse += periCurrentAnalogIn ;
+      sResponse += " PERI CURRENT Milli Amps= ";
+      sResponse += PeriCurrent  ;
+      sResponse += " sigDuration= ";
+      sResponse += sigDuration ;
+      sResponse += " sigCodeInUse= ";
+      sResponse += sigCodeInUse ;
+
+
 
       client.print(sResponse);
-
       client.flush();
     }
+
+
+
+
+    if (req.indexOf("/sigCode/0") != -1) {
+      sigCodeInUse = 0;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 0";
+      // Send the response to the client
+
+      client.print(sResponse);
+      client.flush();
+
+    }
+    if (req.indexOf("/sigCode/1") != -1) {
+      sigCodeInUse = 1;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 1";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+    if (req.indexOf("/sigCode/2") != -1) {
+      sigCodeInUse = 2;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 2";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+    if (req.indexOf("/sigCode/3") != -1) {
+      sigCodeInUse = 3;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 3";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+    if (req.indexOf("/sigCode/4") != -1) {
+      sigCodeInUse = 4;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 4";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+    if (req.indexOf("/sigDuration/104") != -1) {
+      sigDuration = 104;
+      timerAlarmWrite(timer, 104, true);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW 104 microsecond signal duration";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+    if (req.indexOf("/sigDuration/50") != -1) {
+      sigDuration = 50;
+      timerAlarmWrite(timer, 50, true);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW 50 microsecond signal duration";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
 
 
   }
 
   if ((USE_BUTTON) && (millis() > nextTimeCheckButton)) {
     nextTimeCheckButton = millis() + 100;
+    if (StartButtonProcess) {
+      oled.setTextXY(7, 0);
+      oled.putString("StartButtonPress");
+    }
+    /*
+      else {
+      oled.setTextXY(7, 0);
+      oled.putString("                ");
+      }
+    */
     Button_pressed = digitalRead(pinPushButton);
     if (Button_pressed == 1) {
       Serial.println("Button pressed");
       //WiFiClient client = server.available();
+      workTimeMins = 0;
+      enableSender = true;
+      digitalWrite(pinEnable, HIGH);
+      digitalWrite(pinIN1, LOW);
+      digitalWrite(pinIN2, LOW);
       if (client) {
         String sResponse, sHeader;
         sResponse = "BUTTON PRESSED";
         client.print(sResponse);
         client.flush();
       }
-      nextTimeCheckButton = millis() + 2000;
+      nextTimeCheckButton = millis() + 1000;
+      StartButtonProcess = true;
+      nextTimeControl = millis() + 3000;
     }
-
   }
-
-
-
-
-
-
-
-
-
-
 
 }

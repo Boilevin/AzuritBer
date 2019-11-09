@@ -110,10 +110,9 @@ SDL_Arduino_INA3221::SDL_Arduino_INA3221(uint8_t addr, float shuntresistor) {
 void SDL_Arduino_INA3221::begin() {
   Wire.begin();    
   // Set chip to known config values to start
-  INA3221SetConfig();
-    
-   // Serial.print("shut resistor="); Serial.println(INA3221_shuntresistor);
-       // Serial.print("address="); Serial.println(INA3221_i2caddr);
+  INA3221SetConfig();   
+  Serial.print("shut resistor="); Serial.println(INA3221_shuntresistor);
+  Serial.print("address="); Serial.println(INA3221_i2caddr);
     
 }
 
@@ -140,7 +139,7 @@ int16_t SDL_Arduino_INA3221::getBusVoltage_raw(int channel) {
 int16_t SDL_Arduino_INA3221::getShuntVoltage_raw(int channel) {
   uint16_t value;
   wireReadRegister(INA3221_REG_SHUNTVOLTAGE_1+(channel -1) *2, &value);
-   // Serial.print("ShuntVoltage_raw=");
+  //Serial.print("ShuntVoltage_raw=");
    // Serial.println(value,HEX);
   return (int16_t)value;
 }

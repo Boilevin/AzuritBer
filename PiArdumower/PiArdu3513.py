@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-# 14/05/19 new value on console size page
 
-#version for 480*320 pixel
+'version for 480*320 pixel'
 
 
 import sys
@@ -1987,12 +1986,12 @@ to resize Img to fit on a button
 """
 
 
-imgHome=tk.PhotoImage(file=cwd + "/icons/medium/home.png")
+imgHome=tk.PhotoImage(file=cwd + "/icons/home medium.png")
 imgTrack=tk.PhotoImage(file=cwd + "/icons/track.png")
-imgStopAll=tk.PhotoImage(file=cwd + "/icons/medium/stop all.png")
+imgStopAll=tk.PhotoImage(file=cwd + "/icons/stop all medium.png")
 imgStopAllSmall=tk.PhotoImage(file=cwd + "/icons/stop all small.png")
-imgstartMow=tk.PhotoImage(file=cwd + "/icons/medium/startmow.png")
-imgBack=tk.PhotoImage(file=cwd + "/icons/medium/back.png")
+imgstartMow=tk.PhotoImage(file=cwd + "/icons/startmow medium.png")
+imgBack=tk.PhotoImage(file=cwd + "/icons/back medium.png")
 imgBladeStop = tk.PhotoImage(file=cwd + "/icons/bladeoff.png")
 imgBladeStart = tk.PhotoImage(file=cwd + "/icons/bladeon.png")
 imgForward=tk.PhotoImage(file=cwd + "/icons/forward.png")
@@ -2000,7 +1999,7 @@ imgReverse=tk.PhotoImage(file=cwd + "/icons/reverse.png")
 imgLeft=tk.PhotoImage(file=cwd + "/icons/left.png")
 imgRight=tk.PhotoImage(file=cwd + "/icons/right.png")
 imgStop=tk.PhotoImage(file=cwd + "/icons/stop.png")
-imgArdumower = tk.PhotoImage(file=cwd + "/icons/medium/ardumower.png")
+imgArdumower = tk.PhotoImage(file=cwd + "/icons/ardumower medium.png")
 imgManual=tk.PhotoImage(file=cwd + "/icons/manual.png")
 imgAuto=tk.PhotoImage(file=cwd + "/icons/auto.png")
 imgTest=tk.PhotoImage(file=cwd + "/icons/test.png")
@@ -2023,13 +2022,25 @@ imgRfid=tk.PhotoImage(file=cwd + "/icons/rfid.png")
 
 """ THE SETTING PAGE ****************************************************"""
 
-TabSetting=ttk.Notebook(fen1)
 
+
+"""
+TabSetting=ttk.Notebook(fen1)
 TabSetting.place(x=0,y=0)
+"""
+TabSetting=tk.Frame(fen1)
+TabSetting.place(x=0,y=0,width=800,height=380)
+
+TabMainCanvas = tk.Canvas(TabSetting, height=280,width=430)
+TabMainCanvas.grid(row=0, column=0,sticky="nsew")
+TabMainCanvasFrame = tk.Frame(TabMainCanvas)
+TabMainCanvas.create_window(0, 0, window=TabMainCanvasFrame, anchor='nw')
+
+
 
 #TabConsole=ttk.Notebook(fen1)
 #img1=tk.PhotoImage(file="/pi/Ardumawer/img/setting1.png")
-tabMain=tk.Frame(TabSetting,width=800,height=380)
+tabMain=tk.Frame(TabMainCanvasFrame,width=800,height=380)
 tabWheelMotor=tk.Frame(TabSetting,width=800,height=380)
 tabMowMotor=tk.Frame(TabSetting,width=800,height=380)
 tabPerimeter=tk.Frame(TabSetting,width=800,height=380)
@@ -2038,12 +2049,11 @@ tabSonar=tk.Frame(TabSetting,width=800,height=380)
 tabBattery=tk.Frame(TabSetting,width=800,height=380)
 tabOdometry=tk.Frame(TabSetting,width=800,height=380)
 tabDateTime=tk.Frame(TabSetting,width=800,height=380)
-tabByLane=tk.Frame(TabSetting,width=800,height=380)
+tabByLane=tk.Frame(TabMainCanvasFrame,width=800,height=380)
 #tabRfid=tk.Frame(TabSetting,width=800,height=380)
 
 
-
-
+"""
 TabSetting.add(tabMain,text="Main")
 TabSetting.add(tabWheelMotor,text="Wheels Motor")
 TabSetting.add(tabMowMotor,text="Mow Motor")
@@ -2056,6 +2066,29 @@ TabSetting.add(tabOdometry,text="Odometry")
 TabSetting.add(tabDateTime,text="Date Time")
 TabSetting.add(tabByLane,text="ByLane")
 #TabSetting.add(tabRfid,text="Rfid")
+"""
+
+
+yscrollbar = tk.Scrollbar(TabSetting, orient=tk.VERTICAL,width=40)
+yscrollbar.config(command=TabMainCanvas.yview)
+TabMainCanvas.config(yscrollcommand=yscrollbar.set)
+yscrollbar.grid(row=0, column=2, sticky="ns")
+#MainCanvas.yview_moveto(0.5)
+TabMainCanvasFrame.bind("<Configure>", lambda event: TabMainCanvas.configure(scrollregion=TabMainCanvas.bbox("all")))
+
+"""
+
+yscrollbar = tk.Scrollbar(MainPage, orient=tk.VERTICAL,width=40)
+yscrollbar.config(command=MainCanvas.yview)
+MainCanvas.config(yscrollcommand=yscrollbar.set)
+yscrollbar.grid(row=0, column=2, sticky="ns")
+#MainCanvas.yview_moveto(0.5)
+MainCanvasFrame.bind("<Configure>", lambda event: MainCanvas.configure(scrollregion=MainCanvas.bbox("all")))
+"""
+
+
+
+
 
 
 
@@ -2183,8 +2216,7 @@ ButtonSendSettingToEeprom.configure(text="Save setting into RTC Eeprom")
 
 
 ButtonBackHome = tk.Button(TabSetting, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=680, y=280, height=120, width=120)
-
+ButtonBackHome.place(x=390, y=200, height=96, width=80)
 
 
 """************* Mow motor setting *****************************"""
@@ -2581,11 +2613,14 @@ ButtonLaneUseNr = tk.Button(tabByLane,command = ButtonLaneUseNr_click,text="Next
 ButtonLaneUseNr.place(x=10,y=200,width=100, height=20)
 
 def ButtonRollDir_click():
-    send_pfo_message('w20','1','2','3','4','5','6',) 
+    send_pfo_message('w20','1','2','3','4','5','6',)
+   
 ButtonRollDir = tk.Button(tabByLane,command = ButtonRollDir_click,text="Next Roll Dir")
 ButtonRollDir.place(x=10,y=230,width=100, height=20)
-
-
+"""
+ButtonAuto = tk.Button(MainCanvasFrame,image=imgAuto,width=100,height=130,command = ButtonAuto_click)
+ButtonAuto.grid(row=1, column=0)
+"""
 Frame1= tk.Frame(tabByLane)
 Frame1.place(x=10, y=260, height=90, width=650)
 Frame1.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
@@ -2637,7 +2672,7 @@ def ButtonStartMow_click():
 
 
 AutoPage = tk.Frame(fen1)
-AutoPage.place(x=0, y=0, height=300, width=480)
+AutoPage.place(x=0, y=0, height=320, width=480)
 
 batteryFrame= tk.Frame(AutoPage)
 batteryFrame.place(x=10, y=140, height=60, width=100)
@@ -2696,6 +2731,15 @@ Buttonhome.place(x=230,y=0,width=100, height=130)
 Buttontrack = tk.Button(AutoPage, image=imgTrack, command = button_track_click)
 Buttontrack.place(x=380,y=0,width=100, height=130)
 """
+
+#tk_MainStatusLine="TEST 1234"
+#Statustext = tk.Label(AutoPage,text='',textvariable=tk_MainStatusLine,font=("Arial", 12), fg='red')
+#Statustext.place(x=10,y=300, height=16, width=300)
+
+
+
+
+
 ButtonStopAllAuto = tk.Button(AutoPage, image=imgStopAll, command = button_stop_all_click)
 ButtonStopAllAuto.place(x=340,y=0,width=100, height=130)
 
@@ -2830,7 +2874,7 @@ ConsolePage = tk.Frame(fen1)
 ConsolePage.place(x=0, y=0, height=300, width=480)
 
 
-txtRecu = tk.Text(ConsolePage)
+txtRecu = tk.Text(ConsolePage,font=("Arial", 8))
 ScrollTxtRecu = tk.Scrollbar(txtRecu)
 ScrollTxtRecu.pack(side=tk.RIGHT, fill=tk.Y)
 txtRecu.pack(side=tk.LEFT, fill=tk.Y)
@@ -2838,7 +2882,7 @@ ScrollTxtRecu.config(command=txtRecu.yview)
 txtRecu.config(yscrollcommand=ScrollTxtRecu.set)
 txtRecu.place(x=0,y=0,anchor='nw',width=385, height=150)
 
-txtSend = tk.Text(ConsolePage)
+txtSend = tk.Text(ConsolePage,font=("Arial", 8))
 ScrollTxtSend = tk.Scrollbar(txtSend)
 ScrollTxtSend.pack(side=tk.RIGHT, fill=tk.Y)
 txtSend.pack(side=tk.LEFT, fill=tk.Y)
@@ -2846,7 +2890,7 @@ ScrollTxtSend.config(command=txtSend.yview)
 txtSend.config(yscrollcommand=ScrollTxtSend.set)
 txtSend.place(x=0,y=155,anchor='nw',width=385, height=130)
 
-txtConsoleRecu = tk.Text(ConsolePage)
+txtConsoleRecu = tk.Text(ConsolePage,font=("Arial", 8))
 ScrolltxtConsoleRecu = tk.Scrollbar(txtConsoleRecu)
 ScrolltxtConsoleRecu.pack(side=tk.RIGHT, fill=tk.Y)
 txtConsoleRecu.pack(side=tk.LEFT, fill=tk.Y)
@@ -3292,9 +3336,9 @@ ButtonSave.place(x=530, y=210, height=60, width=140)
 
 rebuild_treeview()
 
-ButtonBackHome = tk.Button(RfidPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=680, y=280, height=120, width=120)
 
+ButtonBackHome = tk.Button(RfidPage, image=imgBack, command = ButtonBackToMain_click)
+ButtonBackHome.place(x=390, y=200, height=96, width=80)
 
 """ THE VIDEO PAGE ***************************************************"""
 def BtnStreamVideoStart_click():
@@ -3353,42 +3397,42 @@ TestPage =tk.Frame(fen1)
 TestPage.place(x=0, y=0, height=320, width=480)
 
 ButtonOdo1TurnFw = tk.Button(TestPage)
-ButtonOdo1TurnFw.place(x=30,y=15, height=25, width=200)
+ButtonOdo1TurnFw.place(x=5,y=15, height=35, width=180)
 ButtonOdo1TurnFw.configure(command = ButtonOdo1TurnFw_click)
 ButtonOdo1TurnFw.configure(text="Forward 1 Turn")
 
 ButtonOdo5TurnFw= tk.Button(TestPage)
-ButtonOdo5TurnFw.place(x=30,y=65, height=25, width=200)
+ButtonOdo5TurnFw.place(x=5,y=60, height=35, width=180)
 ButtonOdo5TurnFw.configure(command = ButtonOdo5TurnFw_click)
 ButtonOdo5TurnFw.configure(text="Forward 5 Turn")
 
 ButtonOdo1TurnRev = tk.Button(TestPage)
-ButtonOdo1TurnRev.place(x=30,y=115, height=25, width=200)
+ButtonOdo1TurnRev.place(x=5,y=105, height=35, width=180)
 ButtonOdo1TurnRev.configure(command = ButtonOdo1TurnRev_click)
 ButtonOdo1TurnRev.configure(text="Reverse 1 Turn")
 
 ButtonOdo5TurnRev= tk.Button(TestPage)
-ButtonOdo5TurnRev.place(x=30,y=165, height=25, width=200)
+ButtonOdo5TurnRev.place(x=5,y=150, height=35, width=180)
 ButtonOdo5TurnRev.configure(command = ButtonOdo5TurnRev_click)
 ButtonOdo5TurnRev.configure(text="Reverse 5 Turn")
 
 ButtonOdo3MlFw = tk.Button(TestPage)
-ButtonOdo3MlFw.place(x=300,y=15, height=25, width=200)
+ButtonOdo3MlFw.place(x=200,y=15, height=35, width=200)
 ButtonOdo3MlFw.configure(command = ButtonOdo3MlFw_click)
 ButtonOdo3MlFw.configure(text="3 Meters Forward")
 
 ButtonOdoRot180= tk.Button(TestPage)
-ButtonOdoRot180.place(x=300,y=65, height=25, width=200)
+ButtonOdoRot180.place(x=200,y=60, height=35, width=200)
 ButtonOdoRot180.configure(command = ButtonOdoRot180_click)
 ButtonOdoRot180.configure(text="Rotate 180 Degree")
 
 ButtonOdoRot360= tk.Button(TestPage)
-ButtonOdoRot360.place(x=300,y=115, height=25, width=200)
+ButtonOdoRot360.place(x=200,y=105, height=35, width=200)
 ButtonOdoRot360.configure(command = ButtonOdoRot360_click)
 ButtonOdoRot360.configure(text="Rotate 360 Degree")
 
 ButtonOdoRotNonStop= tk.Button(TestPage)
-ButtonOdoRotNonStop.place(x=300,y=165, height=25, width=200)
+ButtonOdoRotNonStop.place(x=200,y=150, height=35, width=200)
 ButtonOdoRotNonStop.configure(command = ButtonOdoRotNonStop_click)
 ButtonOdoRotNonStop.configure(text="Rotate Non Stop 100 Turns")
 
@@ -3399,8 +3443,7 @@ ButtonOdoRotNonStop.configure(text="Rotate Non Stop 100 Turns")
 #ButtonGoTOArea2.configure(text="Go to Area2")
 
 ButtonBackHome = tk.Button(TestPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=680, y=280, height=120, width=120)
-
+ButtonBackHome.place(x=390, y=200, height=96, width=80)
 
 """ THE TIMER PAGE ***************************************************"""
 def SliderHourStartGroup_click(var1):
@@ -3584,9 +3627,9 @@ ButtonSetTimerApply = tk.Button(TabTimer)
 ButtonSetTimerApply.place(x=300,y=400, height=25, width=150)
 ButtonSetTimerApply.configure(command = ButtonSendTimerToDue_click,text="Send Timer To Mower")
 
-ButtonBackHome = tk.Button(TabTimer, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=680, y=310, height=120, width=120)
 
+ButtonBackHome = tk.Button(TabTimer, image=imgBack, command = ButtonBackToMain_click)
+ButtonBackHome.place(x=390, y=200, height=96, width=80)
  
 """ THE MAIN PAGE ***************************************************"""
 
@@ -3611,7 +3654,7 @@ MainCanvasFrame = tk.Frame(MainCanvas)
 MainCanvas.create_window(0, 0, window=MainCanvasFrame, anchor='nw')
 
 Buttonimgardu=tk.Button(MainCanvasFrame,image=imgArdumower,command = ButtonInfo_click,width=430,height=100)
-Buttonimgardu.grid(row=0, column=0,columnspan=4)
+Buttonimgardu.grid(row=4, column=0,columnspan=4)
 
 ButtonAuto = tk.Button(MainCanvasFrame,image=imgAuto,width=100,height=130,command = ButtonAuto_click)
 ButtonAuto.grid(row=1, column=0)
@@ -3651,10 +3694,11 @@ MainCanvasFrame.bind("<Configure>", lambda event: MainCanvas.configure(scrollreg
 Datetext = tk.Label(MainPage, text='',textvariable=tk_date_Now,font=("Arial", 10), fg='red')
 Datetext.place(x=390,y=20, height=25, width=90)
 """
-#Statustext = tk.Label(MainPage, text='',textvariable=tk_MainStatusLine,font=("Arial", 20), fg='red')
-#Statustext.place(x=10,y=300, height=20, width=400)
-Statustext = tk.Label(fen1, text='ESSAI DE TOOLBAR',font=("Arial", 16), fg='red')
-Statustext.place(x=10,y=300, height=16, width=400)
+#tk_MainStatusLine="TEST 1234"
+Statustext = tk.Label(AutoPage, text='',textvariable=tk_MainStatusLine,font=("Arial", 12), fg='red')
+Statustext.place(x=10,y=300, height=20, width=300)
+#Statustext = tk.Label(fen1, text='ESSAI DE TOOLBAR',font=("Arial", 16), fg='red')
+#Statustext.place(x=10,y=300, height=16, width=400)
 ################## DESACTIVATE THE BT TO SAVE BATTERY
 #subprocess.call(["rfkill","block","bluetooth"])
 subprocess.Popen("sudo rfkill block bluetooth", shell=True)
@@ -3706,7 +3750,7 @@ read_all_setting()
 read_time_setting()
 send_req_message('PERI','1000','1','1','0','0','0',)
 BtnGpsRecordStop_click()
-
+ButtonAuto_click()
 
 
 fen1.mainloop()
