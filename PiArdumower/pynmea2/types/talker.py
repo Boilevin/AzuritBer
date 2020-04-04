@@ -57,14 +57,25 @@ class BAT(TalkerSentence):
 	("chgSense", "chgSense"),
 	
     )
+    
+class IMU(TalkerSentence):
+    """ non stop message from DUE to PI  for imu plot and visu etc....
+    """
+    fields = (
+        ("Millis", "millis"),
+        ("gyroYaw", "gyroYaw"),
+        ("compassYaw", "compassYaw"),
+	
+	
+    )
 
 class MOT(TalkerSentence):
     """ non stop message from DUE to PI  for wheel motor plot and visu etc....
     """
     fields = (
         ("Millis", "millis"),
-        ("motorLeftPower", "motorLeftPower"),
-        ("motorRightPower", "motorRightPower"),
+        ("motorLeftSenseCurrent", "motorLeftSenseCurrent"),
+        ("motorRightSenseCurrent", "motorRightSenseCurrent"),
 	("motorLeftPWMCurr", "motorLeftPWMCurr"),
 	("motorRightPWMCurr", "motorRightPWMCurr"),
         ("BatVoltage", "batVoltage"),
@@ -76,7 +87,7 @@ class MOW(TalkerSentence):
     """
     fields = (
         ("Millis", "millis"),
-        ("motorMowPower", "motorMowPower"),
+        ("motorMowSense", "motorMowSense"),
         ("motorMowPWMCurr", "motorMowPWMCurr"),
         ("BatVoltage", "batVoltage"),
         
