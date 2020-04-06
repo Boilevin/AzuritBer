@@ -16,6 +16,9 @@ if (os.name=='nt'):
     DueConnectedOnPi=False
     AutoRecordBatCharging=False
     useDebugConsole=True
+    useMqtt=True
+    Mqtt_Broker_IP="10.0.0.24"
+    Mqtt_Port = 1883
 
 if (os.name=='posix'):
     print('Linux Platform')
@@ -28,8 +31,11 @@ if (os.name=='posix'):
     GpsIsM6n=False
     NanoConnectedOnPi=False
     DueConnectedOnPi=True
-    AutoRecordBatCharging=True
+    AutoRecordBatCharging=False
     useDebugConsole=True
-    myCamAngle = 0 # Possible= 0, 90, 180, 270 
+    myCamAngle = 0 # Possible= 0, 90, 180, 270
+    useMqtt=True
+    Mqtt_Broker_IP="10.0.0.24"
+    Mqtt_Port = 1883
     
 
