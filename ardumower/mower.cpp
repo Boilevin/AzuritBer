@@ -431,7 +431,7 @@ void Mower::setup() {
 
   //imu.init();
 
-  gps.init();
+  //gps.init();
   // Console.print(millis());
   // Console.println(" --> ******************************************* Start of Robot Setup from mower.cpp *********************************");
   Robot::setup();

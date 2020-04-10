@@ -55,7 +55,7 @@ void GPS::init() {
     GpsPort.write( pgm_read_byte(UBLOX_INIT + i) );
     delay(5); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
   }
-  robot.gpsReady=true;
+  robot.gpsReady = true;
   Console.println("End of Gps Config");
   /*
     //fail to change speed on M6n so stay at 9600 bps
@@ -84,10 +84,10 @@ void GPS::run() {
     }
     if (c == '\n') //linefeed
     {
-        writePi(buf);
-        memset(buf, '\0', 120);
-        pos = 0;
-     
+      writePi(buf);
+      memset(buf, '\0', 120);
+      pos = 0;
+
     }
   }
 }

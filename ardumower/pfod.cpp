@@ -556,7 +556,6 @@ void RemoteControl::sendDropMenu(boolean update) {
 
 void RemoteControl::processDropMenu(String pfodCmd) {
   if (pfodCmd == "u00") robot->dropUse = !robot->dropUse;
-
   sendDropMenu(true);
 }
 

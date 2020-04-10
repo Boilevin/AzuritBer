@@ -213,6 +213,7 @@ Robot::Robot() {
   nextTimeGPS = 0;
   nextTimeCheckIfStuck = 0;
   nextTimePfodLoop = 0;
+  nextTimeGpsRead = 0;
   nextTimeImuLoop = 0;
   nextTimeRain = 0;
   lastMotorMowRpmTime = millis();
@@ -2000,7 +2001,7 @@ void Robot::setup()  {
 
   stateStartTime = millis();
   setBeeper(100, 50, 50, 200, 200 );//beep for 3 sec
-
+  gps.init();
   Console.println(F("START"));
   Console.print(F("Ardumower "));
   Console.println(VER);
@@ -3774,7 +3775,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       setDefaults();
       statsMowTimeTotalStart = false;  // stop stats mowTime counter
       //bber30
-      //loadSaveRobotStats(false);        //save robot stats
+      loadSaveRobotStats(false);        //save robot stats
 
       break;
 
@@ -4675,9 +4676,9 @@ void Robot::loop()  {
 
   }
 
-  if (gpsUse && gpsReady) {
+  if (gpsUse && gpsReady && (millis() >= nextTimeGpsRead)) {
+    nextTimeGpsRead = millis() + 1000;
     gps.run();
-    //processGPSData();
   }
 
 
