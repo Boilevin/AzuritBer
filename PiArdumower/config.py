@@ -35,7 +35,7 @@ if (os.name=='posix'):
     useDebugConsole=True
     myCamAngle = 0 # Possible= 0, 90, 180, 270
     useMqtt=True
-    Mqtt_Broker_IP="10.0.0.24"
+    Mqtt_Broker_IP="10.0.0.4"
     Mqtt_Port = 1883
     
 

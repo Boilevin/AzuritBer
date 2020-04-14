@@ -76,6 +76,7 @@ if(useMqtt):
     Mqqt_client.on_connect = Mqqt_on_connect
 
     try:
+        Mqqt_client.username_pw_set( username="admin", password="admin" )
         Mqqt_client.connect( host=Mqtt_Broker_IP, port=Mqtt_Port, keepalive=KEEP_ALIVE )
         Mqqt_client.subscribe( "Mower/COMMAND/#" )
         Mqqt_client.loop_start() 
@@ -555,6 +556,7 @@ def checkSerial():  #the main loop is that
                 consoleInsertText("send mower state over Mqtt " + '\n')
             else:
                 consoleInsertText("FAIL TO send mower state over Mqtt " + '\n')
+                print(r[0])
             
             mower.timeToSendMqttState=time.time()+10
                     
