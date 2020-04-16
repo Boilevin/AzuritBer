@@ -472,7 +472,7 @@ void RemoteControl::sendMowMenu(boolean update) {
   serialPort->print("/");
   serialPort->print(robot->Right_Mow_Power);
   serialPort->print(F("|o11~Actual Max Value "));
-  serialPort->print(robot->motorMowSense);
+  serialPort->print(robot->motorMowPower);
   sendSlider("o02", F("Power max"), robot->motorMowPowerMax, "", 0.1, 100);
 
   serialPort->print(F("|o04~Speed "));
