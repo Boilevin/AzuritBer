@@ -237,10 +237,8 @@ void PerimeterClass::matchedFilter(byte idx) {
 
   if ((idx == 0) && swapCoilPolarityLeft) mag[idx] *= -1;
   if ((idx == 1) && swapCoilPolarityRight) mag[idx] *= -1;
-  // smoothed magnitude used for signal-off detection change from 1 % to 5 % for faster detection and possible use on center big area to avoid in/out transition
+    // smoothed magnitude used for signal-off detection change from 1 % to 5 % for faster detection and possible use on center big area to avoid in/out transition
   smoothMag[idx] = 0.95 * smoothMag[idx] + 0.05 * ((float)abs(mag[idx]));
-  //smoothMag[idx] = 0.99 * smoothMag[idx] + 0.01 * ((float)abs(mag[idx]));
-  
   // perimeter inside/outside detection
   if (mag[idx] > 0) {
     signalCounter[idx] = min(signalCounter[idx] + 1, 5);
