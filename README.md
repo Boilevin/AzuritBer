@@ -1,6 +1,5 @@
 # AzuritBer
-Ardumower full odometry version
-see https://www.ardumower.de/index.php/de/ for more info.
+Version for Robomow RL1000
 
 GY-88 WITH HMC5883L MANDATORY
 
@@ -10,7 +9,4 @@ OPTIONAL RFID
 	Need ESP32 dev kit to manage SPI communication with PN5180 
 	Need Raspberry Pi 3B+ or Pi Zero for setting RFID
 
-GY87 version use a GY87 IMU connected on I2C1 to avoid i2c adress conflit with RTC but only tested on table and never in mowing condition.
-
-RL1000 version is the code for robomow rl model platform.
 	The 3 big mow motor use 3 BTS7960 motor driver and 3 INA226 with R010 instead R100 to manage motor sense over I2C

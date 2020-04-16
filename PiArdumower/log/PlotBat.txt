@@ -1,2 +1,0 @@
-Time;chgVoltage;chgSense;batVoltage
-0;0;0;0
