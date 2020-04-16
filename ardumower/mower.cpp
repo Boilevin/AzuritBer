@@ -234,7 +234,7 @@ Mower::Mower() {
   gpsUse            = 0;       // use GPS?
   stuckIfGpsSpeedBelow = 0.2; // if Gps speed is below given value the mower is stuck
   gpsBaudrate = 9600; // Gps baud rate setting (use 9600 for m6n and 38400 for m8n)
-  gpsSpeedIgnoreTime = 5000; // how long gpsSpeed is ignored when robot switches into a new STATE (in ms)
+  //gpsSpeedIgnoreTime = 5000; // how long gpsSpeed is ignored when robot switches into a new STATE (in ms)
 
   // ----- other -----------------------------------------
   buttonUse         = 1;       // has digital ON/OFF button?
