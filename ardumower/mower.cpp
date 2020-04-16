@@ -81,7 +81,7 @@ Mower::Mower() {
   motorRightOffsetFwd = 0;  //percent offset in PWM use for the 2 wheels motor have the same speed a the same PWM
   motorRightOffsetRev = 0;  //use the 1 ml ODO test to find good value the 2 wheels need to stop at the same time
   motorTickPerSecond = 200; // use to compute the maxodostate duration and computed on the calibration motor
-
+  
   UseAccelLeft = 1;
   UseBrakeLeft = 1;
   UseAccelRight = 1;
@@ -119,22 +119,22 @@ Mower::Mower() {
   newtagRotAngle2 = 0;
   newtagDistance1 = 10;
   newtagDistance2 = 0;
-
+    
   // ------ sonar ------------------------------------
   sonarUse                   = 0;          // use ultra sonic sensor? (WARNING: robot will slow down, if enabled but not connected!)
   sonarLeftUse               = 1;
   sonarRightUse              = 1;
   sonarCenterUse             = 0;
   sonarTriggerBelow          = 87;       // ultrasonic sensor trigger distance in cm (0=off)
-  sonarToFrontDist           = 30;        // ultrasonic sensor distance to front mower in cm
+  sonarToFrontDist           = 30;        // ultrasonic sensor distance to front mower in cm 
 
 
-
+  
   // ------ perimeter ---------------------------------
   perimeterUse       = 0;      // use perimeter?
-  perimeterTriggerMinSmag = 200;      // perimeter minimum smag to use on big area
-  //perimeterOutRollTimeMax  = 2000;   // free
-  //perimeterOutRollTimeMin = 750;    // free
+  perimeterTriggerMinSmag = 200;      // perimeter minimum smag to use on big area  //perimeterOutRollTimeMax  = 2000;   // free
+  // free
+  
   perimeterOutRevTime   = 2200;   // free
   perimeterTrackRollTime = 1500; //roll time during perimeter tracking
   perimeterTrackRevTime = 2200;  // reverse time during perimeter tracking
@@ -159,7 +159,7 @@ Mower::Mower() {
   perimeterMagMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
   perimeter.read2Coil = false;
   areaToGo = 1;//initialise the areatogo to the station area
-
+  
   // ------ lawn sensor --------------------------------
   lawnSensorUse     = 0;       // use capacitive Sensor
   // ------  IMU (compass/accel/gyro) ----------------------
@@ -215,26 +215,26 @@ Mower::Mower() {
   chgNull         = 2;          // Nullduchgang abziehen (1 oder 2)
   // ------  charging station ---------------------------
   stationRevDist     = 50;    // charge station reverse 50 cm
-  stationRollAngle    = 45;    // charge station roll after reverse
+  stationRollAngle    = 45;    // charge station roll after reverse 
   stationForwDist    = 30;    // charge station accel distance cm
   stationCheckDist   = 2;    // charge station  check distance to be sure voltage is OK cm
-  UseBumperDock = true; //bumper is pressed when docking or not
-  dockingSpeed   =  60;   //speed docking is (percent of maxspeed)
+  UseBumperDock=true;  //bumper is pressed when docking or not
+  dockingSpeed   =  60;   //speed docking is (percent of maxspeed) 
   autoResetActive  = 0;       // after charging reboot or not
 
-
+   
   // ------ odometry ------------------------------------
   odometryUse       = 1;       // use odometry?
   odometryTicksPerRevolution = 1010;   // encoder ticks per one full resolution
   odometryTicksPerCm = 12.9;  // encoder ticks per cm
   odometryWheelBaseCm = 43;    // wheel-to-wheel distance (cm)
   odometryRightSwapDir = 0;       // inverse right encoder direction?
-
-
+  
   // ----- GPS -------------------------------------------
   gpsUse            = 0;       // use GPS?
   stuckIfGpsSpeedBelow = 0.2; // if Gps speed is below given value the mower is stuck
   gpsBaudrate = 9600; // Gps baud rate setting (use 9600 for m6n and 38400 for m8n)
+  gpsSpeedIgnoreTime = 5000; // how long gpsSpeed is ignored when robot switches into a new STATE (in ms)
 
   // ----- other -----------------------------------------
   buttonUse         = 1;       // has digital ON/OFF button?
@@ -478,19 +478,19 @@ void checkMotorFault() {
     robot.addErrorCounter(ERR_MOTOR_LEFT);
     Console.println(F("Error: motor left fault"));
     robot.setNextState(STATE_ERROR, 0);
-
+    
   }
   if  (digitalRead(pinMotorRightFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_RIGHT);
     Console.println(F("Error: motor right fault"));
     robot.setNextState(STATE_ERROR, 0);
-
+    
   }
   if (digitalRead(pinMotorMowFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_MOW);
     Console.println(F("Error: motor mow fault"));
     robot.setNextState(STATE_ERROR, 0);
-
+    
   }
 }
 
@@ -563,11 +563,11 @@ void Mower::setActuator(char type, int value) {
 
   switch (type) {
 
-
-    case ACT_MOTOR_MOW: setMC33926(pinMotorMowDir, pinMotorMowPWM, value); break;// Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
-    //bb
+    case ACT_MOTOR_MOW: setBTS7960(pinMotorMowEnable, pinMotorMowPWM, value); break;// MOW Motor with BTS7960
+     //bb
     case ACT_MOTOR_LEFT: setMC33926(pinMotorLeftDir, pinMotorLeftPWM, value); break;//   Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
-
+  
+    
     case ACT_MOTOR_RIGHT:
       if (value >= 0) setMC33926(pinMotorRightDir, pinMotorRightPWM, value * (1 + (double)motorRightOffsetFwd / 100));
       else setMC33926(pinMotorRightDir, pinMotorRightPWM, value * (1 - (double)motorRightOffsetRev / 100));
@@ -580,7 +580,7 @@ void Mower::setActuator(char type, int value) {
     case ACT_USER_SW3: digitalWrite(pinUserSwitch3, value); break;
     case ACT_RTC:
       if (!setDS1307(datetime)) {
-        Console.println("RTC comm error!");
+        Console.println("Please set a valid date and time!");
         addErrorCounter(ERR_RTC_COMM);
         setNextState(STATE_ERROR, 0);
       }
