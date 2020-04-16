@@ -682,6 +682,7 @@ class Robot
     int stationForwDist    ;    // charge station forward distance cm
     byte stationCheckDist   ;    // charge station check distance cm
     //bber20
+    boolean autoResetActive;       // at the end of the charging all is rebbot to avoid error after 1 or 2 weeks ON
     boolean UseBumperDock ;  //bumper is pressed when docking or not
     byte dockingSpeed ;  //speed docking is (percent of maxspeed) when sonar detect something while tracking
     unsigned long totalDistDrive;  //use to check when to leave the wire in start timer mode
