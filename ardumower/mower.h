@@ -132,8 +132,8 @@
 #define Console SerialUSB
 #define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
 
+
 #define Enable_DueWatchdog true
-//#define Enable_DueWatchdog false
 
 #define RaspberryPIPort SerialUSB  //The PI is connected on NATIVE USB port over USB cable
 
@@ -145,6 +145,9 @@
 #define BLUETOOTH_PIN       1234
 
 #define GpsPort Serial1  // connected on P44 Wlan
+#define GPS_BAUDRATE  38400  // set value to 9600 for M6n marotronics shop or 19200 or 38400 for BN880 and M8N other module
+
+
 
 
 // ------- ultrasonic config ---------------------------------------------------------
