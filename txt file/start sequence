@@ -1,0 +1,44 @@
+SETUP
+ --> ++++++++++++++++++++++++++++++++++* Start Robot Setup at 2502 --> +++++++++++++++++++++++++++
+Load ErrorCounters
+ErrorCounters address Start=500
+ErrorCounters address Stop=522
+UserSettings are read from EEprom Address : 2000 To 2504
+Load Robot Stats
+Robot Stats address Start = 800
+Robot Stats address Stop = 826
+--------------------------------- IMU INITIALISATION -------------------
+COMPASS HMC5883L ID NEED TO BE 72 IF ALL IS OK ------>  ID=72
+IMU: found calib data
+Load Calibration
+Calibration address Start = 600
+Calibration address Stop = 650
+-------- IMU CALIBRATION  --------
+ACCEL GYRO MPU6050 OFFSET ax: -2058 ay: 272 az: 1159 gx: -23 gy: -10 gz: 1
+COMPASS OFFSET X.Y.Z AND SCALE X.Y.Z   --> comOfs=-417.00,80.50,130.00
+comScale=758.00,867.00,784.00
+.
+MPU6050 connection successful
+Initializing DMP...
+Enabling DMP...  Packet size 42
+Wait 3 secondes to stabilize the Drift
+AccelGyro Yaw: 0.00  Compass Yaw: 1.95  Diff between compass and accelGyro in Radian and Deg1.94 / 111.35
+--------------------------------- IMU READY ------------------------------
+Change to Area : 1
+New sigcode in use  : 1,1,-1,-1,1,-1,1,-1,-1,1,-1,1,1,-1,-1,1,-1,-1,1,-1,-1,1,1,-1,
+matchSignal size=24
+subSample=4
+capture size=192
+------------------------------- GPS  Initialisation --------------------------------------------
+Send config sentence
+End of Gps Config
+START
+Ardumower 1.2-Azurit-ber
+Config: Ardumower
+press...
+  d for menu
+  v to change console output (sensor counters, values, perimeter etc.)
+off
+
+Starting all the Ina226 current mow motor 
+Watchdog is enable and set to 2 secondes
