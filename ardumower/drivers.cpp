@@ -168,6 +168,30 @@ void setL9958(int pinDir, int pinPWM, int speed){
   }
 }
 
+//bber1
+// BTS7960 motor driver
+//VCC --> Ioref
+//GND --> GND
+//R_IS --> NC
+//L_IS --> NC
+//R_EN --> pinMotorMowEnable 28
+//L_EN --> Ioref
+//RPWM --> pinMotorMowPWM 2  
+//LPWM --> GND
+
+// PinPWM             PinEnable
+// H                  H     Forward
+// L                  L     Stop   
+void setBTS7960(int pinEnable, int pinPWM, int speed){
+  if (speed > 50){
+    digitalWrite(pinEnable, HIGH) ;  
+    PinMan.analogWrite(pinPWM, abs(speed));
+  } else {
+    digitalWrite(pinEnable, LOW) ;  
+    PinMan.analogWrite(pinPWM, 0);
+  }
+}
+
 // MC33926 motor driver
 // Check http://forum.pololu.com/viewtopic.php?f=15&t=5272#p25031 for explanations.
 //(8-bit PWM=255, 10-bit PWM=1023)
