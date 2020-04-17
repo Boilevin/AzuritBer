@@ -617,10 +617,10 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
   //else serialPort->print(" (outside)");
   sendSlider("e08", F("Mini Smag"), robot->perimeter.timedOutIfBelowSmag, "", 1, 200, 1);
   sendSlider("e14", F("Timeout (s) if Outside"), robot->perimeter.timeOutSecIfNotInside, "", 1, 20, 1);
-  sendSlider("e04", F("Big AREA Smag Center"), robot->perimeterTriggerMinSmag, "", 1, 2000, 100);
+  sendSlider("e04", F("Big AREA Smag Center"), robot->perimeterTriggerMinSmag, "", 1, 500, 100);
   sendSlider("e18", F("Tracking Max Speed PWM"), robot->MaxSpeedperiPwm, "", 1, 255, 50);
   sendSlider("e20", F("Circle Arc disance (cm) Obstacle while tracking"), robot->DistPeriObstacleAvoid, "", 1 , 250, 1);
-  sendSlider("e21", F("Perimeter MAG MAX VALUE"), robot->perimeterMagMaxValue, "", 1 , 2500, 500);
+  sendSlider("e21", F("Perimeter MAG MAX VALUE"), robot->perimeterMagMaxValue, "", 1 , 3000, 1000);
   sendSlider("e11", F("Transition timeout"), robot->trackingPerimeterTransitionTimeOut, "", 1, 5000, 1);
   sendSlider("e12", F("Track error timeout"), robot->trackingErrorTimeOut, "", 1, 10000, 1);
   sendPIDSlider("e07", F("Track"), robot->perimeterPID, 0.1, 52);
@@ -856,7 +856,7 @@ void RemoteControl::processImuMenu(String pfodCmd) {
 }
 
 void RemoteControl::sendRemoteMenu(boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->print(F("{.Remote R/C or Pi`1000"));
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.Raspberry`1000"));
   serialPort->print(F("|h00~Use RC "));
   sendYesNo(robot->remoteUse);
   serialPort->print(F("|h01~Use Rasberry(Need Reboot)"));
@@ -996,7 +996,7 @@ void RemoteControl::sendDateTimeMenu(boolean update) {
   sendSlider("t01", dayOfWeek[robot->datetime.date.dayOfWeek], robot->datetime.date.dayOfWeek, "", 1, 6, 0);
   sendSlider("t02", "Day ", robot->datetime.date.day, "", 1, 31, 1);
   sendSlider("t03", "Month ", robot->datetime.date.month, "", 1, 12, 1);
-  sendSlider("t04", "Year ", robot->datetime.date.year, "", 1, 2020, 2013);
+  sendSlider("t04", "Year ", robot->datetime.date.year, "", 1, 2030, 2019);
   sendSlider("t05", "Hour ", robot->datetime.time.hour, "", 1, 23, 0);
   sendSlider("t06", "Minute ", robot->datetime.time.minute, "", 1, 59, 0);
   serialPort->println("}");

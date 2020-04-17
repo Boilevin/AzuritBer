@@ -59,7 +59,7 @@ sonarTriggerBelow                          : 87
 sonarToFrontDist                           : 30
 ---------- perimeter -----------------------------------------
 perimeterUse                               : 1
-perimeterTriggerMinSmag                    : 0
+perimeterTriggerMinSmag                    : 200
 MaxSpeedperiPwm                            : 160
 perimeterTrackRollTime                     : 1500
 perimeterTrackRevTime                      : 2200
