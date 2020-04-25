@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-
-'version for 480*320 pixel'
-
-
+# 14/05/19 new value on console size page
 import sys
 import serial
 import pynmea2
@@ -30,6 +27,76 @@ from config import DueConnectedOnPi
 from config import GpsIsM6n
 from config import AutoRecordBatCharging
 from config import useDebugConsole
+from config import useMqtt
+from config import Mqtt_Broker_IP
+from config import Mqtt_Port
+
+
+
+
+#bber30 test MQTT see also line 521
+if(useMqtt):
+    import paho.mqtt.client as mqtt_client
+    KEEP_ALIVE  = 45 # interval en seconde
+    
+    mqtt_client.Client.connected_flag=False # create flag in class
+    
+    def Mqqt_on_log( Mqqt_client, userdata, level, buf ):
+        print( "log: ",buf)
+
+    def Mqqt_on_connect( Mqqt_client, userdata, flags, rc ):
+        if rc==0:
+            client.connected_flag=True #set flag
+            consoleInsertText("MQTT connected OK"+ '\n')
+        else:
+            consoleInsertText("MQTT Bad connection Returned code=",rc )
+            consoleInsertText('\n')
+            
+    def Mqqt_on_message( Mqqt_client, userdata, message ):
+        consoleInsertText( "Reception message MQTT..." + '\n')
+        consoleInsertText( "Topic : %s" % message.topic + " Data  : %s" % message.payload + '\n')
+        message_txt=str((message.payload),'utf8')
+        responsetable=message_txt.split(";")
+        #Here the main option to do from COMMAND topic
+        if(str(message.topic)=="Mower/COMMAND/"):
+            if(str(responsetable[0]) == "HOME"):
+                button_home_click()
+            if(str(responsetable[0]) == "STOP"):
+                button_stop_all_click()
+            if(str(responsetable[0]) == "START"):
+                buttonStartMow_click()
+            if(str(responsetable[0]) == "MOWPATTERN"):
+                #Maybe need to stop and restart to mow between change ???
+                tk_mowingPattern.set(int(responsetable[1]))
+                send_var_message('w','mowPatternCurr',''+str(tk_mowingPattern.get())+'','0','0','0','0','0','0','0')
+       
+    Mqqt_client = mqtt_client.Client( client_id="TheMower" )
+    #Mqqt_client.on_log = Mqqt_on_log
+    Mqqt_client.on_message = Mqqt_on_message
+    Mqqt_client.on_connect = Mqqt_on_connect
+
+    try:
+        Mqqt_client.username_pw_set( username="admin", password="admin" )
+        Mqqt_client.connect( host=Mqtt_Broker_IP, port=Mqtt_Port, keepalive=KEEP_ALIVE )
+        Mqqt_client.subscribe( "Mower/COMMAND/#" )
+        Mqqt_client.loop_start() 
+        Mqqt_client.connected_flag=True
+    except:
+        Mqqt_client.connected_flag=False
+        print("MQTT connection failed")
+        #consoleInsertText("MQTT connection failed" + '\n')
+        Mqqt_client.loop_stop()    #Stop loop 
+
+   
+    #END ADDon For MQTT
+
+
+
+
+
+
+
+
 
 
 
@@ -154,8 +221,6 @@ def find_rfid_tag():
             
         if(mymower.newtagToDo=="SPEED"): #find the station for example
             
-            #mower.speedIsReduce=True
-            #mower.timeToResetSpeed=time.time()+5  #reduce speed for 5 secondes
             consoleInsertText('RFID change tracking speed'+'\n')
             send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
             send_var_message('w','ActualSpeedPeriPWM',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
@@ -210,10 +275,6 @@ actualRep=os.getcwd()
 dateNow=time.strftime('%d/%m/%y %H:%M:%S',time.localtime())
 
 fen1 =tk.Tk()
-fen1.attributes('-fullscreen',True)
-fen1.overrideredirect(True)
-
-
 """Variable for check button """
 MotVar1 = tk.IntVar()
 MotVar2 = tk.IntVar()
@@ -266,7 +327,6 @@ tk_chgSense=tk.DoubleVar()
 tk_perimeterMag=tk.IntVar()
 tk_perimeterMagRight=tk.IntVar()
 
-tk_consoleHide=tk.IntVar()
 
 ManualKeyboardUse=tk.IntVar()
 MainperimeterUse= tk.IntVar()
@@ -293,7 +353,7 @@ firstFixFlag=False
 firstFixDate=0
 
 fen1.title('ARDUMOWER')
-fen1.geometry("800x600")
+fen1.geometry("800x480")
 
 class  datetime:
     def __init__(self):       
@@ -358,15 +418,19 @@ class mower:
         mower.rainDetect=False
         mower.areaInMowing=1
         mower.areaToGo=1
-        mower.speedIsReduce=False
+        
         mower.sigArea2Off=True
-        mower.timeToResetSpeed=0
+        
         mower.timeToStartArea2Signal=0
         mower.focusOnPage=0
         mower.dueSerialReceived=''
         mower.autoRecordBatChargeOn=False
-        
-        
+
+
+        mower.timeToSendMqttState=time.time()+20
+        mower.timeToSendMqttBattery=time.time()+200
+        mower.timeToSendMqttMowPattern=time.time()+200
+        mower.timeToSendMqttTemp=time.time()+200
         
         
     
@@ -451,7 +515,7 @@ def checkSerial():  #the main loop is that
         if myps4.rightClick:
             ButtonRight_click()       
         if myps4.upClick:
-            #send_var_message('w','motorSpeedMaxPwm',''+str(manualSpeedSlider.get())+'','0','0','0','0','0','0','0')
+            send_var_message('w','motorSpeedMaxPwm',''+str(manualSpeedSlider.get())+'','0','0','0','0','0','0','0')
             send_pfo_message('nf','1','2','3','4','5','6',)
         if myps4.downClick:
             ButtonStop_click()
@@ -474,23 +538,35 @@ def checkSerial():  #the main loop is that
             buttonBlade_stop_click()
             #print("roundClick:")
         
-    if ((mower.speedIsReduce) & (time.time() > mower.timeToResetSpeed)):
-        mower.speedIsReduce=False
-        send_var_message('w','MaxSpeedperiPwm',''+str(myRobot.MaxSpeedperiPwm)+'','0','0','0','0','0','0','0')
     if useDebugConsole:
         txtRecu.delete('5000.0',tk.END) #keep only  lines
         txtSend.delete('5000.0',tk.END) #keep only  lines
     txtConsoleRecu.delete('2500.0',tk.END) #keep only  lines
    
+    
 
 
 
-
-
+    #bber30
+    #need to test if broker not present the Pi freeze ?????????
+    if (useMqtt and Mqqt_client.connected_flag) :
+        if (time.time() > mower.timeToSendMqttState):
+            r = Mqqt_client.publish( "Mower/State", myRobot.statusNames[mymower.status] +";"+myRobot.stateNames[mymower.state] + ";" + mymower.batVoltage + ";" + mymower.Dht22Temp)
+            if (r[0] == 0):          
+                consoleInsertText("send mower state over Mqtt " + '\n')
+            else:
+                consoleInsertText("FAIL TO send mower state over Mqtt " + '\n')
+                print(r[0])
+            
+            mower.timeToSendMqttState=time.time()+10
+                    
+        
+        #Mqqt_client.loop(0.05) # ???? need to find the correct value 0.001 fail 0.05 ok
     
     #fen1.after(10,checkSerial) #to be sure empty the buffer read again immediatly   
-    fen1.after(20,checkSerial)  # here is the main loop each 50ms
+    fen1.after(20,checkSerial)  # here is the main loop each 20ms
     
+#################################### END OF MAINLOOP ###############################################
 
 
 
@@ -507,9 +583,7 @@ def decode_message(message):  #decode the nmea message
                 mymower.laserSensor5=message.sensor5
                 mymower.laserSensor6=message.sensor6
                 if ((int(mymower.laserSensor1) <= 800) or (int(mymower.laserSensor2) <= 800) or (int(mymower.laserSensor3) <= 800)):
-                    #reduce speed for 5 secondes
-                    #mower.speedIsReduce=True
-                    #mower.timeToResetSpeed=time.time()+5
+                    
                     consoleInsertText('Towel detect something :'+ '\n')
                     consoleInsertText(str(message))
                     
@@ -1021,7 +1095,6 @@ def decode_message(message):  #decode the nmea message
         
         
     
-#################################### END OF MAINLOOP ###############################################
 
     
 def refreshAllSettingPage():
@@ -1444,7 +1517,7 @@ def refreshTimerSettingPage():
 
   
 def refreshMotorSettingPage():
-    #manualSpeedSlider.set(myRobot.motorSpeedMaxPwm)
+    manualSpeedSlider.set(myRobot.motorSpeedMaxPwm)
     sliderPowerMax.set(myRobot.motorPowerMax)
     sliderSpeedRpmMax.set(myRobot.motorSpeedMaxRpm)
     sliderSpeedPwmMax.set(myRobot.motorSpeedMaxPwm)
@@ -1616,7 +1689,7 @@ def ButtonSendSettingToEeprom_click():
     
 
 def ButtonManual_click():
-    #manualSpeedSlider.set(myRobot.motorSpeedMaxPwm)
+    manualSpeedSlider.set(myRobot.motorSpeedMaxPwm)
     mymower.focusOnPage=2
     ManualPage.tkraise()
         
@@ -1974,24 +2047,15 @@ except:
 
 
 #print(cwd)
-#cwd1=cwd+"/icons/medium/home.png"
+#cwd1=cwd+"/icons/home.png"
 #print(cwd1)
 
 """-------------------ICONS LOADING---------------------"""
-"""
-to resize Img to fit on a button
-        img4=Image.open('monImage.PNG')
-        image4=img4.resize((myWidth,myHeight))
-        useImg4=ImageTk.PhotoImage(image4)
-"""
-
-
-imgHome=tk.PhotoImage(file=cwd + "/icons/home medium.png")
+imgHome=tk.PhotoImage(file=cwd + "/icons/home.png")
 imgTrack=tk.PhotoImage(file=cwd + "/icons/track.png")
-imgStopAll=tk.PhotoImage(file=cwd + "/icons/stop all medium.png")
-imgStopAllSmall=tk.PhotoImage(file=cwd + "/icons/stop all small.png")
-imgstartMow=tk.PhotoImage(file=cwd + "/icons/startmow medium.png")
-imgBack=tk.PhotoImage(file=cwd + "/icons/back medium.png")
+imgStopAll=tk.PhotoImage(file=cwd + "/icons/stop all.png")
+imgstartMow=tk.PhotoImage(file=cwd + "/icons/startmow.png")
+imgBack=tk.PhotoImage(file=cwd + "/icons/back.png")
 imgBladeStop = tk.PhotoImage(file=cwd + "/icons/bladeoff.png")
 imgBladeStart = tk.PhotoImage(file=cwd + "/icons/bladeon.png")
 imgForward=tk.PhotoImage(file=cwd + "/icons/forward.png")
@@ -1999,7 +2063,7 @@ imgReverse=tk.PhotoImage(file=cwd + "/icons/reverse.png")
 imgLeft=tk.PhotoImage(file=cwd + "/icons/left.png")
 imgRight=tk.PhotoImage(file=cwd + "/icons/right.png")
 imgStop=tk.PhotoImage(file=cwd + "/icons/stop.png")
-imgArdumower = tk.PhotoImage(file=cwd + "/icons/ardumower medium.png")
+imgArdumower = tk.PhotoImage(file=cwd + "/icons/ardumower.png")
 imgManual=tk.PhotoImage(file=cwd + "/icons/manual.png")
 imgAuto=tk.PhotoImage(file=cwd + "/icons/auto.png")
 imgTest=tk.PhotoImage(file=cwd + "/icons/test.png")
@@ -2022,25 +2086,13 @@ imgRfid=tk.PhotoImage(file=cwd + "/icons/rfid.png")
 
 """ THE SETTING PAGE ****************************************************"""
 
-
-
-"""
 TabSetting=ttk.Notebook(fen1)
+
 TabSetting.place(x=0,y=0)
-"""
-TabSetting=tk.Frame(fen1)
-TabSetting.place(x=0,y=0,width=800,height=380)
-
-TabMainCanvas = tk.Canvas(TabSetting, height=280,width=430)
-TabMainCanvas.grid(row=0, column=0,sticky="nsew")
-TabMainCanvasFrame = tk.Frame(TabMainCanvas)
-TabMainCanvas.create_window(0, 0, window=TabMainCanvasFrame, anchor='nw')
-
-
 
 #TabConsole=ttk.Notebook(fen1)
 #img1=tk.PhotoImage(file="/pi/Ardumawer/img/setting1.png")
-tabMain=tk.Frame(TabMainCanvasFrame,width=800,height=380)
+tabMain=tk.Frame(TabSetting,width=800,height=380)
 tabWheelMotor=tk.Frame(TabSetting,width=800,height=380)
 tabMowMotor=tk.Frame(TabSetting,width=800,height=380)
 tabPerimeter=tk.Frame(TabSetting,width=800,height=380)
@@ -2049,11 +2101,12 @@ tabSonar=tk.Frame(TabSetting,width=800,height=380)
 tabBattery=tk.Frame(TabSetting,width=800,height=380)
 tabOdometry=tk.Frame(TabSetting,width=800,height=380)
 tabDateTime=tk.Frame(TabSetting,width=800,height=380)
-tabByLane=tk.Frame(TabMainCanvasFrame,width=800,height=380)
+tabByLane=tk.Frame(TabSetting,width=800,height=380)
 #tabRfid=tk.Frame(TabSetting,width=800,height=380)
 
 
-"""
+
+
 TabSetting.add(tabMain,text="Main")
 TabSetting.add(tabWheelMotor,text="Wheels Motor")
 TabSetting.add(tabMowMotor,text="Mow Motor")
@@ -2066,29 +2119,6 @@ TabSetting.add(tabOdometry,text="Odometry")
 TabSetting.add(tabDateTime,text="Date Time")
 TabSetting.add(tabByLane,text="ByLane")
 #TabSetting.add(tabRfid,text="Rfid")
-"""
-
-
-yscrollbar = tk.Scrollbar(TabSetting, orient=tk.VERTICAL,width=40)
-yscrollbar.config(command=TabMainCanvas.yview)
-TabMainCanvas.config(yscrollcommand=yscrollbar.set)
-yscrollbar.grid(row=0, column=2, sticky="ns")
-#MainCanvas.yview_moveto(0.5)
-TabMainCanvasFrame.bind("<Configure>", lambda event: TabMainCanvas.configure(scrollregion=TabMainCanvas.bbox("all")))
-
-"""
-
-yscrollbar = tk.Scrollbar(MainPage, orient=tk.VERTICAL,width=40)
-yscrollbar.config(command=MainCanvas.yview)
-MainCanvas.config(yscrollcommand=yscrollbar.set)
-yscrollbar.grid(row=0, column=2, sticky="ns")
-#MainCanvas.yview_moveto(0.5)
-MainCanvasFrame.bind("<Configure>", lambda event: MainCanvas.configure(scrollregion=MainCanvas.bbox("all")))
-"""
-
-
-
-
 
 
 
@@ -2216,7 +2246,8 @@ ButtonSendSettingToEeprom.configure(text="Save setting into RTC Eeprom")
 
 
 ButtonBackHome = tk.Button(TabSetting, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
+
 
 
 """************* Mow motor setting *****************************"""
@@ -2613,14 +2644,11 @@ ButtonLaneUseNr = tk.Button(tabByLane,command = ButtonLaneUseNr_click,text="Next
 ButtonLaneUseNr.place(x=10,y=200,width=100, height=20)
 
 def ButtonRollDir_click():
-    send_pfo_message('w20','1','2','3','4','5','6',)
-   
+    send_pfo_message('w20','1','2','3','4','5','6',) 
 ButtonRollDir = tk.Button(tabByLane,command = ButtonRollDir_click,text="Next Roll Dir")
 ButtonRollDir.place(x=10,y=230,width=100, height=20)
-"""
-ButtonAuto = tk.Button(MainCanvasFrame,image=imgAuto,width=100,height=130,command = ButtonAuto_click)
-ButtonAuto.grid(row=1, column=0)
-"""
+
+
 Frame1= tk.Frame(tabByLane)
 Frame1.place(x=10, y=260, height=90, width=650)
 Frame1.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
@@ -2665,51 +2693,51 @@ def button_home_click():
 def button_track_click():
     send_pfo_message('rk','1','2','3','4','5','6',)
 
-def ButtonStartMow_click():
+def buttonStartMow_click():
     send_var_message('w','mowPatternCurr',''+str(tk_mowingPattern.get())+'','0','0','0','0','0','0','0')
     send_pfo_message('ra','1','2','3','4','5','6',)
    
 
 
 AutoPage = tk.Frame(fen1)
-AutoPage.place(x=0, y=0, height=320, width=480)
+AutoPage.place(x=0, y=0, height=400, width=800)
 
 batteryFrame= tk.Frame(AutoPage)
-batteryFrame.place(x=10, y=140, height=60, width=100)
+batteryFrame.place(x=10, y=180, height=60, width=100)
 batteryFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 
 tk.Label(batteryFrame,text="BATTERY",fg='green').pack(side='top',anchor='n')
 tk.Label(batteryFrame,textvariable=tk_batVoltage, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 temperatureFrame= tk.Frame(AutoPage)
-temperatureFrame.place(x=130, y=140, height=60, width=100)
+temperatureFrame.place(x=130, y=180, height=60, width=100)
 temperatureFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 
 tk.Label(temperatureFrame,text="TEMPERATURE",fg='green').pack(side='top',anchor='n')
 tk.Label(temperatureFrame,textvariable=tk_Dht22Temp, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 loopsFrame= tk.Frame(AutoPage)
-loopsFrame.place(x=250, y=140, height=60, width=100)
+loopsFrame.place(x=250, y=180, height=60, width=100)
 loopsFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 
 tk.Label(loopsFrame,text="LOOP/SEC",fg='green').pack(side='top',anchor='n')
 tk.Label(loopsFrame,textvariable=tk_loopsPerSecond, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 yawFrame= tk.Frame(AutoPage)
-yawFrame.place(x=10, y=210, height=60, width=100)
+yawFrame.place(x=370, y=180, height=60, width=80)
 yawFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 tk.Label(yawFrame,text="YAW",fg='green').pack(side='top',anchor='n')
 tk.Label(yawFrame,textvariable=tk_ImuYaw, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 pitchFrame= tk.Frame(AutoPage)
-pitchFrame.place(x=130, y=210, height=60, width=100)
+pitchFrame.place(x=470, y=180, height=60, width=80)
 pitchFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 tk.Label(pitchFrame,text="PITCH",fg='green').pack(side='top',anchor='n')
 tk.Label(pitchFrame,textvariable=tk_ImuPitch, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 
 rollFrame= tk.Frame(AutoPage)
-rollFrame.place(x=250, y=210, height=60, width=100)
+rollFrame.place(x=570, y=180, height=60, width=80)
 rollFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 tk.Label(rollFrame,text="ROLL",fg='green').pack(side='top',anchor='n')
 tk.Label(rollFrame,textvariable=tk_ImuRoll, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
@@ -2718,37 +2746,34 @@ tk.Label(rollFrame,textvariable=tk_ImuRoll, fg='red',font=("Arial", 20)).pack(si
 
 
 Frame1 = tk.Frame(AutoPage)
-Frame1.place(x=10, y=10, height=120, width=130)
+Frame1.place(x=10, y=20, height=150, width=130)
 tk.Label(Frame1,text="MOW PATTERN",fg='green').pack(side='top',anchor='w')
 RdBtn_Random=tk.Radiobutton(Frame1, text="Random", variable=tk_mowingPattern, value=0).pack(side='top',anchor='w')
 RdBtn_ByLane=tk.Radiobutton(Frame1, text="By Lane", variable=tk_mowingPattern, value=1).pack(side='top',anchor='w')
 RdBtn_Perimeter=tk.Radiobutton(Frame1, text="Wire", variable=tk_mowingPattern, value=2).pack(side='top',anchor='w')
-ButtonStartMow = tk.Button(AutoPage, image=imgstartMow, command = ButtonStartMow_click)
-ButtonStartMow.place(x=120,y=0,width=100, height=130)
+ButtonStartMow = tk.Button(AutoPage, image=imgstartMow, command = buttonStartMow_click)
+ButtonStartMow.place(x=130,y=0,width=100, height=130)
 Buttonhome = tk.Button(AutoPage, image=imgHome, command = button_home_click)
-Buttonhome.place(x=230,y=0,width=100, height=130)
-"""
+Buttonhome.place(x=250,y=0,width=100, height=130)
 Buttontrack = tk.Button(AutoPage, image=imgTrack, command = button_track_click)
 Buttontrack.place(x=380,y=0,width=100, height=130)
-"""
-
-#tk_MainStatusLine="TEST 1234"
-#Statustext = tk.Label(AutoPage,text='',textvariable=tk_MainStatusLine,font=("Arial", 12), fg='red')
-#Statustext.place(x=10,y=300, height=16, width=300)
-
-
-
-
-
 ButtonStopAllAuto = tk.Button(AutoPage, image=imgStopAll, command = button_stop_all_click)
-ButtonStopAllAuto.place(x=340,y=0,width=100, height=130)
+ButtonStopAllAuto.place(x=500,y=0,width=100, height=130)
 
 ButtonBackHome = tk.Button(AutoPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
+
+
+
+
 
 
 """**************************THE MANUAL PAGE  **********************************************"""
 
+
+    
+
+    
 
 def ButtonJoystickON_click() :
     subprocess.call(["rfkill","unblock","bluetooth"])
@@ -2783,7 +2808,7 @@ def buttonBlade_start_click():
 
 def ButtonForward_click():
     ButtonReverse.configure(state='disabled')
-    #send_var_message('w','motorSpeedMaxPwm',''+str(manualSpeedSlider.get())+'','0','0','0','0','0','0','0')
+    send_var_message('w','motorSpeedMaxPwm',''+str(manualSpeedSlider.get())+'','0','0','0','0','0','0','0')
     send_pfo_message('nf','1','2','3','4','5','6',)
 def ButtonRight_click():
     send_pfo_message('nr','1','2','3','4','5','6',)
@@ -2799,7 +2824,7 @@ def ButtonStop_click():
      
     
 ManualPage = tk.Frame(fen1)
-ManualPage.place(x=0, y=0, height=300, width=480)
+ManualPage.place(x=0, y=0, height=400, width=800)
 Frame1 = tk.Frame(ManualPage)
 Frame1.place(x=0, y=0, height=300, width=300)
 
@@ -2819,33 +2844,40 @@ ButtonLeft.place(x=0, y=100, height=100, width=100)
 ButtonReverse = tk.Button(Frame1,image=imgReverse,command = ButtonReverse_click)
 ButtonReverse.place(x=100,y=200, height=100, width=100)
 
-ButtonStopAllManual = tk.Button(Frame1, image=imgStopAllSmall, command = button_stop_all_click)
-ButtonStopAllManual.place(x=210,y=210,width=80, height=80)
-
-
 ButtonBladeStart = tk.Button(ManualPage, image=imgBladeStart, command = buttonBlade_start_click)
-ButtonBladeStart.place(x=370,y=5,width=100, height=50)
+ButtonBladeStart.place(x=680,y=5,width=100, height=50)
 ButtonBladeStop = tk.Button(ManualPage, image=imgBladeStop, command = buttonBlade_stop_click)
-ButtonBladeStop.place(x=370,y=55,width=100, height=80)
+ButtonBladeStop.place(x=680,y=55,width=100, height=80)
 
 
-""" need to find other location ,on setting for example
+
+ButtonStopAllManual = tk.Button(ManualPage, image=imgStopAll, command = button_stop_all_click)
+ButtonStopAllManual.place(x=400,y=200,width=100, height=130)
+
 tk.Label(ManualPage, image=imgJoystick).place(x=400,y=5)
-
 ButtonJoystickON = tk.Button(ManualPage, image=imgJoystickON, command = ButtonJoystickON_click)
 ButtonJoystickON.place(x=450,y=80,width=50, height=50)
 ButtonJoystickOFF = tk.Button(ManualPage, image=imgJoystickOFF, command = ButtonJoystickOFF_click)
 ButtonJoystickOFF.place(x=400,y=80,width=50, height=50)
 
-manualSpeedSlider = tk.Scale(ManualPage,orient='vertical', from_=50, to=255)
-manualSpeedSlider.place(x=300,y=0,width=50, height=300)
+RdBtn_keyboard=tk.Checkbutton(ManualPage, text="Use Keyboard to drive the mower", variable=ManualKeyboardUse).place(x=0,y=365)
+
+
+
+manualSpeedSlider = tk.Scale(ManualPage,orient='horizontal', from_=0, to=255)
+manualSpeedSlider.place(x=0,y=300,width=300, height=60)
+tk.Label(ManualPage, text='SPEED',fg='green').place(x=0,y=300)
 
 """
-#tk.Label(ManualPage, text='SPEED',fg='green').place(x=0,y=300)
-RdBtn_keyboard=tk.Checkbutton(ManualPage, text="Keyboard drive", variable=ManualKeyboardUse).place(x=350,y=160)
-
+slider1 = tk.Scale(orient='horizontal', from_=0, to=350)
+slider1.place(x=50,y=50,anchor='nw',width=300, height=50)
+slider2 = tk.Scale(orient='horizontal', from_=0, to=100)
+slider2.place(x=50,y=100,anchor='nw',width=300, height=50)
+"""
 ButtonBackHome = tk.Button(ManualPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
+
+
 
 """ The Console page  ************************************"""
 
@@ -2860,77 +2892,68 @@ def ButtonClearConsole_click():
     txtRecu=""
     txtConsoleRecu.delete('1.0',tk.END) #delete all
     
-def ButtonConsoleHide_click ():
-    if tk_consoleHide.get()==1:
-        txtConsoleRecu.place_forget()
-        
-    else:
-        txtConsoleRecu.place(x=0,y=0,anchor='nw',width=385, height=300)
-        
-    
-   
 
 ConsolePage = tk.Frame(fen1)
-ConsolePage.place(x=0, y=0, height=300, width=480)
+ConsolePage.place(x=0, y=0, height=400, width=800)
 
 
-txtRecu = tk.Text(ConsolePage,font=("Arial", 8))
+txtRecu = tk.Text(ConsolePage)
 ScrollTxtRecu = tk.Scrollbar(txtRecu)
 ScrollTxtRecu.pack(side=tk.RIGHT, fill=tk.Y)
 txtRecu.pack(side=tk.LEFT, fill=tk.Y)
 ScrollTxtRecu.config(command=txtRecu.yview)
 txtRecu.config(yscrollcommand=ScrollTxtRecu.set)
-txtRecu.place(x=0,y=0,anchor='nw',width=385, height=150)
+txtRecu.place(x=0,y=300,anchor='nw',width=480, height=100)
 
-txtSend = tk.Text(ConsolePage,font=("Arial", 8))
+txtSend = tk.Text(ConsolePage)
 ScrollTxtSend = tk.Scrollbar(txtSend)
 ScrollTxtSend.pack(side=tk.RIGHT, fill=tk.Y)
 txtSend.pack(side=tk.LEFT, fill=tk.Y)
 ScrollTxtSend.config(command=txtSend.yview)
 txtSend.config(yscrollcommand=ScrollTxtSend.set)
-txtSend.place(x=0,y=155,anchor='nw',width=385, height=130)
+txtSend.place(x=490,y=300,anchor='nw',width=300, height=100)
 
-txtConsoleRecu = tk.Text(ConsolePage,font=("Arial", 8))
+txtConsoleRecu = tk.Text(ConsolePage)
 ScrolltxtConsoleRecu = tk.Scrollbar(txtConsoleRecu)
 ScrolltxtConsoleRecu.pack(side=tk.RIGHT, fill=tk.Y)
 txtConsoleRecu.pack(side=tk.LEFT, fill=tk.Y)
 ScrolltxtConsoleRecu.config(command=txtConsoleRecu.yview)
 txtConsoleRecu.config(yscrollcommand=ScrolltxtConsoleRecu.set)
-txtConsoleRecu.place(x=0,y=0,anchor='nw',width=385, height=300)
-txtConsoleRecu.visible=True
+txtConsoleRecu.place(x=0,y=5,anchor='nw',width=800, height=290)
 
-RdBtn_ConsoleHide=tk.Checkbutton(ConsolePage, text="Debug I/O",command = ButtonConsoleHide_click,variable=tk_consoleHide).place(x=385,y=170)
 
 ButtonConsoleMode = tk.Button(ConsolePage)
-ButtonConsoleMode.place(x=390,y=0, height=25, width=80)
+ButtonConsoleMode.place(x=660,y=15, height=25, width=120)
 ButtonConsoleMode.configure(command = ButtonConsoleMode_click,text="Mode")
 
 
 ButtonListVar = tk.Button(ConsolePage)
-ButtonListVar.place(x=390,y=30, height=25, width=80)
+ButtonListVar.place(x=660,y=45, height=25, width=120)
 ButtonListVar.configure(command = ButtonListVar_click,text="List Var")
 
 ButtonClearConsole = tk.Button(ConsolePage)
-ButtonClearConsole.place(x=390,y=65, height=35, width=80)
-ButtonClearConsole.configure(command = ButtonClearConsole_click,text="Clear")
+ButtonClearConsole.place(x=660,y=75, height=35, width=120)
+ButtonClearConsole.configure(command = ButtonClearConsole_click,text="Clear Console")
 
 ButtonSaveReceived = tk.Button(ConsolePage)
-ButtonSaveReceived.place(x=390,y=105, height=35, width=80)
-ButtonSaveReceived.configure(command = ButtonSaveReceived_click,text="Save")
+ButtonSaveReceived.place(x=660,y=120, height=35, width=120)
+ButtonSaveReceived.configure(command = ButtonSaveReceived_click,text="Save To File")
+
+
+
 
 
 ButtonBackHome = tk.Button(ConsolePage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
-
+ButtonBackHome.place(x=660, y=160, height=120, width=120)
 
 """ THE PLOT PAGE ***************************************************"""
 
 TabPlot=ttk.Notebook(fen1)
-tabPlotMain=tk.Frame(TabPlot,width=480,height=200)
-tabPlotWheelMotor=tk.Frame(TabPlot,width=480,height=200)
-tabPlotMowMotor=tk.Frame(TabPlot,width=480,height=200)
-tabPlotPerimeter=tk.Frame(TabPlot,width=480,height=200)
-tabPlotBattery=tk.Frame(TabPlot,width=480,height=200)
+tabPlotMain=tk.Frame(TabPlot,width=800,height=400)
+tabPlotWheelMotor=tk.Frame(TabPlot,width=800,height=200)
+tabPlotMowMotor=tk.Frame(TabPlot,width=800,height=200)
+tabPlotPerimeter=tk.Frame(TabPlot,width=800,height=200)
+tabPlotBattery=tk.Frame(TabPlot,width=800,height=200)
 
 TabPlot.add(tabPlotMain,text="Main")
 TabPlot.add(tabPlotWheelMotor,text="Wheels Motor")
@@ -2938,20 +2961,20 @@ TabPlot.add(tabPlotMowMotor,text="Mow Motor")
 TabPlot.add(tabPlotPerimeter,text="Perimeter")
 TabPlot.add(tabPlotBattery,text="Battery")
 
-TabPlot.place(x=0, y=0, height=300, width=480)
+TabPlot.place(x=0, y=0, height=400, width=800)
 
 #'Main
 Frame11= tk.Frame(tabPlotMain,relief=tk.GROOVE,borderwidth="3")
-Frame11.place(x=5, y=5, height=155, width=390)
+Frame11.place(x=10, y=20, height=80, width=680)
 
 BtnMotPlotStopAll= tk.Button(Frame11,command = BtnMotPlotStopAll_click,text="Stop ALL the Data send by DUE")
 BtnMotPlotStopAll.place(x=10,y=10, height=25, width=250)
 
 #'Wheel Motor
-tk.Label(tabPlotWheelMotor, text="Mower Millis : ").place(x=0,y=200)
-tk.Label(tabPlotWheelMotor, textvariable=tk_millis).place(x=100,y=200)
+tk.Label(tabPlotWheelMotor, text="Mower Millis : ").place(x=300,y=0)
+tk.Label(tabPlotWheelMotor, textvariable=tk_millis).place(x=400,y=0)
 Frame12= tk.Frame(tabPlotWheelMotor,relief=tk.GROOVE,borderwidth="3")
-Frame12.place(x=5, y=5, height=155, width=390)
+Frame12.place(x=10, y=20, height=80, width=680)
 BtnMotPlotStartRec= tk.Button(Frame12,command = BtnMotPlotStartRec_click,text="Start")
 BtnMotPlotStartRec.place(x=0,y=0, height=25, width=60)
 BtnMotPlotStopRec= tk.Button(Frame12,command = BtnMotPlotStopRec_click,text="Stop")
@@ -2960,20 +2983,20 @@ SldMainWheelRefresh = tk.Scale(Frame12, from_=1, to=10, label='Refresh Rate per 
 SldMainWheelRefresh.place(x=70,y=0,width=250, height=50)
 
 
-tk.Label(Frame12, text='Power',fg='green').place(x=100,y=60)
-tk.Label(Frame12, text='Left',fg='green').place(x=50,y=75)
-tk.Label(Frame12, textvariable=tk_motorLeftPower).place(x=100,y=75)
-tk.Label(Frame12, text='Right',fg='green').place(x=50,y=95)
-tk.Label(Frame12, textvariable=tk_motorRightPower).place(x=100,y=95)
-tk.Label(Frame12, text='PWM',fg='green').place(x=250,y=60)
-tk.Label(Frame12, textvariable=tk_motorLeftPWMCurr).place(x=250,y=75)
-tk.Label(Frame12, textvariable=tk_motorRightPWMCurr).place(x=250,y=95)
+tk.Label(Frame12, text='Power',fg='green').place(x=400,y=0)
+tk.Label(Frame12, text='Left',fg='green').place(x=350,y=15)
+tk.Label(Frame12, textvariable=tk_motorLeftPower).place(x=400,y=15)
+tk.Label(Frame12, text='Right',fg='green').place(x=350,y=35)
+tk.Label(Frame12, textvariable=tk_motorRightPower).place(x=400,y=35)
+tk.Label(Frame12, text='PWM',fg='green').place(x=550,y=0)
+tk.Label(Frame12, textvariable=tk_motorLeftPWMCurr).place(x=550,y=15)
+tk.Label(Frame12, textvariable=tk_motorRightPWMCurr).place(x=550,y=35)
 
 #'Mow Motor
-tk.Label(tabPlotMowMotor, text="Mower Millis : ").place(x=0,y=200)
-tk.Label(tabPlotMowMotor, textvariable=tk_millis).place(x=100,y=200)
+tk.Label(tabPlotMowMotor, text="Mower Millis : ").place(x=300,y=0)
+tk.Label(tabPlotMowMotor, textvariable=tk_millis).place(x=400,y=0)
 Frame13= tk.Frame(tabPlotMowMotor,relief=tk.GROOVE,borderwidth="3")
-Frame13.place(x=5, y=5, height=155, width=390)
+Frame13.place(x=10, y=20, height=80, width=680)
 BtnMowPlotStartRec= tk.Button(Frame13,command = BtnMowPlotStartRec_click,text="Start")
 BtnMowPlotStartRec.place(x=0,y=0, height=25, width=60)
 BtnMowPlotStopRec= tk.Button(Frame13,command = BtnMowPlotStopRec_click,text="Stop")
@@ -2981,16 +3004,16 @@ BtnMowPlotStopRec.place(x=0,y=25, height=25, width=60)
 SldMainMowRefresh = tk.Scale(Frame13, from_=1, to=10, label='Refresh Rate per second',relief=tk.SOLID,orient='horizontal')
 SldMainMowRefresh.place(x=70,y=0,width=250, height=50)
 
-tk.Label(Frame13, text='Power',fg='green').place(x=100,y=60)
-tk.Label(Frame13, textvariable=tk_motorMowPower).place(x=100,y=75)
-tk.Label(Frame13, text='PWM',fg='green').place(x=250,y=60)
-tk.Label(Frame13, textvariable=tk_motorMowPWMCurr).place(x=250,y=75)
+tk.Label(Frame13, text='Power',fg='green').place(x=400,y=0)
+tk.Label(Frame13, textvariable=tk_motorMowPower).place(x=400,y=15)
+tk.Label(Frame13, text='PWM',fg='green').place(x=550,y=0)
+tk.Label(Frame13, textvariable=tk_motorMowPWMCurr).place(x=550,y=15)
 
 #'Battery'
-tk.Label(tabPlotBattery, text="Mower Millis : ").place(x=0,y=200)
-tk.Label(tabPlotBattery, textvariable=tk_millis).place(x=100,y=200)
+tk.Label(tabPlotBattery, text="Mower Millis : ").place(x=300,y=0)
+tk.Label(tabPlotBattery, textvariable=tk_millis).place(x=400,y=0)
 Frame14= tk.Frame(tabPlotBattery,relief=tk.GROOVE,borderwidth="3")
-Frame14.place(x=5, y=5, height=155, width=390)
+Frame14.place(x=10, y=20, height=80, width=680)
 BtnBatPlotStartRec= tk.Button(Frame14,command = BtnBatPlotStartRec_click,text="Start")
 BtnBatPlotStartRec.place(x=0,y=0, height=25, width=60)
 BtnBatPlotStopRec= tk.Button(Frame14,command = BtnBatPlotStopRec_click,text="Stop")
@@ -2998,20 +3021,20 @@ BtnBatPlotStopRec.place(x=0,y=25, height=25, width=60)
 SldMainBatRefresh = tk.Scale(Frame14, from_=1, to=100, label='Refresh Rate per minute',relief=tk.SOLID,orient='horizontal')
 SldMainBatRefresh.place(x=70,y=0,width=250, height=50)
 
-tk.Label(Frame14, text='Charge',fg='green').place(x=50,y=75)
-tk.Label(Frame14, text='Battery',fg='green').place(x=50,y=95)
-tk.Label(Frame14, text='Sense',fg='green').place(x=100,y=60)
-tk.Label(Frame14, textvariable=tk_chgSense).place(x=110,y=75)
-tk.Label(Frame14, text='Voltage',fg='green').place(x=160,y=60)
-tk.Label(Frame14, textvariable=tk_chgVoltage).place(x=160,y=75)
-tk.Label(Frame14, textvariable=tk_batVoltage).place(x=160,y=95)
+tk.Label(Frame14, text='Charge',fg='green').place(x=350,y=15)
+tk.Label(Frame14, text='Battery',fg='green').place(x=350,y=35)
+tk.Label(Frame14, text='Sense',fg='green').place(x=400,y=0)
+tk.Label(Frame14, textvariable=tk_chgSense).place(x=400,y=15)
+tk.Label(Frame14, text='Voltage',fg='green').place(x=550,y=0)
+tk.Label(Frame14, textvariable=tk_chgVoltage).place(x=550,y=15)
+tk.Label(Frame14, textvariable=tk_batVoltage).place(x=550,y=35)
 
 
 #'Perimeter'
-tk.Label(tabPlotPerimeter, text="Mower Millis : ").place(x=0,y=200)
-tk.Label(tabPlotPerimeter, textvariable=tk_millis).place(x=100,y=200)
+tk.Label(tabPlotPerimeter, text="Mower Millis : ").place(x=300,y=0)
+tk.Label(tabPlotPerimeter, textvariable=tk_millis).place(x=400,y=0)
 Frame15= tk.Frame(tabPlotPerimeter,relief=tk.GROOVE,borderwidth="3")
-Frame15.place(x=10, y=20, height=155, width=390)
+Frame15.place(x=10, y=20, height=80, width=680)
 BtnPeriPlotStartRec= tk.Button(Frame15,command = BtnPeriPlotStartRec_click,text="Start")
 BtnPeriPlotStartRec.place(x=0,y=0, height=25, width=60)
 BtnPeriPlotStopRec= tk.Button(Frame15,command = BtnPeriPlotStopRec_click,text="Stop")
@@ -3019,20 +3042,21 @@ BtnPeriPlotStopRec.place(x=0,y=25, height=25, width=60)
 SldMainPeriRefresh = tk.Scale(Frame15, from_=1, to=10, label='Refresh Rate per second',relief=tk.SOLID,orient='horizontal')
 SldMainPeriRefresh.place(x=70,y=0,width=250, height=50)
 
-tk.Label(Frame15, text='Mag',fg='green').place(x=100,y=60)
-tk.Label(Frame15, text='Left',fg='green').place(x=50,y=75)
-tk.Label(Frame15, textvariable=tk_perimeterMag).place(x=100,y=75)
-tk.Label(Frame15, text='Right',fg='green').place(x=50,y=95)
-tk.Label(Frame15, textvariable=tk_perimeterMagRight).place(x=100,y=95)
-
+tk.Label(Frame15, text='Mag',fg='green').place(x=400,y=0)
+tk.Label(Frame15, text='Left',fg='green').place(x=350,y=15)
+tk.Label(Frame15, textvariable=tk_perimeterMag).place(x=400,y=15)
+tk.Label(Frame15, text='Right',fg='green').place(x=350,y=35)
+tk.Label(Frame15, textvariable=tk_perimeterMagRight).place(x=400,y=35)
 
 ButtonBackHome = tk.Button(TabPlot, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
 
 
-""" THE INFO PAGE *************************************************** """
+"""
+ THE INFO PAGE ***************************************************
+"""
 InfoPage = tk.Frame(fen1)
-InfoPage.place(x=0, y=0, height=300, width=480)
+InfoPage.place(x=0, y=0, height=400, width=800)
 Infoline1=tk.StringVar()
 LabInfoline = tk.Label(InfoPage, textvariable=Infoline1)
 LabInfoline.place(x=10,y=10, height=25, width=300)
@@ -3049,7 +3073,7 @@ Infoline5=tk.IntVar()
 LabInfoline = tk.Label(InfoPage, textvariable=Infoline5)
 LabInfoline.place(x=10,y=130, height=25, width=300)
 ButtonBackHome = tk.Button(InfoPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
 
 
 #myWindows.loadPageInfo()
@@ -3108,7 +3132,10 @@ def BtnGpsRecordStop_click():
         send_var_message('w','gpsUse','0','0','0','0','0','0','0','0')
         
 GpsPage =tk.Frame(fen1)
-GpsPage.place(x=0, y=0, height=300, width=480)
+GpsPage.place(x=0, y=0, height=400, width=800)
+
+#tk.Label(GpsPage, text='The gps run as service and write into directory /gpsdata/').place(x=10,y=15)
+
 
 txtGpsRecu = tk.Text(GpsPage)
 ScrolltxtGpsRecu = tk.Scrollbar(txtGpsRecu)
@@ -3116,7 +3143,10 @@ ScrolltxtGpsRecu.pack(side=tk.RIGHT, fill=tk.Y)
 txtGpsRecu.pack(side=tk.LEFT, fill=tk.Y)
 ScrolltxtGpsRecu.config(command=txtGpsRecu.yview)
 txtGpsRecu.config(yscrollcommand=ScrolltxtGpsRecu.set)
-txtGpsRecu.place(x=5,y=35,anchor='nw',width=385, height=200)
+txtGpsRecu.place(x=5,y=35,anchor='nw',width=600, height=300)
+
+
+
 
 BtnGpsRecordStart= tk.Button(GpsPage,command = BtnGpsRecordStart_click,text="Start")
 BtnGpsRecordStart.place(x=5,y=5, height=25, width=60)
@@ -3124,14 +3154,14 @@ BtnGpsRecordStop= tk.Button(GpsPage,command = BtnGpsRecordStop_click,text="Stop"
 BtnGpsRecordStop.place(x=150,y=5, height=25, width=60)
 
 ButtonBackHome = tk.Button(GpsPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
 
 
 
 """ THE RFID PAGE ***************************************************"""
 
 RfidPage =tk.Frame(fen1)
-RfidPage.place(x=0, y=0, height=320, width=480)
+RfidPage.place(x=0, y=0, height=400, width=800)
 
 
 
@@ -3337,13 +3367,26 @@ ButtonSave.place(x=530, y=210, height=60, width=140)
 rebuild_treeview()
 
 
-ButtonBackHome = tk.Button(RfidPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
 
-""" THE VIDEO PAGE ***************************************************"""
+
+
+
+
+
+
+
+
+ButtonBackHome = tk.Button(RfidPage, image=imgBack, command = ButtonBackToMain_click)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
+
+
+
+""" THE CAMERA PAGE ***************************************************"""
 def BtnStreamVideoStart_click():
     if CamVar1.get()==1:
         myStreamVideo.start(1)
+        #webbrowser.open("http://localhost:8000/index.html")
+
     else:
         myStreamVideo.start(0)
         
@@ -3351,27 +3394,28 @@ def BtnStreamVideoStop_click():
     myStreamVideo.stop()
     
 StreamVideoPage =tk.Frame(fen1)
-StreamVideoPage.place(x=0, y=0, height=300, width=480)
+StreamVideoPage.place(x=0, y=0, height=400, width=800)
 FrameStreamVideo = tk.Frame(StreamVideoPage,borderwidth="1",relief=tk.SOLID)
-FrameStreamVideo.place(x=5, y=5, width=390, height=190)
-OptBtnStreamVideo1=tk.Radiobutton(FrameStreamVideo, text="320*240",relief=tk.SOLID,variable=CamVar1,value=0,anchor='nw')
-OptBtnStreamVideo1.place(x=10,y=10,width=250, height=30)
-OptBtnStreamVideo2=tk.Radiobutton(FrameStreamVideo, text="640*480",relief=tk.SOLID,variable=CamVar1,value=1,anchor='nw')
-OptBtnStreamVideo2.place(x=10,y=40,width=250, height=30)
-tk.Label(FrameStreamVideo, text='To view the vidéo stream use a browser').place(x=2,y=80)
-tk.Label(FrameStreamVideo, text='http://(Your PI IP Adress and):8000/index.html').place(x=2,y=100)
-tk.Label(FrameStreamVideo, text='Do not forget to activate the Camera into the RaspiConfig').place(x=2,y=120)
+FrameStreamVideo.place(x=20, y=30, width=600, height=300)
+OptBtnStreamVideo1=tk.Radiobutton(FrameStreamVideo, text="320*240",relief=tk.SOLID,variable=CamVar1,value=0,anchor='nw').place(x=10,y=10,width=250, height=20)
+OptBtnStreamVideo2=tk.Radiobutton(FrameStreamVideo, text="640*480",relief=tk.SOLID,variable=CamVar1,value=1,anchor='nw').place(x=10,y=30,width=250, height=20)
+tk.Label(FrameStreamVideo, text='To view the vidéo stream use a browser http://(Your PI IP Adress and):8000/index.html').place(x=10,y=180)
+tk.Label(FrameStreamVideo, text='Do not forget to activate the Camera into the RaspiConfig').place(x=10,y=200)
 
 BtnStreamVideoStart= tk.Button(FrameStreamVideo,command = BtnStreamVideoStart_click,text="Start")
-BtnStreamVideoStart.place(x=180,y=150, height=25, width=60)
+BtnStreamVideoStart.place(x=180,y=250, height=25, width=60)
 BtnStreamVideoStop= tk.Button(FrameStreamVideo,command = BtnStreamVideoStop_click,text="Stop")
-BtnStreamVideoStop.place(x=10,y=150, height=25, width=60)
+BtnStreamVideoStop.place(x=10,y=250, height=25, width=60)
 
 ButtonBackHome = tk.Button(StreamVideoPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
+
         
         
 """ THE TEST PAGE ***************************************************"""
+
+
+
 
 def ButtonOdo1TurnFw_click():
     send_pfo_message('yt0','1','2','3','4','5','6',)
@@ -3393,46 +3437,48 @@ def ButtonOdoRotNonStop_click():
     #mymower.status=4
     #send_pfo_message('ru','1','2','3','4','5','6',)
 
+
+
 TestPage =tk.Frame(fen1)
-TestPage.place(x=0, y=0, height=320, width=480)
+TestPage.place(x=0, y=0, height=400, width=800)
 
 ButtonOdo1TurnFw = tk.Button(TestPage)
-ButtonOdo1TurnFw.place(x=5,y=15, height=35, width=180)
+ButtonOdo1TurnFw.place(x=30,y=15, height=25, width=200)
 ButtonOdo1TurnFw.configure(command = ButtonOdo1TurnFw_click)
 ButtonOdo1TurnFw.configure(text="Forward 1 Turn")
 
 ButtonOdo5TurnFw= tk.Button(TestPage)
-ButtonOdo5TurnFw.place(x=5,y=60, height=35, width=180)
+ButtonOdo5TurnFw.place(x=30,y=65, height=25, width=200)
 ButtonOdo5TurnFw.configure(command = ButtonOdo5TurnFw_click)
 ButtonOdo5TurnFw.configure(text="Forward 5 Turn")
 
 ButtonOdo1TurnRev = tk.Button(TestPage)
-ButtonOdo1TurnRev.place(x=5,y=105, height=35, width=180)
+ButtonOdo1TurnRev.place(x=30,y=115, height=25, width=200)
 ButtonOdo1TurnRev.configure(command = ButtonOdo1TurnRev_click)
 ButtonOdo1TurnRev.configure(text="Reverse 1 Turn")
 
 ButtonOdo5TurnRev= tk.Button(TestPage)
-ButtonOdo5TurnRev.place(x=5,y=150, height=35, width=180)
+ButtonOdo5TurnRev.place(x=30,y=165, height=25, width=200)
 ButtonOdo5TurnRev.configure(command = ButtonOdo5TurnRev_click)
 ButtonOdo5TurnRev.configure(text="Reverse 5 Turn")
 
 ButtonOdo3MlFw = tk.Button(TestPage)
-ButtonOdo3MlFw.place(x=200,y=15, height=35, width=200)
+ButtonOdo3MlFw.place(x=300,y=15, height=25, width=200)
 ButtonOdo3MlFw.configure(command = ButtonOdo3MlFw_click)
 ButtonOdo3MlFw.configure(text="3 Meters Forward")
 
 ButtonOdoRot180= tk.Button(TestPage)
-ButtonOdoRot180.place(x=200,y=60, height=35, width=200)
+ButtonOdoRot180.place(x=300,y=65, height=25, width=200)
 ButtonOdoRot180.configure(command = ButtonOdoRot180_click)
 ButtonOdoRot180.configure(text="Rotate 180 Degree")
 
 ButtonOdoRot360= tk.Button(TestPage)
-ButtonOdoRot360.place(x=200,y=105, height=35, width=200)
+ButtonOdoRot360.place(x=300,y=115, height=25, width=200)
 ButtonOdoRot360.configure(command = ButtonOdoRot360_click)
 ButtonOdoRot360.configure(text="Rotate 360 Degree")
 
 ButtonOdoRotNonStop= tk.Button(TestPage)
-ButtonOdoRotNonStop.place(x=200,y=150, height=35, width=200)
+ButtonOdoRotNonStop.place(x=300,y=165, height=25, width=200)
 ButtonOdoRotNonStop.configure(command = ButtonOdoRotNonStop_click)
 ButtonOdoRotNonStop.configure(text="Rotate Non Stop 100 Turns")
 
@@ -3443,17 +3489,24 @@ ButtonOdoRotNonStop.configure(text="Rotate Non Stop 100 Turns")
 #ButtonGoTOArea2.configure(text="Go to Area2")
 
 ButtonBackHome = tk.Button(TestPage, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=280, height=120, width=120)
+
+
+
 
 """ THE TIMER PAGE ***************************************************"""
 def SliderHourStartGroup_click(var1):
         print("heure change "+str(var1))
      
+
+
+
 TabTimer=ttk.Notebook(fen1)
 SheetTimer= [None]*5
 for i in range(5):
-    SheetTimer[i]=tk.Frame(TabTimer,width=320,height=480)
+    SheetTimer[i]=tk.Frame(TabTimer,width=800,height=380)
     TabTimer.add(SheetTimer[i],text="Timer "+str(i))
+
     
 TabTimer.place(x=0, y=0, height=430, width=800)
 
@@ -3488,6 +3541,8 @@ for i in range(5):
     tk_timerStartLaneMaxlengh.append(tk.IntVar())
     tk_timerStartDistance.append(tk.IntVar())
     
+
+
 tk_timerDayVar=[[None] * 7 for i in range(5)]
 
 ChkBtnDayGroup = [[None] * 7 for i in range(5)]
@@ -3510,6 +3565,8 @@ FrameLaneParameter=[None]*5
 RdBtn_Random=[None]*5
 RdBtn_ByLane=[None]*5
 RdBtn_Perimeter=[None]*5
+
+
 
 for i in range(5):
     ChkBtnEnableGroup[i] = tk.Checkbutton(SheetTimer[i],text="Enable this Timer",font=("Arial", 14), fg='red',variable=tk_timerActive[i],anchor = 'w')
@@ -3573,6 +3630,8 @@ for i in range(5):
         ChkBtnDayGroup[i][j] = tk.Checkbutton(SheetTimer[i],text=days_list[j],variable=tk_timerDayVar[i][j],relief=tk.GROOVE,borderwidth="1",anchor = 'w')
         ChkBtnDayGroup[i][j].place(x=110*j+10, y=150, height=25, width=120) 
 
+
+
 def ButtonSendTimerToDue_click():
     
     for i in range(5):
@@ -3627,9 +3686,14 @@ ButtonSetTimerApply = tk.Button(TabTimer)
 ButtonSetTimerApply.place(x=300,y=400, height=25, width=150)
 ButtonSetTimerApply.configure(command = ButtonSendTimerToDue_click,text="Send Timer To Mower")
 
-
 ButtonBackHome = tk.Button(TabTimer, image=imgBack, command = ButtonBackToMain_click)
-ButtonBackHome.place(x=390, y=200, height=96, width=80)
+ButtonBackHome.place(x=680, y=310, height=120, width=120)
+
+
+
+
+
+
  
 """ THE MAIN PAGE ***************************************************"""
 
@@ -3640,65 +3704,59 @@ def ButtonPowerOff_click():
         button_stop_all_click()
         send_pfo_message('rt','1','2','3','4','5','6',)
         
-def ButtonExitProg_click():
-    ButtonSaveReceived_click()  #save the console txt
-    fen1.destroy()
-     
-    
+
 MainPage = tk.Frame(fen1)
-MainPage.place(x=0, y=0, height=300, width=480)
+MainPage.place(x=0, y=0, height=480, width=800)
 
-MainCanvas = tk.Canvas(MainPage, height=280,width=430)
-MainCanvas.grid(row=0, column=0,sticky="nsew")
-MainCanvasFrame = tk.Frame(MainCanvas)
-MainCanvas.create_window(0, 0, window=MainCanvasFrame, anchor='nw')
+ButtonAuto = tk.Button(MainPage,image=imgAuto,command = ButtonAuto_click)
+ButtonAuto.place(x=10,y=10, height=130, width=100)
 
-Buttonimgardu=tk.Button(MainCanvasFrame,image=imgArdumower,command = ButtonInfo_click,width=430,height=100)
-Buttonimgardu.grid(row=4, column=0,columnspan=4)
+ButtonManual = tk.Button(MainPage,image=imgManual)
+ButtonManual.place(x=145,y=10, height=130, width=100)
+ButtonManual.configure(command = ButtonManual_click)
 
-ButtonAuto = tk.Button(MainCanvasFrame,image=imgAuto,width=100,height=130,command = ButtonAuto_click)
-ButtonAuto.grid(row=1, column=0)
-ButtonManual = tk.Button(MainCanvasFrame,image=imgManual,command = ButtonManual_click,width=100,height=130)
-ButtonManual.grid(row=1, column=1)
-ButtonSetting = tk.Button(MainCanvasFrame,image=imgSetting,command = ButtonSetting_click,width=100,height=130)
-ButtonSetting.grid(row=1, column=2)
-ButtonConsole = tk.Button(MainCanvasFrame,image=imgConsole,command = ButtonConsole_click,width=100,height=130)
-ButtonConsole.grid(row=1, column=3)
+ButtonSetting = tk.Button(MainPage,image=imgSetting)
+ButtonSetting.place(x=280,y=10, height=130, width=100)
+ButtonSetting.configure(command = ButtonSetting_click)
 
-ButtonPlot = tk.Button(MainCanvasFrame, image=imgPlot, command = ButtonPlot_click,width=100,height=130)
-ButtonPlot.grid(row=2, column=0)
-ButtonSchedule = tk.Button(MainCanvasFrame, image=imgSchedule, command = ButtonSchedule_click,width=100,height=130)
-ButtonSchedule.grid(row=2, column=1)
-ButtonCamera = tk.Button(MainCanvasFrame, image=imgCamera, command = ButtonCamera_click,width=100,height=130)
-ButtonCamera.grid(row=2, column=2)
-ButtonRfid = tk.Button(MainCanvasFrame, image=imgRfid, command = ButtonRfid_click,width=100,height=130)
-ButtonRfid.grid(row=2, column=3)
 
-ButtonTest = tk.Button(MainCanvasFrame,image=imgTest,command = ButtonTest_click,width=100,height=130)
-ButtonTest.grid(row=3, column=0)
-ButtonGps = tk.Button(MainCanvasFrame, image=imgGps, command = ButtonGps_click,width=100,height=130)
-ButtonGps.grid(row=3, column=1)
-ButtonPowerOff = tk.Button(MainCanvasFrame, image=imgPowerOff, command = ButtonPowerOff_click,width=100,height=130)
-ButtonPowerOff.grid(row=3, column=2,columnspan=1)
-ButtonExitProg = tk.Button(MainCanvasFrame, image=imgStop, command = ButtonExitProg_click,width=100,height=130)
-ButtonExitProg.grid(row=3, column=3,columnspan=1)
+ButtonConsole = tk.Button(MainPage,image=imgConsole)
+ButtonConsole.place(x=415,y=10, height=130, width=100)
+ButtonConsole.configure(command = ButtonConsole_click)
 
-yscrollbar = tk.Scrollbar(MainPage, orient=tk.VERTICAL,width=40)
-yscrollbar.config(command=MainCanvas.yview)
-MainCanvas.config(yscrollcommand=yscrollbar.set)
-yscrollbar.grid(row=0, column=2, sticky="ns")
-#MainCanvas.yview_moveto(0.5)
-MainCanvasFrame.bind("<Configure>", lambda event: MainCanvas.configure(scrollregion=MainCanvas.bbox("all")))
 
-"""
-Datetext = tk.Label(MainPage, text='',textvariable=tk_date_Now,font=("Arial", 10), fg='red')
-Datetext.place(x=390,y=20, height=25, width=90)
-"""
-#tk_MainStatusLine="TEST 1234"
-Statustext = tk.Label(AutoPage, text='',textvariable=tk_MainStatusLine,font=("Arial", 12), fg='red')
-Statustext.place(x=10,y=300, height=20, width=300)
-#Statustext = tk.Label(fen1, text='ESSAI DE TOOLBAR',font=("Arial", 16), fg='red')
-#Statustext.place(x=10,y=300, height=16, width=400)
+ButtonTest = tk.Button(MainPage,image=imgTest)
+ButtonTest.place(x=550,y=10, height=130, width=100)
+ButtonTest.configure(command = ButtonTest_click)
+
+ButtonPlot = tk.Button(MainPage, image=imgPlot, command = ButtonPlot_click)
+ButtonPlot.place(x=10,y=145,width=100, height=130)
+
+ButtonSchedule = tk.Button(MainPage, image=imgSchedule, command = ButtonSchedule_click)
+ButtonSchedule.place(x=145,y=145,width=100, height=130)
+
+ButtonCamera = tk.Button(MainPage, image=imgCamera, command = ButtonCamera_click)
+ButtonCamera.place(x=280,y=145,width=100, height=130)
+
+ButtonGps = tk.Button(MainPage, image=imgGps, command = ButtonGps_click)
+ButtonGps.place(x=415,y=145,width=100, height=130)
+
+ButtonRfid = tk.Button(MainPage, image=imgRfid, command = ButtonRfid_click)
+ButtonRfid.place(x=550,y=145,width=100, height=130)
+
+
+
+ButtonPowerOff = tk.Button(MainPage, image=imgPowerOff, command = ButtonPowerOff_click)
+ButtonPowerOff.place(x=685,y=280,width=100, height=120)
+
+Buttonimgardu=tk.Button(MainPage,image=imgArdumower,command = ButtonInfo_click)
+Buttonimgardu.place(x=10,y=280,height=120,width=650)
+
+Datetext = tk.Label(MainPage, text='',textvariable=tk_date_Now,font=("Arial", 20), fg='red')
+Datetext.place(x=10,y=400, height=25, width=240)
+Statustext = tk.Label(MainPage, text='',textvariable=tk_MainStatusLine,font=("Arial", 20), fg='red')
+Statustext.place(x=240,y=400, height=25, width=400)
+
 ################## DESACTIVATE THE BT TO SAVE BATTERY
 #subprocess.call(["rfkill","block","bluetooth"])
 subprocess.Popen("sudo rfkill block bluetooth", shell=True)
@@ -3715,7 +3773,8 @@ def check_keyboard(e) :
         if (e.char=="m"):  
             buttonBlade_start_click()            
         if (e.char=='q'):
-            buttonBlade_stop_click()             
+            buttonBlade_stop_click()
+              
         
 def kbd_spaceKey(e) :
     if (page_list[mymower.focusOnPage]=="MANUAL") & (ManualKeyboardUse.get()==1):
@@ -3728,7 +3787,7 @@ def kbd_rightKey(e) :
         ButtonRight_click()
 def kbd_upKey(e) :
     if (page_list[mymower.focusOnPage]=="MANUAL") & (ManualKeyboardUse.get()==1):
-        #send_var_message('w','motorSpeedMaxPwm',''+str(manualSpeedSlider.get())+'','0','0','0','0','0','0','0')
+        send_var_message('w','motorSpeedMaxPwm',''+str(manualSpeedSlider.get())+'','0','0','0','0','0','0','0')
         send_pfo_message('nf','1','2','3','4','5','6',)
 def kbd_downKey(e) :
     if (page_list[mymower.focusOnPage]=="MANUAL") & (ManualKeyboardUse.get()==1):
@@ -3750,7 +3809,7 @@ read_all_setting()
 read_time_setting()
 send_req_message('PERI','1000','1','1','0','0','0',)
 BtnGpsRecordStop_click()
-ButtonAuto_click()
+
 
 
 fen1.mainloop()
