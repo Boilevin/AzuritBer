@@ -3707,7 +3707,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
       if (distancePI(imu.comYaw, yawCiblePos * PI / 180) > 0) { //rotate in the nearest direction
         actualRollDirToCalibrate = RIGHT;
-        Console.println(" >>> >>> >>> >>> >>> >>> 0");
+        //Console.println(" >>> >>> >>> >>> >>> >>> 0");
         motorLeftSpeedRpmSet = motorSpeedMaxRpm * compassRollSpeedCoeff / 100 ;
         motorRightSpeedRpmSet = -motorSpeedMaxRpm * compassRollSpeedCoeff / 100;
         stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
@@ -3716,7 +3716,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       else
       {
         actualRollDirToCalibrate = LEFT;
-        Console.println(" <<< <<< <<< <<< <<< << 0");
+        //Console.println(" <<< <<< <<< <<< <<< << 0");
         motorLeftSpeedRpmSet = -motorSpeedMaxRpm * compassRollSpeedCoeff / 100 ;
         motorRightSpeedRpmSet = motorSpeedMaxRpm * compassRollSpeedCoeff / 100;
         stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm *  4 * PI * odometryWheelBaseCm );
@@ -3879,13 +3879,13 @@ void Robot::setNextState(byte stateNew, byte dir) {
   perimeterTriggerTime = 0;
   Console.print (F(statusNames[statusCurr]));
   Console.print (" / ");
-  Console.print (F(stateNames[stateCurr]));
-  Console.print (" Dir ");
-  Console.print (rollDir);
-  Console.print (" State changed at ");
-  Console.print (stateStartTime);
-  Console.print (" From state ");
-  Console.println (F(stateNames[stateLast]));
+  Console.println (F(stateNames[stateCurr]));
+  //Console.print (" Dir ");
+  //Console.print (rollDir);
+  //Console.print (" State changed at ");
+  //Console.print (stateStartTime);
+  //Console.print (" From state ");
+  //Console.println (F(stateNames[stateLast]));
 
 }
 // check battery voltage and decide what to do
@@ -5556,7 +5556,7 @@ void Robot::loop()  {
         Console.println("4 sec of read value, verify if the drift is stop");
         if  (abs(accelGyroYawMedian.getHighest() - accelGyroYawMedian.getLowest()) < 4 * maxDriftPerSecond * PI / 180) { //drift is OK restart mowing
           imu.CompassGyroOffset = distancePI( scalePI(accelGyroYawMedian.getMedian() -  imu.CompassGyroOffset), compassYawMedian.getMedian()); //change the Gyro offset according to Compass Yaw
-          Console.println("OK next state out rev");
+          Console.println("Drift is OK");
           setBeeper(0, 0, 0, 0, 0); //stop sound immediatly
           if (stopMotorDuringCalib) motorMowEnable = true;//restart the mow motor
           if (perimeterInside) {
