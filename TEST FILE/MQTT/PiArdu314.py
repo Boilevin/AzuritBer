@@ -61,13 +61,14 @@ if(useMqtt):
             consoleInsertText('\n')
             
     def Mqqt_on_disconnect( Mqqt_client, userdata, flags, rc ):
+        Mqqt_client.loop_stop()
         Mqqt_client.connected_flag=False
         consoleInsertText("MQTT Disconnected " + str(rc) + '\n')
                     
     def Mqqt_on_publish( Mqqt_client, userdata, result ):       
         if (Mqqt_client.connected_flag) :
             mymower.callback_id=int(result)
-            #consoleInsertText("MQTT Callback message  " + str(mymower.callback_id) + '\n')
+            consoleInsertText("MQTT Callback message  " + str(mymower.callback_id) + '\n')
         else:            
             consoleInsertText("MQTT Callback error last message id  " + mymower.mqtt_message_id + " return " + str(mymower.callback_id) + '\n')
             mymower.callback_id=0
@@ -98,29 +99,29 @@ if(useMqtt):
                 #Maybe need to stop and restart to mow between change ???
                 tk_mowingPattern.set(int(responsetable[1]))
                 send_var_message('w','mowPatternCurr',''+str(tk_mowingPattern.get())+'','0','0','0','0','0','0','0')
-       
-    
+            if(str(responsetable[0]) == "PAUSE"):
+                tempVar=mymower.millis + (3600000*int(responsetable[1]))
+                send_var_message('w','nextTimeTimer',''+str(tempVar)+'','0','0','0','0','0','0','0')
+ 
     #Mqqt_client.on_log = Mqqt_on_log
     Mqqt_client.on_message = Mqqt_on_message
     Mqqt_client.on_connect = Mqqt_on_connect
     Mqqt_client.on_disconnect = Mqqt_on_disconnect   
-    Mqqt_client.on_publish = Mqqt_on_publish
+    #Mqqt_client.on_publish = Mqqt_on_publish
 
 
     def Mqqt_Connection():
-        
         testNet = checkNetwork("https://google.fi")
         consoleInsertText("CHECK WIFI" + '\n')
         if (testNet):
             consoleInsertText("WIFI CONNECTED" + '\n')
-           
             try:
                 Mqqt_client.username_pw_set( username="admin", password="admin" )
                 Mqqt_client.connect( host=Mqtt_Broker_IP, port=Mqtt_Port, keepalive=KEEP_ALIVE )
                 Mqqt_client.subscribe( "Mower/COMMAND/#" )
                 Mqqt_client.loop_start() 
                 Mqqt_client.connected_flag=True
-                consoleInsertText("MQTT Connected" + '\n')
+                consoleInsertText("MQTT Try to connect " + '\n')
                 mymower.callback_id=0
                 mymower.mqtt_message_id=0
         
@@ -135,11 +136,20 @@ if(useMqtt):
             consoleInsertText("WIFI NOT CONNECTED" + '\n')
             
 
-    def sendMqtt(var_topic,var_payload) :
-        
-        if (Mqqt_client.connected_flag): 
+    def sendMqtt(var_topic,var_payload) :        
+        if (Mqqt_client.connected_flag):
+            r=Mqqt_client.publish(topic=var_topic,payload=var_payload,qos=0, retain=False)
+            mymower.mqtt_message_id=int(r[1])
+            #consoleInsertText("MQTT send message " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
+        else:
+            pass
+            #consoleInsertText("MQTT not Connected fail to send " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
+            """
+#on fast sate change the call 4 is received after the message 5 was send so not possible to work with Qos=1 and high frequency
             if (mymower.callback_id != mymower.mqtt_message_id):
                         consoleInsertText("FAIL TO send data over Mqtt " + '\n')
+                        consoleInsertText("Call_back" + str(mymower.callback_id) + '\n')
+                        consoleInsertText("Message  " + str(mymower.mqtt_message_id) + '\n')
                         Mqqt_client.connected_flag=False
                         mymower.callback_id=0
                         mymower.mqtt_message_id=0
@@ -148,9 +158,11 @@ if(useMqtt):
                                     
                         r=Mqqt_client.publish(topic=var_topic,payload=var_payload,qos=1, retain=False)
                         mymower.mqtt_message_id=int(r[1])
-                        #consoleInsertText("MQTT send message " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
-    #END ADDon For MQTT
+                        consoleInsertText("MQTT send message " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
 
+             """
+    #END ADDon For MQTT
+            
 
 
 
@@ -606,7 +618,7 @@ def checkSerial():  #the main loop is that
 
     #bber30
     #need to test if broker not present the Pi freeze ?????????
-    #so send with feedback Qos=1 and check the callback into on_publish
+    
     if (useMqtt):
         if (Mqqt_client.connected_flag):            
             if (time.time() > mymower.timeToSendMqttIdle):
@@ -860,8 +872,8 @@ def decode_message(message):  #decode the nmea message
                 if (mymower.batVoltage!=float(message.batVoltage)):                    
                     mymower.batVoltage=float(message.batVoltage)
                     ecart=mower.lastMqttBatteryValue-float(message.batVoltage)
-                    #only send Mqtt if 0.02 volt dif
-                    if(abs(ecart)>0.02):
+                    #only send Mqtt if 0.2 volt dif to avoid send too fast
+                    if(abs(ecart)>0.2):
                         sendMqtt("Mower/Battery",message.batVoltage)
                         mower.lastMqttBatteryValue=float(message.batVoltage)
                 mymower.yaw=message.yaw
@@ -1580,7 +1592,7 @@ def refreshTimerSettingPage():
 
 
 
-        print(tk_timerStartArea[i])
+        #print(tk_timerStartArea[i])
                            
         for j in range(7):
             
@@ -3571,7 +3583,8 @@ ButtonBackHome.place(x=680, y=280, height=120, width=120)
 
 """ THE TIMER PAGE ***************************************************"""
 def SliderHourStartGroup_click(var1):
-        print("heure change "+str(var1))
+    pass
+    #print("heure change "+str(var1))
      
 
 
@@ -3891,8 +3904,9 @@ read_all_setting()
 consoleInsertText('Read Area In Mowing from PCB1.3'+ '\n')
 send_req_message('PERI','1000','1','1','0','0','0',)
 if(useMqtt):
-    consoleInsertText('Wait 2 minutes before start MQTT if needed'+ '\n')
-    mymower.timeToReconnectMqtt=time.time()+120
+    consoleInsertText('Wait update Date/Time from internet'+ '\n')
+    consoleInsertText('Initial start MQTT after 1 minute'+ '\n')
+    mymower.timeToReconnectMqtt=time.time()+60
 else:
     consoleInsertText('Adjust PI time from PCB1.3'+ '\n')
     read_time_setting()
