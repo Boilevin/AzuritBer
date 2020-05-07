@@ -844,8 +844,9 @@ def decode_message(message):  #decode the nmea message
          
             if message.sentence_type =='STU': # message for status info send on change only       
                 mymower.status=int(message.status)
-                #bber40
-                sendMqtt("Mower/Status",str(myRobot.statusNames[mymower.status]))
+               
+                if(useMqtt):
+                   sendMqtt("Mower/Status",str(myRobot.statusNames[mymower.status]))
                          
                 if(myRobot.statusNames[mymower.status]=="TRACK_TO_START"):
                     mymower.areaInMowing=int(message.val1)
@@ -861,27 +862,34 @@ def decode_message(message):  #decode the nmea message
             if message.sentence_type =='STA': #permanent each 500 ms message for state info
                
                 mymower.millis=int(message.millis)
-                #bber40
-                if (mymower.state!=int(message.state)):
-                    mymower.state=int(message.state)    
-                    sendMqtt("Mower/State",str(myRobot.stateNames[mymower.state]))                        
                 mymower.odox=message.odox
                 mymower.odoy=message.odoy
                 mymower.prevYaw=message.prevYaw
-               
-                if (mymower.batVoltage!=float(message.batVoltage)):                    
-                    mymower.batVoltage=float(message.batVoltage)
-                    ecart=mower.lastMqttBatteryValue-float(message.batVoltage)
-                    #only send Mqtt if 0.2 volt dif to avoid send too fast
-                    if(abs(ecart)>0.2):
-                        sendMqtt("Mower/Battery",message.batVoltage)
-                        mower.lastMqttBatteryValue=float(message.batVoltage)
+                
+                if(useMqtt):
+                    if (mymower.state!=int(message.state)):
+                        mymower.state=int(message.state)    
+                        sendMqtt("Mower/State",str(myRobot.stateNames[mymower.state]))    
+                    if (mymower.batVoltage!=float(message.batVoltage)):
+                        mymower.batVoltage=float(message.batVoltage)
+                        ecart=mower.lastMqttBatteryValue-float(message.batVoltage)
+                        #only send Mqtt if 0.2 volt dif to avoid send too fast
+                        if(abs(ecart)>0.2):
+                            sendMqtt("Mower/Battery",message.batVoltage)
+                            mower.lastMqttBatteryValue=float(message.batVoltage)
+                    if (mymower.Dht22Temp!=message.Dht22Temp):
+                        mymower.Dht22Temp=message.Dht22Temp
+                        sendMqtt("Mower/Temp",str(mymower.Dht22Temp))      
+                else:
+                   mymower.batVoltage=float(message.batVoltage)
+                   mymower.Dht22Temp=message.Dht22Temp
+                   mymower.state=int(message.state)   
+                   
                 mymower.yaw=message.yaw
                 mymower.pitch=message.pitch
                 mymower.roll=message.roll
-                if (mymower.Dht22Temp!=message.Dht22Temp):
-                    mymower.Dht22Temp=message.Dht22Temp
-                    sendMqtt("Mower/Temp",str(mymower.Dht22Temp))                     
+                   
+                               
                 mymower.loopsPerSecond=message.loopsPerSecond
                 #//bber17
                 if AutoRecordBatCharging :
