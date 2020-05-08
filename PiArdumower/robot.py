@@ -54,6 +54,7 @@ class robot:
         self.perimeter_read2Coil=0
         self.maxDriftPerSecond=0
         self.perimeterTriggerTimeout=0
+        self.perimeterTriggerMinSmag=0
         self.trackingErrorTimeOut=0
         self.perimeterOutRollTimeMin=0
         self.perimeterOutRevTime=0

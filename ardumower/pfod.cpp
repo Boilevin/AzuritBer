@@ -940,9 +940,6 @@ void RemoteControl::sendStationMenu(boolean update) {
   sendSlider("k02", F("Accel Distance after Roll"), robot->stationForwDist, "", 1, 200, 0);
   sendSlider("k03", F("Station check Distance"), robot->stationCheckDist, "", 1, 20, 0);
   sendSlider("k06", F("Docking Speed % of MaxSpeed"), robot->dockingSpeed, "", 1, 100, 20);
-  serialPort->println(F("|k04~Force State to Station "));
-
-
   serialPort->println("}");
 }
 
@@ -954,9 +951,6 @@ void RemoteControl::processStationMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("k02")) processSlider(pfodCmd, robot->stationForwDist, 1);
   else if (pfodCmd.startsWith("k03")) processSlider(pfodCmd, robot->stationCheckDist, 1);
   else if (pfodCmd.startsWith("k06")) processSlider(pfodCmd, robot->dockingSpeed, 1);
-  else if (pfodCmd.startsWith("k04")) robot->setNextState(STATE_STATION, 0);
-
-
   sendStationMenu(true);
 }
 

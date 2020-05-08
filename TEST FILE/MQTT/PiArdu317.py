@@ -28,42 +28,32 @@ from config import useMqtt
 from config import Mqtt_Broker_IP
 from config import Mqtt_Port
 
-import urllib.request
-import urllib.error
-def checkNetwork(url_to_check):
-    try:
-        urllib.request.urlopen(url_to_check, timeout=2)
-        return True
-    except urllib.error.URLError as err:
-        return False
-
-
 #bber30 test MQTT see also line 521 for the publish message
-if(useMqtt):
-    
+
+if(useMqtt):   
     import paho.mqtt.client as mqtt_client
-    #KEEP_ALIVE  = 45 # interval en seconde between 2 data exchange before closing connection
-    KEEP_ALIVE  = 65500 # try to never close connection in more than 24H
+    KEEP_ALIVE  = 60
     Mqqt_client = mqtt_client.Client( client_id="TheMower" )
     Mqqt_client.connected_flag=False # create flag in class
-   
-    
+       
     def Mqqt_on_log( Mqqt_client, userdata, level, buf ):     
         print( "log: ",buf)
 
     def Mqqt_on_connect( Mqqt_client, userdata, flags, rc ):
-        if rc==0:
+        if rc==0:           
             Mqqt_client.connected_flag=True #set flag
-            consoleInsertText("MQTT connected OK"+ '\n')
+            consoleInsertText("MQTT connected "+ '\n')
+            
         else:
             Mqqt_client.connected_flag=False
-            consoleInsertText("MQTT Bad connection Returned code=",rc )
-            consoleInsertText('\n')
+            consoleInsertText("MQTT Bad connection Returned Code:" + rc +'\n')
             
-    def Mqqt_on_disconnect( Mqqt_client, userdata, flags, rc ):
-        Mqqt_client.loop_stop()
+            #mymower.timeToReconnectMqtt=time.time()+120
+            
+    def Mqqt_on_disconnect( Mqqt_client, userdata, rc ):
         Mqqt_client.connected_flag=False
-        consoleInsertText("MQTT Disconnected " + str(rc) + '\n')
+        mymower.timeToReconnectMqtt=time.time()+120
+        consoleInsertText("MQTT Disconnected Code:" + str(rc) + '\n')
                     
     def Mqqt_on_publish( Mqqt_client, userdata, result ):       
         if (Mqqt_client.connected_flag) :
@@ -103,25 +93,28 @@ if(useMqtt):
                 tempVar=mymower.millis + (3600000*int(responsetable[1]))
                 send_var_message('w','nextTimeTimer',''+str(tempVar)+'','0','0','0','0','0','0','0')
  
-    #Mqqt_client.on_log = Mqqt_on_log
+    Mqqt_client.on_log = Mqqt_on_log
     Mqqt_client.on_message = Mqqt_on_message
     Mqqt_client.on_connect = Mqqt_on_connect
     Mqqt_client.on_disconnect = Mqqt_on_disconnect   
     #Mqqt_client.on_publish = Mqqt_on_publish
 
-
+    def Mqqt_DisConnection():
+        client.loop_stop()    #Stop loop 
+        client.disconnect() # disconnect
+        
     def Mqqt_Connection():
-        testNet = checkNetwork("https://google.fi")
-        consoleInsertText("CHECK WIFI" + '\n')
-        if (testNet):
-            consoleInsertText("WIFI CONNECTED" + '\n')
+        consoleInsertText("PING Broker" + '\n')
+        #testNet = os.system("ping -c 1 " + Mqtt_Broker_IP)
+        testNet = os.system("ping -c 1 -W 2000 " + Mqtt_Broker_IP)
+        if (testNet == 0):
+            consoleInsertText("Broker OK" + '\n')
             try:
                 Mqqt_client.username_pw_set( username="admin", password="admin" )
                 Mqqt_client.connect( host=Mqtt_Broker_IP, port=Mqtt_Port, keepalive=KEEP_ALIVE )
                 Mqqt_client.subscribe( "Mower/COMMAND/#" )
                 Mqqt_client.loop_start() 
-                Mqqt_client.connected_flag=True
-                consoleInsertText("MQTT Try to connect " + '\n')
+                consoleInsertText("MQTT Connecting Please Wait " + '\n')
                 mymower.callback_id=0
                 mymower.mqtt_message_id=0
         
@@ -131,36 +124,24 @@ if(useMqtt):
                 #Mqqt_client.loop_stop()    #Stop loop
                 mymower.callback_id=0
                 mymower.mqtt_message_id=0
+            
         else:
             
-            consoleInsertText("WIFI NOT CONNECTED" + '\n')
+            consoleInsertText("BROKER NOT CONNECTED" + '\n')
             
 
     def sendMqtt(var_topic,var_payload) :        
         if (Mqqt_client.connected_flag):
             r=Mqqt_client.publish(topic=var_topic,payload=var_payload,qos=0, retain=False)
-            mymower.mqtt_message_id=int(r[1])
-            #consoleInsertText("MQTT send message " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
+            #mymower.mqtt_message_id=int(r[1])
+            consoleInsertText("MQTT send message " + var_topic + " " + var_payload + '\n')   
+                         
+
         else:
+            consoleInsertText("MQTT not connected" + '\n')
             pass
             #consoleInsertText("MQTT not Connected fail to send " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
-            """
-#on fast sate change the call 4 is received after the message 5 was send so not possible to work with Qos=1 and high frequency
-            if (mymower.callback_id != mymower.mqtt_message_id):
-                        consoleInsertText("FAIL TO send data over Mqtt " + '\n')
-                        consoleInsertText("Call_back" + str(mymower.callback_id) + '\n')
-                        consoleInsertText("Message  " + str(mymower.mqtt_message_id) + '\n')
-                        Mqqt_client.connected_flag=False
-                        mymower.callback_id=0
-                        mymower.mqtt_message_id=0
-                    
-            else:
-                                    
-                        r=Mqqt_client.publish(topic=var_topic,payload=var_payload,qos=1, retain=False)
-                        mymower.mqtt_message_id=int(r[1])
-                        consoleInsertText("MQTT send message " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
 
-             """
     #END ADDon For MQTT
             
 
@@ -436,7 +417,7 @@ class mower:
     def __init__(self):
         mower.millis=0
         mower.status=0
-        mower.state="OFF"
+        mower.state=0
         mower.odox=0
         mower.odoy=0
         mower.prevYaw=0
@@ -495,9 +476,11 @@ class mower:
 
         mower.mqtt_message_id=0
         mower.callback_id=0
-        mower.timeToSendMqttIdle=time.time()+120
+        mower.timeToSendMqttIdle=time.time()+65
         mower.timeToReconnectMqtt=time.time()+120
         mower.lastMqttBatteryValue=0
+        
+        
         
         
         #mower.timeToSendMqttMowPattern=time.time()+200
@@ -672,11 +655,14 @@ def decode_message(message):  #decode the nmea message
                 if message.actuatorname == 'RestartPi':
                     mymower.focusOnPage=4
                     ConsolePage.tkraise()
-                    consoleInsertText('Start to save all Console Data'+ '\n')
-                    ButtonSaveReceived_click()  #save the console txt
+                    if(useMqtt):
+                        consoleInsertText('Close Mqtt Connection'+ '\n')
+                        Mqqt_DisConnection()                        
                     consoleInsertText('All Console Data are saved'+ '\n')
                     consoleInsertText('The GPS Record is stopped'+ '\n')
                     consoleInsertText('PI Restart into 5 Seconds'+ '\n')
+                    consoleInsertText('Start to save all Console Data'+ '\n')
+                    ButtonSaveReceived_click()  #save the console txt
                     time.sleep(1)
                     subprocess.Popen('/home/pi/Documents/PiArdumower/Restart.py')
                     fen1.destroy()
@@ -1041,7 +1027,8 @@ def decode_message(message):  #decode the nmea message
                         myRobot.sonarTriggerBelow=message.val2
                         myRobot.perimeterUse=message.val3
                         myRobot.perimeter_timedOutIfBelowSmag=message.val4
-                        myRobot.perimeterTriggerTimeout=message.val5
+                        #myRobot.perimeterTriggerTimeout=message.val5
+                        myRobot.perimeterTriggerMinSmag=message.val5
                         myRobot.perimeterOutRollTimeMax=message.val6
                         myRobot.perimeterOutRollTimeMin=message.val7
                         myRobot.perimeterOutRevTime=message.val8
@@ -1680,7 +1667,7 @@ def refreshMainSettingPage():
 def refreshPerimeterSettingPage():
     sliderTimeBelowSmag.set(myRobot.perimeter_timedOutIfBelowSmag)
     sliderTimeNotInside.set(myRobot.perimeter_timeOutSecIfNotInside)
-    sliderTrigTimeout.set(myRobot.perimeterTriggerTimeout)
+    sliderTrigMinSmag.set(myRobot.perimeterTriggerMinSmag)
     sliderTrackingSpeed.set(myRobot.MaxSpeedperiPwm)
     sliderCircleArcDistance.set(myRobot.DistPeriObstacleAvoid)
     sliderPeriMagMaxValue.set(myRobot.perimeterMagMaxValue)
@@ -1911,7 +1898,7 @@ def ButtonSendSettingToDue_click():
                             '',''+str(myRobot.sonarTriggerBelow)+\
                             '',''+str(myRobot.perimeterUse)+\
                             '',''+str(myRobot.perimeter_timedOutIfBelowSmag)+\
-                            '',''+str(myRobot.perimeterTriggerTimeout)+\
+                            '',''+str(myRobot.perimeterTriggerMinSmag)+\
                             '',''+str(myRobot.perimeterOutRollTimeMax)+\
                             '',''+str(myRobot.perimeterOutRollTimeMin)+\
                             '',''+str(myRobot.perimeterOutRevTime)+\
@@ -2579,7 +2566,7 @@ ButtonSetMotApply.configure(command = ButtonSetMotApply_click,text="Send To Mowe
 def ButtonSetPerimeterApply_click():
     myRobot.perimeter_timedOutIfBelowSmag=sliderTimeBelowSmag.get()
     myRobot.perimeter_timeOutSecIfNotInside=sliderTimeNotInside.get()
-    myRobot.perimeterTriggerTimeout=sliderTrigTimeout.get()
+    myRobot.perimeterTriggerMinSmag=sliderTrigMinSmag.get()
     myRobot.MaxSpeedperiPwm=sliderTrackingSpeed.get()
     myRobot.DistPeriObstacleAvoid=sliderCircleArcDistance.get()
     myRobot.perimeterMagMaxValue=sliderPeriMagMaxValue.get()
@@ -2641,8 +2628,8 @@ sliderTimeBelowSmag = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID,
 sliderTimeBelowSmag.place(x=5,y=10,width=250, height=50)
 sliderTimeNotInside = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=20, label='Timeout if not inside (0 to 20) in Sec')
 sliderTimeNotInside.place(x=5,y=60,width=250, height=50)
-sliderTrigTimeout = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=1000, label='Trigger timeout (0 to 1000)')
-sliderTrigTimeout.place(x=5,y=110,width=250, height=50)
+sliderTrigMinSmag = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=1000, label='Big Area Smag Center (0 to 1000)')
+sliderTrigMinSmag.place(x=5,y=110,width=250, height=50)
 sliderTrackingSpeed = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=255, label='Tracking PWM Max Speed (0 to 255)')
 sliderTrackingSpeed.place(x=5,y=160,width=250, height=50)
 sliderCircleArcDistance = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=1, to=250, label='Circle Arc Distance (cm)')
