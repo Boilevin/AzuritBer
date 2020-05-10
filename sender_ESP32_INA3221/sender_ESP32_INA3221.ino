@@ -1,15 +1,15 @@
 /*
-WIFI Communicating sender
-Adjust IP according to your ESP32 value 10.42.0.253 in this example
-On your browser send :
-http://10.42.0.253/0   *********** to stop the sender
-http://10.42.0.253/1   *********** to start the sender
-http://10.42.0.253/sigCode/2 ******* to change the sigcode in use possible value are 0,1,2,3,4 ,see sigcode list
-http://10.42.0.253/?   *********** to see the state of the sender
-http://10.42.0.253/sigDuration/104    *********** to change the speed sender to 104 microsecondes
-http://10.42.0.253/sigDuration/50    *********** to change the speed sender to 50 microsecondes
+  WIFI Communicating sender
+  Adjust IP according to your ESP32 value 10.42.0.253 in this example
+  On your browser send :
+  http://10.42.0.253/0   *********** to stop the sender
+  http://10.42.0.253/1   *********** to start the sender
+  http://10.42.0.253/sigCode/2 ******* to change the sigcode in use possible value are 0,1,2,3,4 ,see sigcode list
+  http://10.42.0.253/?   *********** to see the state of the sender
+  http://10.42.0.253/sigDuration/104    *********** to change the speed sender to 104 microsecondes
+  http://10.42.0.253/sigDuration/50    *********** to change the speed sender to 50 microsecondes
 
-If USE_STATION : the sender start and stop automaticly if the mower is in the station or not
+  If USE_STATION : the sender start and stop automaticly if the mower is in the station or not
 
 
 */
@@ -19,8 +19,8 @@ If USE_STATION : the sender start and stop automaticly if the mower is in the st
 #include <WiFi.h>
 
 //********************* user setting **********************************
-const char* ssid     = "RL1000";   // put here your acces point ssid 
-const char* password = "Ardumower1234";  // put here the password
+const char* ssid     = "My_ssid_wifi";   // put here your acces point ssid
+const char* password = "My_pass_wifi";  // put here the password
 #define USE_STATION     1 // a station is connected and is used to charge the mower
 #define USE_PERI_CURRENT      1     // use pinFeedback for perimeter current measurements? (set to '0' if not connected!)
 #define USE_BUTTON      1     // use button to start mowing or send mower to station
@@ -270,7 +270,7 @@ void connection()
     String ipAddress = IPAddress2String(WiFi.localIP());
     oled.clearDisplay();
     oled.setTextXY(0, 0);
-    oled.putString("Mower Connected");
+    oled.putString("WIFI Connected");
     oled.setTextXY(1, 0);
     oled.putString(ipAddress);
     server.begin();
@@ -339,6 +339,7 @@ static void ScanNetwork()
     if (!enableSender) ESP.restart(); // do not reset if sender is ON
   }
   if (n == -2)
+    //bug in esp32 if wifi is lost many time the esp32 fail to autoreconnect,maybe solve in other firmware ???????
   {
     oled.setTextXY(0, 0);
     oled.putString("Scan Fail.");
@@ -450,7 +451,7 @@ void loop()
       oled.putFloat(ChargeCurrent, 0);
 
       if (ChargeCurrent > 200) { //mower is into the station ,in my test 410 ma are drained so possible to stop sender
-        
+
         workTimeMins = 0;
         enableSender = false;
         digitalWrite(pinEnable, LOW);
@@ -491,12 +492,13 @@ void loop()
   if (client) {
     // Read the first line of the request
     String req = client.readStringUntil('\r');
+    if (req=="") return;
     Serial.print("Client say  ");
     Serial.println(req);
     Serial.println("------------------------ - ");
     //client.flush();
     // Match the request
-    if (req.indexOf("/0") != -1) {
+    if (req.indexOf("GET /0") != -1) {
       // WiffiRequestOn = false;
       enableSender = false;
       workTimeMins = 0;
@@ -506,10 +508,11 @@ void loop()
       String sResponse;
       sResponse = "SENDER IS OFF";
       // Send the response to the client
+      Serial.println(sResponse);
       client.print(sResponse);
       client.flush();
     }
-    if (req.indexOf("/1") != -1) {
+    if (req.indexOf("GET /1") != -1) {
       //WiffiRequestOn = 1;
       workTimeMins = 0;
       enableSender = true;
@@ -520,13 +523,16 @@ void loop()
       String sResponse;
       sResponse = "SENDER IS ON";
       // Send the response to the client
+      Serial.println(sResponse);
       client.print(sResponse);
       client.flush();
     }
 
-    if (req.indexOf("/?") != -1) {
+    if (req.indexOf("GET /?") != -1) {
       String sResponse, sHeader;
-      sResponse = "WORKING DURATION= ";
+      sResponse = "MAC ADRESS = ";
+      sResponse += WiFi.macAddress() ;
+      sResponse += " WORKING DURATION= ";
       sResponse += workTimeMins ;
       sResponse += " PERI CURRENT Milli Amps= ";
       sResponse += PeriCurrent  ;
@@ -534,9 +540,7 @@ void loop()
       sResponse += sigDuration ;
       sResponse += " sigCodeInUse= ";
       sResponse += sigCodeInUse ;
-
-
-
+      Serial.println(sResponse);
       client.print(sResponse);
       client.flush();
     }
@@ -544,19 +548,19 @@ void loop()
 
 
 
-    if (req.indexOf("/sigCode/0") != -1) {
+    if (req.indexOf("GET /sigCode/0") != -1) {
       sigCodeInUse = 0;
       changeArea(sigCodeInUse);
       // Prepare the response
       String sResponse;
       sResponse = "NOW Send Signal 0";
       // Send the response to the client
-
+      Serial.println(sResponse);
       client.print(sResponse);
       client.flush();
 
     }
-    if (req.indexOf("/sigCode/1") != -1) {
+    if (req.indexOf("GET /sigCode/1") != -1) {
       sigCodeInUse = 1;
       changeArea(sigCodeInUse);
       // Prepare the response
@@ -569,7 +573,7 @@ void loop()
 
     }
 
-    if (req.indexOf("/sigCode/2") != -1) {
+    if (req.indexOf("GET /sigCode/2") != -1) {
       sigCodeInUse = 2;
       changeArea(sigCodeInUse);
       // Prepare the response
@@ -582,7 +586,7 @@ void loop()
 
     }
 
-    if (req.indexOf("/sigCode/3") != -1) {
+    if (req.indexOf("GET /sigCode/3") != -1) {
       sigCodeInUse = 3;
       changeArea(sigCodeInUse);
       // Prepare the response
@@ -595,7 +599,7 @@ void loop()
 
     }
 
-    if (req.indexOf("/sigCode/4") != -1) {
+    if (req.indexOf("GET /sigCode/4") != -1) {
       sigCodeInUse = 4;
       changeArea(sigCodeInUse);
       // Prepare the response
@@ -607,7 +611,7 @@ void loop()
       client.flush();
 
     }
-    if (req.indexOf("/sigDuration/104") != -1) {
+    if (req.indexOf("GET /sigDuration/104") != -1) {
       sigDuration = 104;
       timerAlarmWrite(timer, 104, true);
       // Prepare the response
@@ -620,7 +624,7 @@ void loop()
 
     }
 
-    if (req.indexOf("/sigDuration/50") != -1) {
+    if (req.indexOf("GET /sigDuration/50") != -1) {
       sigDuration = 50;
       timerAlarmWrite(timer, 50, true);
       // Prepare the response
@@ -643,12 +647,7 @@ void loop()
       oled.setTextXY(7, 0);
       oled.putString("StartButtonPress");
     }
-    /*
-      else {
-      oled.setTextXY(7, 0);
-      oled.putString("                ");
-      }
-    */
+
     Button_pressed = digitalRead(pinPushButton);
     if (Button_pressed == 1) {
       Serial.println("Button pressed");

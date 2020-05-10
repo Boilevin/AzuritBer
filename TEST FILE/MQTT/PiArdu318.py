@@ -29,7 +29,8 @@ from config import Mqtt_Broker_IP
 from config import Mqtt_Port
 from config import Mqtt_IdleFreqency
 from config import Mqtt_MowerName
-
+from config import Sender2AdressIP
+from config import Sender3AdressIP
 
 #bber30 test MQTT 
 
@@ -2588,8 +2589,9 @@ def ButtonSetPerimeterApply_click():
      
 
 def ButtonStartArea2_click():
-    consoleInsertText("Try to Start Area2 Sender" + '\n') 
-    sub = subprocess.Popen("curl 10.42.0.172/area2/1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+    consoleInsertText("Try to Start Area2 Sender" + '\n')
+    ipMessage="curl "+Sender2AdressIP+"/1"
+    sub = subprocess.Popen("curl "+Sender2AdressIP+"/1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output,error_output = sub.communicate()
     if str(output)=="b'SENDER IS ON'":
         mymower.sigArea2Off=False
@@ -2606,7 +2608,7 @@ def ButtonStartArea2_click():
          
 def ButtonStopArea2_click():
     consoleInsertText("Try to Stop Area2 Sender" + '\n')  
-    sub = subprocess.Popen("curl 10.42.0.172/area2/0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+    sub = subprocess.Popen("curl "+Sender2AdressIP+"/0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output, error_output = sub.communicate()   
     if str(output)=="b'SENDER IS OFF'":
         mymower.sigArea2Off=True

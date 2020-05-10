@@ -16,6 +16,8 @@ if (os.name=='nt'):
     DueConnectedOnPi=False
     AutoRecordBatCharging=False
     useDebugConsole=True
+    Sender2AdressIP="10.0.0.27"
+    Sender3AdressIP="10.0.0.28"
     useMqtt=True
     Mqtt_Broker_IP="10.0.0.24"
     Mqtt_Port = 1883
@@ -35,6 +37,8 @@ if (os.name=='posix'):
     DueConnectedOnPi=True
     AutoRecordBatCharging=False
     useDebugConsole=True
+    Sender2AdressIP="10.0.0.27"
+    Sender3AdressIP="10.0.0.28"
     myCamAngle = 0 # Possible= 0, 90, 180, 270
     useMqtt=True
     Mqtt_Broker_IP="10.0.0.8"
