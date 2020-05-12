@@ -3,25 +3,18 @@
 #include <WiFi.h>
 
 
-const char* ssid     = "Arduwifi";   // put here your phone acces point ssid
-const char* password = "Ardumower1234";  // put here the password
+const char* ssid     = "YOUR SSID WIFI";   // put here your phone acces point ssid
+const char* password = "YOUR PASSWORD";  // put here the password
 
 
 int8_t sigcode_norm[128];
-
 int16_t sigcode_size;
-
-
 
 // the OLED used
 U8X8_SSD1306_128X64_NONAME_SW_I2C u8x8(/* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
 
-
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
-
-
-
 
 // ---- choose only one perimeter signal code ----
 //#define SIGCODE_0  // test scope signal
@@ -411,7 +404,7 @@ void loop()
 
     // Match the request
 
-    if (req.indexOf("/area2/0") != -1) {
+    if (req.indexOf("GET /0") != -1) {
       // WiffiRequestOn = false;
       enableSender = false;
       workTimeMins = 0;
@@ -426,7 +419,7 @@ void loop()
       client.flush();
 
     }
-    if (req.indexOf("/area2/1") != -1) {
+    if (req.indexOf("GET /1") != -1) {
       //WiffiRequestOn = 1;
       workTimeMins = 0;
       enableSender = true;
