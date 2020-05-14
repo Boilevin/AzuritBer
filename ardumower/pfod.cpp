@@ -1322,7 +1322,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
       robot->findedYaw = 999;
       robot->imuDirPID.reset();
       //robot->mowPatternCurr = 1;
-      robot->startByTimer = false;
+      robot->startByTimer = true;
       robot->mowPatternDuration = 0;
       robot->totalDistDrive = 0;
       robot->setActuator(ACT_CHGRELAY, 0);
