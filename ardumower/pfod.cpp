@@ -1156,7 +1156,6 @@ void RemoteControl::processTimerDetailMenu(String pfodCmd) {
     minutes2time(stopmin, time);
     robot->timer[timerIdx].stopTime = time;
     robot->startByTimer = false;
-    robot->actualLenghtByLane = robot->maxLenghtByLane;
     robot->whereToStart = 0;
     robot->actualLenghtByLane = robot->maxLenghtByLane;
   } else if (checkStart) {

@@ -1139,9 +1139,8 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "laneUseNr", 20) == 0)  robot->laneUseNr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "rollDir", 20) == 0)  robot->rollDir = atoi(received_value[i]);
       if (strncmp(variable_name[i], "whereToStart", 20) == 0)  robot->whereToStart = atoi(received_value[i]);
-      if (strncmp(variable_name[i], "actualLenghtByLane", 20) == 0)  robot->actualLenghtByLane = atoi(received_value[i]);
-      
-      
+      if (strncmp(variable_name[i], "actualLenghtByLane", 20) == 0) robot->actualLenghtByLane = atoi(received_value[i]);
+             
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle1", 20) == 0) robot->newtagRotAngle1 = atoi(received_value[i]);

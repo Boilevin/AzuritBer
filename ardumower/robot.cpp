@@ -5321,6 +5321,7 @@ void Robot::loop()  {
           Console.print("Distance OK, time to start mowing into new area ");
           Console.println(areaInMowing);
           areaToGo = 1; //after mowing the mower need to back to station
+          ActualSpeedPeriPWM = MaxSpeedperiPwm;
           setNextState(STATE_PERI_STOP_TOROLL, rollDir);
           return;
         }
