@@ -126,36 +126,7 @@ float nextTimeAdjustYaw;
   boolean newMinMaxFound();
   void calibGyro();
   // ---------------------- 
- /*  // ---- compass ------
-   bool calibFound;
-   //adafruit_bno055_offsets_t calibData; // BNO055 calibration
-   point_float_t comR; // raw compass (uncalibrated)
-   point_float_t comAcc; // compass acceleration sensor
-   float comRoll; // compass roll
-   float comPitch; // compass pitch
-    point_float_t comLast;
-    point_float_t comMin; // compass sensor data (raw)
-    point_float_t comMax; // compass sensor data (raw)  
-    point_float_t comTilt; // compass sensor data (tilt corrected)
-    point_float_t comOfs;
-    point_float_t comScale;  
-  
-   point_float_t comAccMin; // compass acceleration sensor seen min
-   point_float_t comAccMax; // compass acceleration sensor seen max
-   long gyroBias[3];    // gyro bias 
-   long accelCal[3];   // accel calibration
-   float comCalA_1[9]; // compass calibration A_1
-   float comCalB[3];   // compass calibration B
-   point_float_t comAccOfs; // compass acceleration sensor ofs
-   point_float_t comAccScale;  // compass acceleration sensor scale
-      bool useComAccCalibration;
-   int calibComAccAxisCounter ;   
-   float yawAtGyroCalibrationTime;
-   unsigned long timeAtGyroCalibrationTime;
-   float statsYawMax;
-   float statsYawMin;
-   int statsGyroCalibrationTimeMax; 
-   */  
+ 
   
  void meansensors();
  void calibration();

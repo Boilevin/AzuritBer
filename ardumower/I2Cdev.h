@@ -261,8 +261,8 @@ class I2Cdev {
     #ifndef cbi // clear bit
         #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
     #endif // cbi
-    
-    extern TwoWire Wire;
+    //bber15
+    extern TwoWire Wire1;
 
 #endif // I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_NBWIRE
 
