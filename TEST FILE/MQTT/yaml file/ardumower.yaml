@@ -334,9 +334,9 @@ automation:
     action:
       service: mqtt.publish
       data_template:
-        topic: "Mower/TEST/"
+        topic: "Mower/COMMAND/"
         # STARTTIMER;MowPattern;LaneNr;rollDir;WhereStart;areToGo;LaneLenght
-        payload: "STARTTIMER;{% if is_state('input_select.mower_timer1_mowpattern', 'Random') %}1{% elif is_state('input_select.mower_timer1_mowpattern', 'Lane') %}2{% elif is_state('input_select.mower_timer1_mowpattern', 'Perimeter') %}3{% else %}FAILED{% endif %};{{states('input_select.mower_timer1_lanenr')}};{% if is_state('input_select.mower_timer1_rolldir', 'Left') %}0{% elif is_state('input_select.mower_timer1_rolldir', 'Right') %}1{% else %}FAILED{% endif %};{{states('input_number.mower_timer1_start_distance')|round(0)}};{{states('input_select.mower_timer1_areatogo')}};{{states('input_number.mower_timer1_lane_lenght')|round(0)}}"
+        payload: "STARTTIMER;{% if is_state('input_select.mower_timer1_mowpattern', 'Random') %}0{% elif is_state('input_select.mower_timer1_mowpattern', 'Lane') %}1{% elif is_state('input_select.mower_timer1_mowpattern', 'Perimeter') %}2{% else %}FAILED{% endif %};{{states('input_select.mower_timer1_lanenr')}};{% if is_state('input_select.mower_timer1_rolldir', 'Left') %}0{% elif is_state('input_select.mower_timer1_rolldir', 'Right') %}1{% else %}FAILED{% endif %};{{states('input_number.mower_timer1_start_distance')|round(0)}};{{states('input_select.mower_timer1_areatogo')}};{{states('input_number.mower_timer1_lane_lenght')|round(0)}}"
         qos: 0
 
   # Stop Timer 1
@@ -370,6 +370,6 @@ automation:
     action:
       service: mqtt.publish
       data_template:
-        topic: "Mower/TEST/"
+        topic: "Mower/COMMAND/"
         payload: "HOME"
         qos: 0
