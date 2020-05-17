@@ -100,8 +100,8 @@ void IMUClass::begin() {
   */
   delay(2000); //    wait 2 second before doing the first reading
 
-  
- 
+
+
   mpu.setXAccelOffset(ax_offset); //-1929
   mpu.setYAccelOffset(ay_offset); //471
   mpu.setZAccelOffset(az_offset); // 1293
@@ -133,7 +133,7 @@ void IMUClass::begin() {
   Console.println(F("Wait 3 secondes to stabilize the Drift"));
   delay(3000); // wait 3 sec to help DMP stop drift
 
-  
+
   // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
   mpu.setI2CBypassEnabled(true); // mandatory to see the compass over the DMP on GY87 or GY88
   run();
@@ -148,7 +148,7 @@ void IMUClass::begin() {
   Console.println(CompassGyroOffset * 180 / PI);
 
   Console.println(F("--------------------------------- IMU READY ------------------------------"));
-  
+
 }
 
 // weight fusion (w=0..1) of two radiant values (a,b)
@@ -313,9 +313,39 @@ void IMUClass::run() {
   mpu.dmpGetQuaternion(&q, fifoBuffer);
   mpu.dmpGetGravity(&gravity, &q);
   mpu.dmpGetYawPitchRoll(yprtest, &q, &gravity);
+
+  //bber4
+  //filter to avoid bad reading
+
+  if ((abs(yprtest[1]) - abs(ypr.pitch)) > 0.3490)
+  {
+    Console.print("Last pitch : ");
+    Console.print(ypr.pitch / PI * 180);
+    Console.print(" Actual pitch : ");
+    Console.println(yprtest[1] / PI * 180);
+    Console.println("pitch change 20 deg in less than 50 ms ????????? value is skip");
+  }
+  else
+  {
+    ypr.pitch = yprtest[1];
+  }
+
+  if ((abs(yprtest[2]) - abs(ypr.roll)) > 0.3490)
+  {
+    Console.print("Last roll : ");
+    Console.print(ypr.roll / PI * 180);
+    Console.print(" Actual roll : ");
+    Console.println(yprtest[2] / PI * 180);
+    Console.println("roll change 20 deg in less than 50 ms ????????? value is skip");
+  }
+  else
+  {
+    ypr.roll = yprtest[2];
+  }
+
+
   gyroAccYaw = yprtest[0];  // the Gyro Yaw very accurate but drift
-  ypr.pitch = yprtest[1];
-  ypr.roll = yprtest[2];
+
 
   // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
   readHMC5883L();
@@ -352,10 +382,10 @@ void IMUClass::run() {
 }
 
 void IMUClass::readHMC5883L() {
-  
+
   int16_t mx, my, mz;
   mag.getHeading(&mx, &my, &mz);
-  
+
   float x = (int16_t)(mx);
   float y = (int16_t)(my);
   float z = (int16_t)(mz);
@@ -567,7 +597,7 @@ void IMUClass::calibComUpdate() {
   comLast = com;
   delay(20);
   readHMC5883L();
-  
+
   boolean newfound = false;
   if ( (abs(com.x - comLast.x) < 10) &&  (abs(com.y - comLast.y) < 10) &&  (abs(com.z - comLast.z) < 10) ) {
     if (com.x < comMin.x) {
