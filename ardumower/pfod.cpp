@@ -1329,6 +1329,12 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     sendCommandMenu(true);
 
   }
+  
+  else if (pfodCmd=="rx")
+  {
+    robot->autoReboot();
+    sendCommandMenu(true);
+  }
 
   else if (pfodCmd == "rz") { //coming from pi
     // cmd: find other tag for station
