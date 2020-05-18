@@ -1,7 +1,7 @@
 # AzuritBer
 Version for Robomow RL1000
 
-GY-88 WITH HMC5883L MANDATORY
+GY-87 MANDATORY
 
 OPTIONAL RFID
 	Use for multiple area mowing, Fast start Entry point,Fast return to station,soft docking ,etc....
