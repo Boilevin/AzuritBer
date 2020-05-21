@@ -2024,7 +2024,7 @@ void Robot::setup()  {
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
     Console.println ("Watchdog is enable and set to 2 secondes");
-    watchdogEnable(3000);// Watchdog trigger after  2 sec if not reseted.
+    watchdogEnable(2000);// Watchdog trigger after  2 sec if not reseted.
 
   }
   else
@@ -4254,7 +4254,7 @@ void Robot::checkPerimeterBoundary() {
     Console.println(" Rotation direction Left / Right change ");
   }
   //bber17
-  if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_MOW_SPIRALE) ) {
+  if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_MOW_SPIRALE) || (stateCurr == STATE_ROLL_TO_FIND_YAW) || (stateCurr == STATE_NEXT_LANE_FORW)) {
     if (perimeterTriggerTime != 0) {
       if (millis() >= perimeterTriggerTime) {
         perimeterTriggerTime = 0;
@@ -5706,7 +5706,7 @@ void Robot::loop()  {
       }
       //********************************************************************************************
       if ((odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft) ) {
-        if (!perimeterInside) {
+        if (perimeterMag>0) {
           setNextState(STATE_PERI_OUT_STOP, rollDir);
         }
         else
@@ -5734,12 +5734,25 @@ void Robot::loop()  {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) )
           if (rollDir == RIGHT) {
             if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) { //wait until the 2 motor completly stop because need precision
+              if (perimeterMag>0) {
+                Console.println ("Warning after peri_out_rev the mower is always outside ????? ");
+                addErrorCounter(ERR_TRACKING);
+                setNextState(STATE_ERROR, 0);
+                return;
+              }
               setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
+
             }
           }
           else
           {
             if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) {
+              if (perimeterMag>0) {
+                Console.println ("Warning after peri_out_rev the mower is always outside ????? ");
+                addErrorCounter(ERR_TRACKING);
+                setNextState(STATE_ERROR, 0);
+                return;
+              }
               setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
             }
           }
@@ -5750,13 +5763,24 @@ void Robot::loop()  {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) )
           if (rollDir == RIGHT) {
             if (motorLeftPWMCurr == 0 ) { //wait until the left motor completly stop because rotation is inverted
-
+              if (perimeterMag>0) {
+                Console.println ("Warning after peri_out_rev the mower is always outside ????? ");
+                addErrorCounter(ERR_TRACKING);
+                setNextState(STATE_ERROR, 0);
+                return;
+              }
               setNextState(STATE_PERI_OUT_ROLL, rollDir);
             }
           }
           else
           {
             if (motorRightPWMCurr == 0 ) { //wait until the right motor completly stop because rotation is inverted
+              if (perimeterMag>0) {
+                Console.println ("Warning after peri_out_rev the mower is always outside ????? ");
+                addErrorCounter(ERR_TRACKING);
+                setNextState(STATE_ERROR, 0);
+                return;
+              }
               setNextState(STATE_PERI_OUT_ROLL, rollDir);
             }
           }
@@ -5776,7 +5800,7 @@ void Robot::loop()  {
       if (rollDir == RIGHT) {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft) ) {
           if (motorRightPWMCurr == 0 ) { //wait until the left motor completly stop because rotation is inverted
-            if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_PERI_OUT_FORW, rollDir);
           }
         }
@@ -5784,7 +5808,7 @@ void Robot::loop()  {
       else {
         if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) ) {
           if (motorLeftPWMCurr == 0 ) { //wait until the left motor completly stop because rotation is inverted
-            if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_PERI_OUT_FORW, rollDir);
           }
 
@@ -5812,7 +5836,7 @@ void Robot::loop()  {
       if (rollDir == RIGHT) {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft) ) {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
-            if (!perimeterInside) setNextState(STATE_WAIT_AND_REPEAT, rollDir);//again until find the inside
+            if (perimeterMag>0) setNextState(STATE_WAIT_AND_REPEAT, rollDir);//again until find the inside
             else setNextState(STATE_PERI_OUT_FORW, rollDir);
           }
         }
@@ -5820,7 +5844,7 @@ void Robot::loop()  {
       else {
         if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) ) {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 ) ) { //wait until the 2 motor completly stop
-            if (!perimeterInside) setNextState(STATE_WAIT_AND_REPEAT, rollDir);//again until find the inside
+            if (perimeterMag>0) setNextState(STATE_WAIT_AND_REPEAT, rollDir);//again until find the inside
             else setNextState(STATE_PERI_OUT_FORW, rollDir);
           }
 
@@ -5830,7 +5854,7 @@ void Robot::loop()  {
         if (developerActive) {
           Console.println ("Warning can t Roll to inside in time ");
         }
-        if (!perimeterInside) setNextState(STATE_WAIT_AND_REPEAT, rollDir);//again until find the inside
+        if (perimeterMag>0) setNextState(STATE_WAIT_AND_REPEAT, rollDir);//again until find the inside
         else setNextState(STATE_PERI_OUT_FORW, rollDir);
       }
       break;
@@ -5847,7 +5871,7 @@ void Robot::loop()  {
         if (developerActive) {
           Console.println ("Warning can t find perimeter Wire while PERI_OUT_ROLL_TOTRACK in time ");
         }
-        if (!perimeterInside) setNextState(STATE_WAIT_AND_REPEAT, 0);//again until find the inside
+        if (perimeterMag>0) setNextState(STATE_WAIT_AND_REPEAT, 0);//again until find the inside
         else setNextState(STATE_PERI_OUT_STOP_ROLL_TOTRACK, 0);;
       }
       break;
@@ -5867,7 +5891,7 @@ void Robot::loop()  {
         if (developerActive) {
           Console.println ("Warning can t PERI_OUT_STOP_ROLL_TOTRACK in time ");
         }
-        if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOTRACK, 0);//again until find the inside
+        if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOTRACK, 0);//again until find the inside
         else setNextState(STATE_PERI_TRACK, 0);
       }
       break;
@@ -5879,7 +5903,7 @@ void Robot::loop()  {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the left motor completly stop because rotation is inverted
-            if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_NEXT_LANE_FORW, rollDir);
           }
         }
@@ -5889,7 +5913,7 @@ void Robot::loop()  {
         if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the left motor completly stop because rotation is inverted
-            if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_NEXT_LANE_FORW, rollDir);
           }
         }
@@ -5908,7 +5932,7 @@ void Robot::loop()  {
 
       //bber14
       //if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
-      if (!perimeterInside) {
+      if (perimeterMag>0) {
         setNextState(STATE_PERI_OUT_STOP, rollDir);
         return;
       }
@@ -5935,7 +5959,7 @@ void Robot::loop()  {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
-            if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_FORWARD_ODO, rollDir);// forward odo to straight line
             rollDir = LEFT;//invert the next rotate
           }
@@ -5947,7 +5971,7 @@ void Robot::loop()  {
         if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
-            if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_FORWARD_ODO, rollDir);
             rollDir = RIGHT;// invert the next rotate
           }
@@ -5958,13 +5982,13 @@ void Robot::loop()  {
           Console.println ("Warning can t make the roll2 in time ");
         }
         if (rollDir == RIGHT) {
-          if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+          if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
           else setNextState(STATE_FORWARD_ODO, rollDir);// forward odo to straight line
           rollDir = LEFT;//invert the next rotate
         }
         else
         {
-          if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+          if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
           else setNextState(STATE_FORWARD_ODO, rollDir);
           rollDir = RIGHT;// invert the next rotate
         }
@@ -5976,7 +6000,7 @@ void Robot::loop()  {
 
     case STATE_PERI_OUT_FORW:
       motorControlOdo();
-      if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+      if (perimeterMag>0) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
       if ((millis() > (stateStartTime + MaxOdoStateDuration)) || (odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft) ) {
         setNextState(STATE_FORWARD_ODO, rollDir);
         //motorControl();
