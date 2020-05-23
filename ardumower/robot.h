@@ -784,6 +784,7 @@ class Robot
     
     virtual void receivePiPfodCommand (String RpiCmd,float v1,float v2,float v3);
     virtual void printSettingSerial();
+    char* mowPatternNameList(byte mowPatternIndex);
     
   protected:
     // convert ppm time to RC slider value
@@ -865,7 +866,7 @@ class Robot
     virtual void purgeConsole();
     virtual char waitCharConsole();
     virtual String waitStringConsole();
-
+    
 
 };
 

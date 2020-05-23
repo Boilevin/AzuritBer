@@ -1031,8 +1031,8 @@ void RemoteControl::sendTimerDetailMenu(int timerIdx, boolean update) {
   serialPort->print("|p7");
   serialPort->print(timerIdx);
   serialPort->println(F("~Start Pattern  "));
-  serialPort->print(robot->mowPatternName());
-
+  serialPort->print(robot->mowPatternNameList(robot->timer[timerIdx].startMowPattern));
+ 
   serialPort->print("|pd");
   serialPort->print(timerIdx);
   serialPort->println(F("~Start Area  "));

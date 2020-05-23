@@ -259,8 +259,12 @@ char* Robot::statusName() {
 }
 
 
-char *Robot::mowPatternName() {
+char* Robot::mowPatternName() {
   return mowPatternNames[mowPatternCurr];
+}
+
+char* Robot::mowPatternNameList(byte mowPatternIndex) {
+  return mowPatternNames[mowPatternIndex];
 }
 /*
   int freeMemory() {
