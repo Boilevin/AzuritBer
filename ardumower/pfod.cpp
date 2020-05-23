@@ -1317,7 +1317,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
   }
   else if (pfodCmd == "rv") { //coming from pi starttimer mqtt addon
      Console.println("MQTT START FROM STATION");
-      robot->ActualRunningTimer = 0;
+      robot->ActualRunningTimer = 99;
       robot->findedYaw = 999;
       robot->imuDirPID.reset();
       //robot->mowPatternCurr = 1;
@@ -1351,7 +1351,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     if ((robot->stateCurr == STATE_STATION) || (robot->stateCurr == STATE_STATION_CHARGING)) {
       //bber40
       Console.println("MANUAL START FROM STATION");
-      robot->ActualRunningTimer = 0;
+      robot->ActualRunningTimer = 99;
       robot->findedYaw = 999;
       robot->imuDirPID.reset();
       //robot->mowPatternCurr = 1;

@@ -14,7 +14,7 @@ void RpiRemote::init() {
 }
 void RpiRemote::run() {
   readPi();
-  if (millis() >= nextTimeRaspberryPISendStat) {
+  if ((millis() >= nextTimeRaspberryPISendStat) && (millis()>=30000)) {   // start to send the stat only after 30sec on power up to wait pi start
     nextTimeRaspberryPISendStat = millis() + 500;  //better to put 200
     RaspberryPISendStat();
   }

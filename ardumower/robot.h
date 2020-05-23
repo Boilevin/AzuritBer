@@ -630,7 +630,7 @@ class Robot
     // ----- other -----------------------------------------
     boolean buttonUse         ;       // has digital ON/OFF button?
     bool RaspberryPIUse;  //a raspberryPI is connected to USBNativeport
-    
+    bool MyrpiStatusSync;
     unsigned long beepOnOFFDuration; //variable use for the beeper
     bool beepState;//for the beeper true when sound
     unsigned long  nextTimeBeeper;// use for beeper

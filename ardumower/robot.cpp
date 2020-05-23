@@ -93,6 +93,8 @@ Robot::Robot() {
   MyRpi.setRobot(this);
 
   stateLast = stateCurr = stateNext = STATE_OFF;
+  statusCurr=WAIT;  //initialise the status on power up 
+  
   stateTime = 0;
   idleTimeSec = 0;
   statsMowTimeTotalStart = false;
@@ -244,6 +246,7 @@ Robot::Robot() {
   motorRightPID.Ki = motorLeftPID.Ki;
   motorRightPID.Kd = motorLeftPID.Kd;
   gpsReady = false;
+  MyrpiStatusSync = false;
 }
 
 
@@ -1950,8 +1953,6 @@ void Robot::setup()  {
 
 
 
-
-
   //setDefaultTime();
   //init of timer for factory setting
   for (int i = 0; i < MAX_TIMERS; i++) {
@@ -1968,13 +1969,8 @@ void Robot::setup()  {
     timer[i].startRollDir = 0;
     timer[i].startLaneMaxlengh = 0;
     timer[i].rfidBeacon = 0;
-
-
-
   }
-
-
-
+  ActualRunningTimer=99;
   setMotorPWM(0, 0, false);
   loadSaveErrorCounters(true);
   loadUserSettings();
@@ -3213,6 +3209,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       endTimeCalibration = millis() + maxDurationDmpAutocalib * 1000;  //max duration calibration
       compassYawMedian.clear();
       accelGyroYawMedian.clear();
+      
       break;
 
 
@@ -3233,7 +3230,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
         stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm / 2 ) ;
         stateEndOdometryLeft = odometryLeft - (int)(odometryTicksPerCm / 2 ) ;
       }
-
+      //bber50
+      OdoRampCompute();
       break;
 
     case STATE_STOP_BEFORE_SPIRALE:
@@ -4638,11 +4636,19 @@ String Robot::waitStringConsole() {
 void Robot::loop()  {
   stateTime = millis() - stateStartTime;
   int steer;
-
+  
   ADCMan.run();
   perimeter.run();
-  if (RaspberryPIUse)   MyRpi.run();
-  else readSerial();
+  if (RaspberryPIUse) {
+    MyRpi.run();
+    if ((millis()>60000) && (!MyrpiStatusSync)){ // on initial powerON DUE start faster than PI , so need to send again the status to refresh 
+      MyRpi.SendStatusToPi();
+      MyrpiStatusSync=true;
+    }
+  }
+  else {
+    readSerial();
+  }
 
   if (bluetoothUse) {
     rc.readSerial();
@@ -5356,7 +5362,7 @@ void Robot::loop()  {
       else {
         if (millis() - stateStartTime > 10000) checkTimer(); //only check timer after 10 second to avoid restart before charging
       }
-
+      readDHT22();
       break;
 
     case STATE_STATION_CHARGING:
