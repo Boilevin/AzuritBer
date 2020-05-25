@@ -93,8 +93,8 @@ Robot::Robot() {
   MyRpi.setRobot(this);
 
   stateLast = stateCurr = stateNext = STATE_OFF;
-  statusCurr=WAIT;  //initialise the status on power up 
-  
+  statusCurr = WAIT; //initialise the status on power up
+
   stateTime = 0;
   idleTimeSec = 0;
   statsMowTimeTotalStart = false;
@@ -1974,7 +1974,7 @@ void Robot::setup()  {
     timer[i].startLaneMaxlengh = 0;
     timer[i].rfidBeacon = 0;
   }
-  ActualRunningTimer=99;
+  ActualRunningTimer = 99;
   setMotorPWM(0, 0, false);
   loadSaveErrorCounters(true);
   loadUserSettings();
@@ -3213,7 +3213,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       endTimeCalibration = millis() + maxDurationDmpAutocalib * 1000;  //max duration calibration
       compassYawMedian.clear();
       accelGyroYawMedian.clear();
-      
+
       break;
 
 
@@ -3534,13 +3534,13 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseAccelRight = 1;
       UseBrakeRight = 1;
       if (dir == RIGHT) {
-        motorLeftSpeedRpmSet = motorSpeedMaxRpm; 
-        motorRightSpeedRpmSet = -motorSpeedMaxRpm; 
+        motorLeftSpeedRpmSet = motorSpeedMaxRpm;
+        motorRightSpeedRpmSet = -motorSpeedMaxRpm;
         stateEndOdometryRight =  odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight ;
         stateEndOdometryLeft =  odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft ;
       } else {
-        motorLeftSpeedRpmSet = -motorSpeedMaxRpm; 
-        motorRightSpeedRpmSet = motorSpeedMaxRpm; 
+        motorLeftSpeedRpmSet = -motorSpeedMaxRpm;
+        motorRightSpeedRpmSet = motorSpeedMaxRpm;
         stateEndOdometryRight = odometryRight + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight;
         stateEndOdometryLeft = odometryLeft - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft;
       }
@@ -4640,14 +4640,14 @@ String Robot::waitStringConsole() {
 void Robot::loop()  {
   stateTime = millis() - stateStartTime;
   int steer;
-  
+
   ADCMan.run();
   perimeter.run();
   if (RaspberryPIUse) {
     MyRpi.run();
-    if ((millis()>60000) && (!MyrpiStatusSync)){ // on initial powerON DUE start faster than PI , so need to send again the status to refresh 
+    if ((millis() > 60000) && (!MyrpiStatusSync)) { // on initial powerON DUE start faster than PI , so need to send again the status to refresh
       MyRpi.SendStatusToPi();
-      MyrpiStatusSync=true;
+      MyrpiStatusSync = true;
     }
   }
   else {
@@ -4977,7 +4977,7 @@ void Robot::loop()  {
 
     case STATE_REVERSE:
       motorControlOdo();
-      if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) )
+      if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) ) {
         if (rollDir == RIGHT) {
           if (motorLeftPWMCurr == 0 ) { //wait until the left motor completly stop because rotation is inverted
             setNextState(STATE_ROLL, rollDir);
@@ -4989,6 +4989,7 @@ void Robot::loop()  {
             setNextState(STATE_ROLL, rollDir);
           }
         }
+      }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         if (developerActive) {
           Console.println ("Warning can t reverse in time ");
@@ -5710,7 +5711,7 @@ void Robot::loop()  {
       motorControlOdo();
 
       if (mowPatternCurr == MOW_LANES) {  //  *************************LANE***************************************
-        if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) )
+        if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) ) {
           if (rollDir == RIGHT) {
             if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) { //wait until the 2 motor completly stop because need precision
               setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
@@ -5722,11 +5723,11 @@ void Robot::loop()  {
               setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
             }
           }
-
+        }
       }
       else
       { //  *************************RANDOM***************************************
-        if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) )
+        if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) ) {
           if (rollDir == RIGHT) {
             if (motorLeftPWMCurr == 0 ) { //wait until the left motor completly stop because rotation is inverted
 
@@ -5739,8 +5740,8 @@ void Robot::loop()  {
               setNextState(STATE_PERI_OUT_ROLL, rollDir);
             }
           }
+        }
       }
-
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         if (developerActive) {
           Console.println ("Warning can t peri out rev in time ");
