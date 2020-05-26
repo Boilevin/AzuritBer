@@ -2516,7 +2516,7 @@ void Robot::readSensors() {
 
 
 
-    nextTimePerimeter = millis() +  15; // 50
+    nextTimePerimeter = millis() +  15;
     if (perimeter.read2Coil) {
       perimeterMagRight = readSensor(SEN_PERIM_RIGHT);
     }
@@ -4094,8 +4094,16 @@ void Robot::checkCurrent() {
       Console.println(motorRightPower);
 
       if (stateCurr != STATE_ERROR) {
+        if ((stateCurr == STATE_PERI_TRACK) || (stateCurr == STATE_PERI_FIND)) {
+          Console.println("Power motor left warning ");
+          setNextState(STATE_STATION_CHECK, rollDir);
+          return;
+        }
+        else
+        {
         if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
         else reverseOrBidir(LEFT);
+        }
       }
     }
     else
@@ -4126,8 +4134,16 @@ void Robot::checkCurrent() {
       Console.println(motorLeftPower);
 
       if (stateCurr != STATE_ERROR) {
-        if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
-        else reverseOrBidir(RIGHT);
+        if ((stateCurr == STATE_PERI_TRACK) || (stateCurr == STATE_PERI_FIND)) {
+          Console.println("Power motor left warning ");
+          setNextState(STATE_STATION_CHECK, rollDir);
+          return;
+        }
+        else
+        {
+          if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
+          else reverseOrBidir(RIGHT);
+        }
       }
     }
     else
@@ -4321,8 +4337,12 @@ void Robot::checkRain() {
   if (rain) {
     Console.println(F("RAIN"));
     areaToGo = 1;
-    if (perimeterUse) setNextState(STATE_PERI_FIND, 0);
-    else setNextState(STATE_OFF, 0);
+    if (perimeterUse) {
+      setNextState(STATE_PERI_FIND, 0);
+    }
+    else {
+      setNextState(STATE_OFF, 0);
+    }
   }
 }
 void Robot::checkSonarPeriTrack() {
@@ -5301,7 +5321,7 @@ void Robot::loop()  {
 
       checkSonar();
       checkBumpersPerimeter();
-
+      checkCurrent();
       motorControlOdo();
       break;
 

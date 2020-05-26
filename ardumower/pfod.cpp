@@ -237,12 +237,12 @@ void RemoteControl::sendSettingsMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Settings"));
   if ((robot->stateCurr == STATE_OFF) || (robot->stateCurr == STATE_STATION))  //deactivate the save setting if the mower is not OFF to avoid zombie
   {
-    serialPort->print(F("|sz~Save settings|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~R/C"));
+    serialPort->print(F("|sz~Save settings|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~Raspberry"));
     serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s15~Drop sensor|s14~GPS RFID|i~Timer|s12~Date/time|sx~Factory settings|s16~ByLane Setting}"));
   }
   else
   {
-    serialPort->print(F("|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~R/C"));
+    serialPort->print(F("|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~Raspberry"));
     serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s15~Drop sensor|s14~GPS RFID|i~Timer|s12~Date/time|sx~Factory settings|s16~ByLane Setting}"));
   }
 }
@@ -856,8 +856,8 @@ void RemoteControl::processImuMenu(String pfodCmd) {
 
 void RemoteControl::sendRemoteMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Remote R/C or Pi`1000"));
-  serialPort->print(F("|h00~Use RC "));
-  sendYesNo(robot->remoteUse);
+  //serialPort->print(F("|h00~Use RC "));
+  //sendYesNo(robot->remoteUse);
   serialPort->print(F("|h01~Use Rasberry(Need Reboot)"));
   sendYesNo(robot->RaspberryPIUse);
 
@@ -866,7 +866,7 @@ void RemoteControl::sendRemoteMenu(boolean update) {
 }
 
 void RemoteControl::processRemoteMenu(String pfodCmd) {
-  if (pfodCmd == "h00" ) robot->remoteUse = !robot->remoteUse;
+  //if (pfodCmd == "h00" ) robot->remoteUse = !robot->remoteUse;
   if (pfodCmd == "h01" ) robot->RaspberryPIUse = !robot->RaspberryPIUse;
   if (pfodCmd == "h02" ) robot->printSettingSerial();  //use by pi to show all the variable in the console
   if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode
