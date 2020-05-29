@@ -68,7 +68,7 @@ char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "P
                       "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                       "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
                       "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK",
-                      "STOPTOFASTSTART", "CALIBMOTORSPEED"
+                      "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD"
                      };
 
 char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT" , "WIREMOWING"
@@ -1181,7 +1181,7 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   }
   else {  // si moins d 1 tour
     if (UseAccelLeft && UseBrakeLeft) { //need 2 ramp
-      OdoStartBrakeLeft = distToMoveLeft / 2; //on freine a la moitiÃ© de la distance a parcourir
+      OdoStartBrakeLeft = distToMoveLeft / 2; //on freine a la moitie de la distance a parcourir
       if (PwmLeftSpeed <= 0) SpeedOdoMaxLeft = map(distToMoveLeft / 2, odometryTicksPerRevolution / 2, 0, PwmLeftSpeed, -SpeedOdoMax); //valeur de vitesse max en fonction de la distance a parcourir
       else SpeedOdoMaxLeft = map(distToMoveLeft / 2, odometryTicksPerRevolution / 2, 0, PwmLeftSpeed, SpeedOdoMax);
     }
@@ -1200,7 +1200,7 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   }
   else {  //if less than 1 rev right wheel
     if (UseAccelRight && UseBrakeRight) {
-      OdoStartBrakeRight = distToMoveRight / 2; //on freine a la moitiÃ© de la distance a parcourir
+      OdoStartBrakeRight = distToMoveRight / 2; //on freine a la moitie de la distance a parcourir
       if (PwmRightSpeed <= 0) SpeedOdoMaxRight = map(distToMoveRight / 2, odometryTicksPerRevolution / 2, 0, PwmRightSpeed, -SpeedOdoMax); //valeur de vitesse max en fonction de la distance a parcourir
       else SpeedOdoMaxRight = map(distToMoveRight / 2, odometryTicksPerRevolution / 2, 0, PwmRightSpeed, SpeedOdoMax);
     }
@@ -1214,14 +1214,8 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
 
 
   //compute the approximative moving time in millis()
-  //warning maybe 40000 need to be adjusted
   //Need to compute in 2 times to avoid overflow  !!!!!
-  /*
-    movingTimeLeft = distToMoveLeft *  odometryTicksPerRevolution / 40000.00; //0.58= nb ticks/ms at max speed
-    movingTimeLeft = movingTimeLeft * abs(SpeedOdoMaxLeft);
-    movingTimeRight = distToMoveRight * odometryTicksPerRevolution / 40000.00;
-    movingTimeRight = movingTimeRight * abs(SpeedOdoMaxRight);
-  */
+
   movingTimeLeft = 1000 * distToMoveLeft / motorTickPerSecond ;
   movingTimeLeft = movingTimeLeft * motorSpeedMaxPwm / abs(SpeedOdoMaxLeft);
   movingTimeRight = 1000 * distToMoveRight / motorTickPerSecond ;
@@ -2376,7 +2370,7 @@ void Robot::readSerial() {
         // press '1' for Automode
         //  motorMowEnable = true;
         //motorMowModulate = false;
-        setNextState(STATE_FORWARD_ODO, 0);
+        setNextState(STATE_ACCEL_FRWRD, 0);
         break;
       case 'd':
         menu(); // menu
@@ -2404,7 +2398,7 @@ void Robot::readSerial() {
         setNextState(STATE_PERI_TRACK, 0); // press 't' to track perimeter
         break;
       case 'u':
-        setNextState(STATE_FORWARD_ODO, RIGHT);
+        setNextState(STATE_ACCEL_FRWRD, RIGHT);
         break;
       case 'v':
         //bb
@@ -2441,16 +2435,17 @@ void Robot::checkButton() {
         // start normal with mowing in lanes
         motorMowEnable = true;
         mowPatternCurr = MOW_LANES;
-        setNextState(STATE_FORWARD_ODO, 0);
+        setNextState(STATE_ACCEL_FRWRD, 0);
       } else if (buttonCounter == 2) {
+        //go to station
         areaToGo = 1;
         setNextState(STATE_PERI_FIND, 0);
       }
       else
-      { // start normal with mowing
+      { // start normal with mowing random
         motorMowEnable = true;
         mowPatternCurr = MOW_RANDOM;
-        setNextState(STATE_FORWARD_ODO, 0);
+        setNextState(STATE_ACCEL_FRWRD, 0);
 
       }
 
@@ -3868,6 +3863,21 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
       break;
 
+    //bber50
+    case STATE_ACCEL_FRWRD:
+    // after this state the mower use pid imu to drive straight so accelerate only at half the max speed
+      UseAccelLeft = 1;
+      UseBrakeLeft = 0;
+      UseAccelRight = 1;
+      UseBrakeRight = 0;
+      motorRightSpeedRpmSet = motorSpeedMaxRpm / 2 ;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 2 ;
+      stateEndOdometryRight = odometryRight + int(odometryTicksPerRevolution / 4) ;
+      stateEndOdometryLeft = odometryLeft + int(odometryTicksPerRevolution / 4) ;
+      OdoRampCompute();
+
+      break;
+
   }  // end switch
 
   sonarObstacleTimeout = 0;
@@ -4101,8 +4111,8 @@ void Robot::checkCurrent() {
         }
         else
         {
-        if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
-        else reverseOrBidir(LEFT);
+          if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
+          else reverseOrBidir(LEFT);
         }
       }
     }
@@ -4898,7 +4908,7 @@ void Robot::loop()  {
       }
       break;
 
-    case STATE_ROLL_WAIT:
+    case STATE_ROLL_WAIT: //not use ??
       if ((odometryLeft >= stateEndOdometryLeft) || (odometryRight <= stateEndOdometryRight)) {
         if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
           Console.print(" OdometryLeft ");
@@ -5040,7 +5050,7 @@ void Robot::loop()  {
         if (developerActive) {
           Console.println ("Warning can t roll in time ");
         }
-        setNextState(STATE_FORWARD_ODO, rollDir);//if the motor can't rech the odocible in slope
+        setNextState(STATE_FORWARD_ODO, rollDir);
       }
 
       break;
@@ -5593,7 +5603,7 @@ void Robot::loop()  {
           setBeeper(0, 0, 0, 0, 0); //stop sound immediatly
           if (stopMotorDuringCalib) motorMowEnable = true;//restart the mow motor
           if (perimeterInside) {
-            setNextState(STATE_FORWARD_ODO, rollDir); //if not on the wire continue in forward
+            setNextState(STATE_ACCEL_FRWRD, rollDir); //if not outside continue in forward
           }
           else
           {
@@ -5619,7 +5629,7 @@ void Robot::loop()  {
             // if (rollDir == 0) rollDir = 1;
             // else rollDir = 0;
           }
-          setNextState(STATE_FORWARD_ODO, rollDir); //if not on the wire continue in forward
+          setNextState(STATE_ACCEL_FRWRD, rollDir);
         }
         else
         {
@@ -5978,7 +5988,7 @@ void Robot::loop()  {
       if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
       if ((millis() > (stateStartTime + MaxOdoStateDuration)) || (odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft) ) {
         setNextState(STATE_FORWARD_ODO, rollDir);
-        //motorControl();
+
       }
       break;
 
@@ -6098,6 +6108,23 @@ void Robot::loop()  {
     case STATE_WAIT_AND_REPEAT:
       if (millis() > (stateStartTime + 500)) setNextState(stateLast, rollDir);//1000
       break;
+
+    //bber50
+    case STATE_ACCEL_FRWRD:
+      motorControlOdo();
+      if (!perimeterInside) {
+        setNextState(STATE_PERI_OUT_STOP, rollDir);
+        return;
+      }
+      if ((millis() > (stateStartTime + MaxOdoStateDuration)) || (odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft) ) {
+        imuDirPID.reset();
+        motorRightPID.reset();
+        motorLeftPID.reset();
+        setNextState(STATE_FORWARD_ODO, rollDir);
+      }
+
+      break;
+
 
   } // end switch
 

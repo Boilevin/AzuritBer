@@ -189,7 +189,8 @@ enum {
   STATE_STOP_TO_NEWAREA,  //use to stop the mower in straight line after long distance moving with ODO and IMU
   STATE_PERI_OUT_STOP_ROLL_TOTRACK, // after the mower rool to track we need to stop the right motor because it's reverse and the track is forward
   STATE_PERI_STOP_TO_FAST_START,  // after the mower find a tag for find a new start entry point
-  STATE_CALIB_MOTOR_SPEED  // we need to know how may ticks the motor can do in 1 ms to compute the maxododuration 
+  STATE_CALIB_MOTOR_SPEED,  // we need to know how may ticks the motor can do in 1 ms to compute the maxododuration 
+  STATE_ACCEL_FRWRD // when start from calib or off need to accel before motorodo
   
 };
 

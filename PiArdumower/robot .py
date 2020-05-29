@@ -6,7 +6,7 @@ class robot:
                             "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                             "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
                             "TRACKSTOP","ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA","WAITSIG2","STOPTONEWAREA",
-                            "ROLLSTOPTOTRACK","STOPTOFASTSTART","CALIBMOTORSPEED","INC_01","INC_02","INC_03","INC_04","INC_05","INC_06"]
+                            "ROLLSTOPTOTRACK","STOPTOFASTSTART","CALIBMOTORSPEED","ACCELFRWRD","INC_02","INC_03","INC_04","INC_05","INC_06"]
         self.statusNames = ["WAIT", "NORMAL_MOWING", "SPIRALE_MOWING", "BACK_TO_STATION", 
                       "TRACK_TO_START", "MANUAL", "REMOTE", "IN_ERROR", "IN_STATION",
                       "TESTING","WAITSIG2","WIRE_MOWING","INC_01","INC_02","INC_03","INC_04","INC_05","INC_06"]
@@ -53,7 +53,7 @@ class robot:
         self.perimeter_swapCoilPolarityRight=0
         self.perimeter_read2Coil=0
         self.maxDriftPerSecond=0
-        self.perimeterTriggerTimeout=0
+        #self.perimeterTriggerTimeout=0
         self.perimeterTriggerMinSmag=0
         self.trackingErrorTimeOut=0
         self.perimeterOutRollTimeMin=0

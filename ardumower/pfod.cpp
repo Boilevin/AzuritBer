@@ -1374,7 +1374,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
         robot->setNextState(STATE_PERI_FIND, 0);
       }
       else {
-        robot->setNextState(STATE_FORWARD_ODO, 0);
+        robot->setNextState(STATE_ACCEL_FRWRD, 0);
       }
 
 
