@@ -1,2 +1,0 @@
-Time;motorLeftSenseCurrent;motorRightSenseCurrent;motorLeftPWMCurr;motorRightPWMCurr
-0;0;0;0;0

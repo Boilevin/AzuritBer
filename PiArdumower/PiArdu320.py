@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# 14/05/19 new value on console size page
+
 import sys
 import serial
 import pynmea2
@@ -7,9 +7,6 @@ import time
 #import numpy as np
 import subprocess 
 import pickle
-
-#import webbrowser
-
 
 import os
 from tkinter import ttk
@@ -27,6 +24,148 @@ from config import DueConnectedOnPi
 from config import GpsIsM6n
 from config import AutoRecordBatCharging
 from config import useDebugConsole
+from config import useMqtt
+from config import Mqtt_Broker_IP
+from config import Mqtt_Port
+from config import Mqtt_IdleFreqency
+from config import Mqtt_MowerName
+from config import Sender2AdressIP
+from config import Sender3AdressIP
+
+#bber30 test MQTT 
+
+if(useMqtt):   
+    import paho.mqtt.client as mqtt_client
+    KEEP_ALIVE  = 60
+    Mqqt_client = mqtt_client.Client( client_id = Mqtt_MowerName)
+    Mqqt_client.connected_flag=False # create flag in class
+       
+    def Mqqt_on_log( Mqqt_client, userdata, level, buf ):     
+        print( "log: ",buf)
+
+    def Mqqt_on_connect( Mqqt_client, userdata, flags, rc ):
+        if rc==0:           
+            Mqqt_client.connected_flag=True #set flag
+            consoleInsertText("MQTT connected "+ '\n')
+            #initialize all for next loop update MQTT data
+            mymower.state=255
+            mymower.batVoltage=0
+            mymower.lastMqttBatteryValue=0
+            mymower.Dht22Temp=0
+            sendMqtt("Mower/Status",str(myRobot.statusNames[mymower.status]))
+            
+                
+            
+            
+            
+        else:
+            Mqqt_client.connected_flag=False
+            consoleInsertText("MQTT Bad connection Returned Code:" + rc +'\n')
+            
+            
+            
+    def Mqqt_on_disconnect( Mqqt_client, userdata, rc ):
+        Mqqt_client.connected_flag=False
+        mymower.timeToReconnectMqtt=time.time()+120
+        consoleInsertText("MQTT Disconnected Code:" + str(rc) + '\n')
+                    
+    def Mqqt_on_publish( Mqqt_client, userdata, result ):       
+        if (Mqqt_client.connected_flag) :
+            mymower.callback_id=int(result)
+            print("MQTT Callback message  " + str(mymower.callback_id) + '\n')
+        else:            
+            print("MQTT Callback error last message id  " + mymower.mqtt_message_id + " return " + str(mymower.callback_id) + '\n')
+            mymower.callback_id=0
+            #receive a callback from the last message send before disconnect
+         
+    def Mqqt_on_message( Mqqt_client, userdata, message ):
+        consoleInsertText( "Reception message MQTT..." + '\n')
+        consoleInsertText( "Topic : %s" % message.topic + " Data  : %s" % message.payload + '\n')
+        message_txt=str((message.payload),'utf8')
+        responsetable=message_txt.split(";")
+        #Here the main option to do from COMMAND topic
+        if(str(message.topic)=="Mower/COMMAND/VIDEO/" or str(message.topic)=="Mower/COMMAND/VIDEO"):
+            if(message_txt=="ON"):
+                consoleInsertText("Start Video streaming" + '\n')
+                myStreamVideo.start(0)
+            if(message_txt=='OFF'):
+                consoleInsertText("Stop Video streaming" + '\n')
+                myStreamVideo.stop()    
+                
+        if(str(message.topic)=="Mower/COMMAND/" or str(message.topic)=="Mower/COMMAND"):
+            if(str(responsetable[0]) == "HOME"):
+                button_home_click()
+            if(str(responsetable[0]) == "STOP"):
+                button_stop_all_click()
+            if(str(responsetable[0]) == "START"):
+                buttonStartMow_click()
+            if(str(responsetable[0]) == "MOWPATTERN"):
+                #Maybe need to stop and restart to mow between change ???
+                tk_mowingPattern.set(int(responsetable[1]))
+                send_var_message('w','mowPatternCurr',''+str(tk_mowingPattern.get())+'','0','0','0','0','0','0','0')
+            if(str(responsetable[0]) == "PAUSE"):
+                tempVar=mymower.millis + (3600000*int(responsetable[1]))
+                send_var_message('w','nextTimeTimer',''+str(tempVar)+'','0','0','0','0','0','0','0')
+
+            if(str(responsetable[0]) == "STARTTIMER"):
+                send_var_message('w','mowPatternCurr',''+str(responsetable[1])+'','laneUseNr',''+str(responsetable[2])+'','rollDir',''+str(responsetable[3])+'','0','0','0')
+                send_var_message('w','whereToStart',''+str(responsetable[4])+'','areaToGo',''+str(responsetable[5])+'','actualLenghtByLane',''+str(responsetable[6])+'','0','0','0')
+                send_pfo_message('rv','1','2','3','4','5','6',)
+
+
+    #the on_log and on_publish show debug message in terminal
+    Mqqt_client.on_log = Mqqt_on_log
+    #Mqqt_client.on_publish = Mqqt_on_publish
+    Mqqt_client.on_message = Mqqt_on_message
+    Mqqt_client.on_connect = Mqqt_on_connect
+    Mqqt_client.on_disconnect = Mqqt_on_disconnect   
+    
+
+    def Mqqt_DisConnection():
+        Mqqt_client.loop_stop()    #Stop loop 
+        Mqqt_client.disconnect() # disconnect
+        
+    def Mqqt_Connection():
+        consoleInsertText("PING Broker" + '\n')
+        testNet = os.system("ping -c 1 -W 2000 " + Mqtt_Broker_IP)
+        if (testNet == 0):
+            consoleInsertText("Broker OK" + '\n')
+            try:
+                Mqqt_client.username_pw_set( username="admin", password="admin" )
+                Mqqt_client.connect( host=Mqtt_Broker_IP, port=Mqtt_Port, keepalive=KEEP_ALIVE )
+                Mqqt_client.subscribe( "Mower/COMMAND/#" )
+                Mqqt_client.loop_start() 
+                consoleInsertText("MQTT Connecting Please Wait " + '\n')
+                mymower.callback_id=0
+                mymower.mqtt_message_id=0
+        
+            except:
+                Mqqt_client.connected_flag=False
+                consoleInsertText("MQTT connection failed" + '\n')
+                #Mqqt_client.loop_stop()    #Stop loop
+                mymower.callback_id=0
+                mymower.mqtt_message_id=0
+            
+        else:
+            
+            consoleInsertText("BROKER NOT CONNECTED" + '\n')
+            
+
+    def sendMqtt(var_topic,var_payload) :        
+        if (Mqqt_client.connected_flag):
+            r=Mqqt_client.publish(topic=var_topic,payload=var_payload,qos=0, retain=False)
+            #mymower.mqtt_message_id=int(r[1])
+            #consoleInsertText("MQTT send message " + var_topic + " " + var_payload + '\n')   
+                         
+
+        else:
+            consoleInsertText("MQTT not connected" + '\n')
+            pass
+            #consoleInsertText("MQTT not Connected fail to send " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
+
+    #END ADDon For MQTT
+            
+
 
 
 
@@ -151,8 +290,6 @@ def find_rfid_tag():
             
         if(mymower.newtagToDo=="SPEED"): #find the station for example
             
-            #mower.speedIsReduce=True
-            #mower.timeToResetSpeed=time.time()+5  #reduce speed for 5 secondes
             consoleInsertText('RFID change tracking speed'+'\n')
             send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
             send_var_message('w','ActualSpeedPeriPWM',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
@@ -301,11 +438,11 @@ class mower:
     def __init__(self):
         mower.millis=0
         mower.status=0
-        mower.state="OFF"
+        mower.state=0
         mower.odox=0
         mower.odoy=0
         mower.prevYaw=0
-        mower.batVoltage=0
+        mower.batVoltage=0.00
         mower.yaw=0
         mower.pitch=0
         mower.roll=0
@@ -350,15 +487,24 @@ class mower:
         mower.rainDetect=False
         mower.areaInMowing=1
         mower.areaToGo=1
-        mower.speedIsReduce=False
+        
         mower.sigArea2Off=True
-        mower.timeToResetSpeed=0
+        
         mower.timeToStartArea2Signal=0
         mower.focusOnPage=0
         mower.dueSerialReceived=''
         mower.autoRecordBatChargeOn=False
+
+        mower.mqtt_message_id=0
+        mower.callback_id=0
+        mower.timeToSendMqttIdle=time.time()+65
+        mower.timeToReconnectMqtt=time.time()+120
+        mower.lastMqttBatteryValue=0
         
         
+        
+        
+        #mower.timeToSendMqttMowPattern=time.time()+200
         
         
     
@@ -414,8 +560,8 @@ def checkSerial():  #the main loop is that
                     
             
             else :  # here a nmea message
-                """
-                print(mymower.dueSerialReceived)
+                
+                #print(mymower.dueSerialReceived)
                 message = pynmea2.parse(mymower.dueSerialReceived)
                 decode_message(message)
                 """
@@ -427,7 +573,7 @@ def checkSerial():  #the main loop is that
                     consoleInsertText("INCOMMING MESSAGE ERROR FROM DUE" + '\n')
                     consoleInsertText(str(mymower.dueSerialReceived) + '\n')
 
-                  
+                 """ 
                 
 
                 
@@ -466,9 +612,6 @@ def checkSerial():  #the main loop is that
             buttonBlade_stop_click()
             #print("roundClick:")
         
-    if ((mower.speedIsReduce) & (time.time() > mower.timeToResetSpeed)):
-        mower.speedIsReduce=False
-        send_var_message('w','MaxSpeedperiPwm',''+str(myRobot.MaxSpeedperiPwm)+'','0','0','0','0','0','0','0')
     if useDebugConsole:
         txtRecu.delete('5000.0',tk.END) #keep only  lines
         txtSend.delete('5000.0',tk.END) #keep only  lines
@@ -477,12 +620,26 @@ def checkSerial():  #the main loop is that
 
 
 
-
-
+    #bber30
+    #need to test if broker not present the Pi freeze ?????????
     
-    #fen1.after(10,checkSerial) #to be sure empty the buffer read again immediatly   
-    fen1.after(20,checkSerial)  # here is the main loop each 50ms
+    if (useMqtt):
+        if (Mqqt_client.connected_flag):            
+            if (time.time() > mymower.timeToSendMqttIdle):
+                sendMqtt("Mower/Idle",str(mymower.loopsPerSecond))
+                mymower.timeToSendMqttIdle=time.time()+Mqtt_IdleFreqency
+                
+        else:
+            
+            if (time.time() > mymower.timeToReconnectMqtt):
+                consoleInsertText("MQTT not connected retry each 2 minutes" + '\n')
+                Mqqt_Connection()
+                mymower.timeToReconnectMqtt=time.time()+120
+               
+     
+    fen1.after(20,checkSerial)  # here is the main loop each 20ms
     
+#################################### END OF MAINLOOP ###############################################
 
 
 
@@ -499,9 +656,7 @@ def decode_message(message):  #decode the nmea message
                 mymower.laserSensor5=message.sensor5
                 mymower.laserSensor6=message.sensor6
                 if ((int(mymower.laserSensor1) <= 800) or (int(mymower.laserSensor2) <= 800) or (int(mymower.laserSensor3) <= 800)):
-                    #reduce speed for 5 secondes
-                    #mower.speedIsReduce=True
-                    #mower.timeToResetSpeed=time.time()+5
+                    
                     consoleInsertText('Towel detect something :'+ '\n')
                     consoleInsertText(str(message))
                     
@@ -519,39 +674,34 @@ def decode_message(message):  #decode the nmea message
      
             if message.sentence_type =='CMD': #receive a command from the DUE (need to do something
                 if message.actuatorname == 'RestartPi':
+                    consoleInsertText('TIME TO RESTART'+ '\n')
                     mymower.focusOnPage=4
                     ConsolePage.tkraise()
+                    if(useMqtt):
+                        consoleInsertText('Close Mqtt Connection'+ '\n')
+                        Mqqt_DisConnection()                        
+                    consoleInsertText('PI Restart into 5 Seconds'+ '\n')
                     consoleInsertText('Start to save all Console Data'+ '\n')
                     ButtonSaveReceived_click()  #save the console txt
-                    consoleInsertText('All Console Data are saved'+ '\n')
-                    consoleInsertText('The GPS Record is stopped'+ '\n')
-                    consoleInsertText('PI Restart into 5 Seconds'+ '\n')
                     time.sleep(1)
                     subprocess.Popen('/home/pi/Documents/PiArdumower/Restart.py')
                     fen1.destroy()
                     time.sleep(1)
-                    print("Fen1 is destroy")
                     sys.exit("Restart ordered by Arduino Due")
                 if message.actuatorname == 'PowerOffPi':
                     mymower.focusOnPage=4
                     ConsolePage.tkraise()
+                    if(useMqtt):
+                        consoleInsertText('Close Mqtt Connection'+ '\n')
+                        Mqqt_DisConnection() 
                     consoleInsertText('Start to save all Console Data'+ '\n')
                     ButtonSaveReceived_click()  #save the console txt
                     consoleInsertText('All Console Data are saved'+ '\n')
-                    print("All Console Data are saved")
-                    
-                    #txtConsoleRecu.insert('1.0', 'Start to stop the GPS Record')
-                    #mygpsRecord.stop()
-                    consoleInsertText('The GPS Record is stopped'+ '\n')
-                    print("The GPS Record is stopped")
-                    #text1.config(text="Start to shutdown")
-                    consoleInsertText('PI start Shutdown into 5 Seconds'+ '\n')
+                    consoleInsertText('PI start Shutdown'+ '\n')
                     time.sleep(1)
-                    print("Start subprocess /home/pi/Documents/PiArdumower/PowerOff.py")
                     subprocess.Popen('/home/pi/Documents/PiArdumower/PowerOff.py')
                     fen1.destroy()
                     time.sleep(1)
-                    print("Fen1 is destroy")
                     sys.exit("PowerOFF ordered by Arduino Due")
                     
                     
@@ -691,8 +841,12 @@ def decode_message(message):  #decode the nmea message
                 f.write("{};{};{}\n".format((int(mymower.millis)-firstplotPerx)/1000,float(mymower.perimeterMag) , float(mymower.perimeterMagRight)))
                 f.close()
          
-            if message.sentence_type =='STU': # message for status info send on change only 
+            if message.sentence_type =='STU': # message for status info send on change only       
                 mymower.status=int(message.status)
+               
+                if(useMqtt and Mqqt_client.connected_flag):
+                   sendMqtt("Mower/Status",str(myRobot.statusNames[mymower.status]))
+                         
                 if(myRobot.statusNames[mymower.status]=="TRACK_TO_START"):
                     mymower.areaInMowing=int(message.val1)
                     mymower.areaToGo=int(message.val2)
@@ -707,15 +861,34 @@ def decode_message(message):  #decode the nmea message
             if message.sentence_type =='STA': #permanent each 500 ms message for state info
                
                 mymower.millis=int(message.millis)
-                mymower.state=int(message.state)
                 mymower.odox=message.odox
                 mymower.odoy=message.odoy
                 mymower.prevYaw=message.prevYaw
-                mymower.batVoltage=message.batVoltage
+                
+                if(useMqtt and Mqqt_client.connected_flag):
+                    if (mymower.state!=int(message.state)):
+                        mymower.state=int(message.state)    
+                        sendMqtt("Mower/State",str(myRobot.stateNames[mymower.state]))    
+                    if (mymower.batVoltage!=float(message.batVoltage)):
+                        mymower.batVoltage=float(message.batVoltage)
+                        ecart=mymower.lastMqttBatteryValue-float(message.batVoltage)
+                        #only send Mqtt if 0.2 volt dif to avoid send too fast
+                        if(abs(ecart)>0.2):
+                            sendMqtt("Mower/Battery",message.batVoltage)
+                            mymower.lastMqttBatteryValue=float(message.batVoltage)
+                    if (mymower.Dht22Temp!=message.Dht22Temp):
+                        mymower.Dht22Temp=message.Dht22Temp
+                        sendMqtt("Mower/Temp",str(mymower.Dht22Temp))      
+                else:
+                   mymower.batVoltage=float(message.batVoltage)
+                   mymower.Dht22Temp=message.Dht22Temp
+                   mymower.state=int(message.state)   
+                   
                 mymower.yaw=message.yaw
                 mymower.pitch=message.pitch
                 mymower.roll=message.roll
-                mymower.Dht22Temp=message.Dht22Temp
+                   
+                               
                 mymower.loopsPerSecond=message.loopsPerSecond
                 #//bber17
                 if AutoRecordBatCharging :
@@ -867,7 +1040,8 @@ def decode_message(message):  #decode the nmea message
                         myRobot.sonarTriggerBelow=message.val2
                         myRobot.perimeterUse=message.val3
                         myRobot.perimeter_timedOutIfBelowSmag=message.val4
-                        myRobot.perimeterTriggerTimeout=message.val5
+                        #myRobot.perimeterTriggerTimeout=message.val5
+                        myRobot.perimeterTriggerMinSmag=message.val5
                         myRobot.perimeterOutRollTimeMax=message.val6
                         myRobot.perimeterOutRollTimeMin=message.val7
                         myRobot.perimeterOutRevTime=message.val8
@@ -1013,7 +1187,6 @@ def decode_message(message):  #decode the nmea message
         
         
     
-#################################### END OF MAINLOOP ###############################################
 
     
 def refreshAllSettingPage():
@@ -1427,7 +1600,7 @@ def refreshTimerSettingPage():
 
 
 
-        print(tk_timerStartArea[i])
+        #print(tk_timerStartArea[i])
                            
         for j in range(7):
             
@@ -1507,7 +1680,7 @@ def refreshMainSettingPage():
 def refreshPerimeterSettingPage():
     sliderTimeBelowSmag.set(myRobot.perimeter_timedOutIfBelowSmag)
     sliderTimeNotInside.set(myRobot.perimeter_timeOutSecIfNotInside)
-    sliderTrigTimeout.set(myRobot.perimeterTriggerTimeout)
+    sliderTrigMinSmag.set(myRobot.perimeterTriggerMinSmag)
     sliderTrackingSpeed.set(myRobot.MaxSpeedperiPwm)
     sliderCircleArcDistance.set(myRobot.DistPeriObstacleAvoid)
     sliderPeriMagMaxValue.set(myRobot.perimeterMagMaxValue)
@@ -1738,7 +1911,7 @@ def ButtonSendSettingToDue_click():
                             '',''+str(myRobot.sonarTriggerBelow)+\
                             '',''+str(myRobot.perimeterUse)+\
                             '',''+str(myRobot.perimeter_timedOutIfBelowSmag)+\
-                            '',''+str(myRobot.perimeterTriggerTimeout)+\
+                            '',''+str(myRobot.perimeterTriggerMinSmag)+\
                             '',''+str(myRobot.perimeterOutRollTimeMax)+\
                             '',''+str(myRobot.perimeterOutRollTimeMin)+\
                             '',''+str(myRobot.perimeterOutRevTime)+\
@@ -2406,7 +2579,7 @@ ButtonSetMotApply.configure(command = ButtonSetMotApply_click,text="Send To Mowe
 def ButtonSetPerimeterApply_click():
     myRobot.perimeter_timedOutIfBelowSmag=sliderTimeBelowSmag.get()
     myRobot.perimeter_timeOutSecIfNotInside=sliderTimeNotInside.get()
-    myRobot.perimeterTriggerTimeout=sliderTrigTimeout.get()
+    myRobot.perimeterTriggerMinSmag=sliderTrigMinSmag.get()
     myRobot.MaxSpeedperiPwm=sliderTrackingSpeed.get()
     myRobot.DistPeriObstacleAvoid=sliderCircleArcDistance.get()
     myRobot.perimeterMagMaxValue=sliderPeriMagMaxValue.get()
@@ -2433,8 +2606,9 @@ def ButtonSetPerimeterApply_click():
      
 
 def ButtonStartArea2_click():
-    consoleInsertText("Try to Start Area2 Sender" + '\n') 
-    sub = subprocess.Popen("curl 10.42.0.172/area2/1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+    ipMessage="curl "+Sender2AdressIP+"/1"
+    consoleInsertText("Try to Start Area2 Sender" + ipMessage + '\n')
+    sub = subprocess.Popen("curl "+Sender2AdressIP+"/1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output,error_output = sub.communicate()
     if str(output)=="b'SENDER IS ON'":
         mymower.sigArea2Off=False
@@ -2451,7 +2625,7 @@ def ButtonStartArea2_click():
          
 def ButtonStopArea2_click():
     consoleInsertText("Try to Stop Area2 Sender" + '\n')  
-    sub = subprocess.Popen("curl 10.42.0.172/area2/0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+    sub = subprocess.Popen("curl "+Sender2AdressIP+"/0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output, error_output = sub.communicate()   
     if str(output)=="b'SENDER IS OFF'":
         mymower.sigArea2Off=True
@@ -2468,8 +2642,8 @@ sliderTimeBelowSmag = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID,
 sliderTimeBelowSmag.place(x=5,y=10,width=250, height=50)
 sliderTimeNotInside = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=20, label='Timeout if not inside (0 to 20) in Sec')
 sliderTimeNotInside.place(x=5,y=60,width=250, height=50)
-sliderTrigTimeout = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=1000, label='Trigger timeout (0 to 1000)')
-sliderTrigTimeout.place(x=5,y=110,width=250, height=50)
+sliderTrigMinSmag = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=1000, label='Big Area Smag Center (0 to 1000)')
+sliderTrigMinSmag.place(x=5,y=110,width=250, height=50)
 sliderTrackingSpeed = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=255, label='Tracking PWM Max Speed (0 to 255)')
 sliderTrackingSpeed.place(x=5,y=160,width=250, height=50)
 sliderCircleArcDistance = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=1, to=250, label='Circle Arc Distance (cm)')
@@ -2612,7 +2786,7 @@ def button_home_click():
 def button_track_click():
     send_pfo_message('rk','1','2','3','4','5','6',)
 
-def ButtonStartMow_click():
+def buttonStartMow_click():
     send_var_message('w','mowPatternCurr',''+str(tk_mowingPattern.get())+'','0','0','0','0','0','0','0')
     send_pfo_message('ra','1','2','3','4','5','6',)
    
@@ -2670,7 +2844,7 @@ tk.Label(Frame1,text="MOW PATTERN",fg='green').pack(side='top',anchor='w')
 RdBtn_Random=tk.Radiobutton(Frame1, text="Random", variable=tk_mowingPattern, value=0).pack(side='top',anchor='w')
 RdBtn_ByLane=tk.Radiobutton(Frame1, text="By Lane", variable=tk_mowingPattern, value=1).pack(side='top',anchor='w')
 RdBtn_Perimeter=tk.Radiobutton(Frame1, text="Wire", variable=tk_mowingPattern, value=2).pack(side='top',anchor='w')
-ButtonStartMow = tk.Button(AutoPage, image=imgstartMow, command = ButtonStartMow_click)
+ButtonStartMow = tk.Button(AutoPage, image=imgstartMow, command = buttonStartMow_click)
 ButtonStartMow.place(x=130,y=0,width=100, height=130)
 Buttonhome = tk.Button(AutoPage, image=imgHome, command = button_home_click)
 Buttonhome.place(x=250,y=0,width=100, height=130)
@@ -3302,14 +3476,17 @@ ButtonBackHome.place(x=680, y=280, height=120, width=120)
 
 """ THE CAMERA PAGE ***************************************************"""
 def BtnStreamVideoStart_click():
+    consoleInsertText("Start Video streaming" + '\n')
     if CamVar1.get()==1:
         myStreamVideo.start(1)
+        
         #webbrowser.open("http://localhost:8000/index.html")
 
     else:
         myStreamVideo.start(0)
         
 def BtnStreamVideoStop_click():
+    consoleInsertText("Stop Video streaming" + '\n')
     myStreamVideo.stop()
     
 StreamVideoPage =tk.Frame(fen1)
@@ -3415,7 +3592,8 @@ ButtonBackHome.place(x=680, y=280, height=120, width=120)
 
 """ THE TIMER PAGE ***************************************************"""
 def SliderHourStartGroup_click(var1):
-        print("heure change "+str(var1))
+    pass
+    #print("heure change "+str(var1))
      
 
 
@@ -3724,9 +3902,24 @@ fen1.bind('<space>', kbd_spaceKey)
 
 
 checkSerial()
+#on startup PI update Date time from Internet
+#subprocess.Popen("sudo systemctl stop ntp.service", shell=True)
+#subprocess.Popen("sudo systemctl disable ntp.service", shell=True)
+#time.sleep(10)
+
+
+consoleInsertText('Read Setting from PCB1.3'+ '\n')
 read_all_setting()
-read_time_setting()
+consoleInsertText('Read Area In Mowing from PCB1.3'+ '\n')
 send_req_message('PERI','1000','1','1','0','0','0',)
+if(useMqtt):
+    consoleInsertText('Wait update Date/Time from internet'+ '\n')
+    consoleInsertText('Initial start MQTT after 1 minute'+ '\n')
+    mymower.timeToReconnectMqtt=time.time()+60
+else:
+    consoleInsertText('Adjust PI time from PCB1.3'+ '\n')
+    read_time_setting()
+
 BtnGpsRecordStop_click()
 
 

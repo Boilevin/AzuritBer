@@ -35,10 +35,10 @@ if (os.name=='posix'):
     GpsIsM6n=False
     NanoConnectedOnPi=False
     DueConnectedOnPi=True
-    AutoRecordBatCharging=False
-    useDebugConsole=True
-    Sender2AdressIP="10.0.0.27"
-    Sender3AdressIP="10.0.0.28"
+    AutoRecordBatCharging=True
+    useDebugConsole=False
+    Sender2AdressIP="10.0.0.10"
+    Sender3AdressIP="10.0.0.30"
     myCamAngle = 0 # Possible= 0, 90, 180, 270
     useMqtt=True
     Mqtt_Broker_IP="10.0.0.8"
