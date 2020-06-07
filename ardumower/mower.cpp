@@ -429,9 +429,6 @@ void Mower::setup() {
   ADCMan.setupChannel(pinVoltageMeasurement, 1, false);
   // perimeter.setPins(pinPerimeterLeft, pinPerimeterRight);
 
-  //imu.init();
-
-  //gps.init();
   // Console.print(millis());
   // Console.println(" --> ******************************************* Start of Robot Setup from mower.cpp *********************************");
   Robot::setup();
@@ -473,23 +470,26 @@ void Mower::setup() {
 void checkMotorFault() {
   //bb to test without motor board uncheck return
   //return;
-  if (robot.stateCurr == STATE_OFF) return;  //do not generate error if the state if OFF to avoid Buzzer when PI power the DUE via the USB native port
+  if ((robot.stateCurr == STATE_OFF) || (robot.stateCurr == STATE_ERROR)  ) return;  //do not generate error if the state if OFF to avoid Buzzer when PI power the DUE via the USB native port
   if (digitalRead(pinMotorLeftFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_LEFT);
     Console.println(F("Error: motor left fault"));
     robot.setNextState(STATE_ERROR, 0);
+    return;
     
   }
   if  (digitalRead(pinMotorRightFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_RIGHT);
     Console.println(F("Error: motor right fault"));
     robot.setNextState(STATE_ERROR, 0);
+    return;
     
   }
   if (digitalRead(pinMotorMowFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_MOW);
     Console.println(F("Error: motor mow fault"));
     robot.setNextState(STATE_ERROR, 0);
+    return;
     
   }
 }

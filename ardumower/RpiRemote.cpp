@@ -14,7 +14,7 @@ void RpiRemote::init() {
 }
 void RpiRemote::run() {
   readPi();
-  if (millis() >= nextTimeRaspberryPISendStat) {
+  if ((millis() >= nextTimeRaspberryPISendStat) && (millis()>=30000)) {   // start to send the stat only after 30sec on power up to wait pi start
     nextTimeRaspberryPISendStat = millis() + 500;  //better to put 200
     RaspberryPISendStat();
   }
@@ -805,11 +805,11 @@ void RpiRemote::RaspberryPISendStat () {
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->stateCurr;
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->odometryX;
+  lineToSend = lineToSend + "0";//robot->odometryX;
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->odometryY;
+  lineToSend = lineToSend + "0";//robot->odometryY;
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->prevYawCalcOdo;
+  lineToSend = lineToSend + "0";//robot->prevYawCalcOdo;
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->batVoltage;
   lineToSend = lineToSend + ",";
@@ -1126,12 +1126,9 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       case 8:
         strcpy(variable_name[3], token);
         break;
-
       case 9:
         strcpy(received_value[3] , token);
         break;
-
-
     }
     counter++;
   }
@@ -1141,6 +1138,10 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
     for (int i = 0; i <= 3; i++) {  // read the 4 values and check to adjust
       //here need to add all the variable that can send the raspberry and what to do
       if (strncmp(variable_name[i], "mowPatternCurr", 20) == 0)  robot->mowPatternCurr = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "laneUseNr", 20) == 0)  robot->laneUseNr = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "rollDir", 20) == 0)  robot->rollDir = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "whereToStart", 20) == 0)  robot->whereToStart = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "actualLenghtByLane", 20) == 0)  robot->actualLenghtByLane = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle1", 20) == 0) robot->newtagRotAngle1 = atoi(received_value[i]);
@@ -1155,7 +1156,7 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       }
 
 
-      if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)  robot->newtagDistance1 = atoi(received_value[i]);
+      //if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)  robot->newtagDistance1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagDistance2", 20) == 0)  robot->newtagDistance2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "areaToGo", 20) == 0)  robot->areaToGo = atoi(received_value[i]);
       if (strncmp(variable_name[i], "stateCurr", 20) == 0)  robot->stateCurr = atoi(received_value[i]);
