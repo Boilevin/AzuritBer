@@ -2723,21 +2723,18 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeRight = 0;
       motorRightSpeedRpmSet = motorSpeedMaxRpm ;
       motorLeftSpeedRpmSet = motorSpeedMaxRpm ;
-
-      if ((mowPatternCurr == MOW_LANES) && (!justChangeLaneDir)) {
-        stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * actualLenghtByLane * 100); //limit the lenght
-        stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * actualLenghtByLane * 100);
-      }
-      else {//it s a new line so don't limit the forward distance and invert the rollDir
-        if ((stateLast != STATE_STOP_CALIBRATE) && (mowPatternCurr == MOW_LANES)) {  //change the rolldir only in lane mowing and not after calibration of imu
-          if (rollDir == 0) rollDir = 1;
-          else rollDir = 0;
+      //bber60
+      if (mowPatternCurr == MOW_LANES){
+        if (!justChangeLaneDir){ //it s a new lane so don't limit the forward distance 
+          stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * actualLenghtByLane * 100); //limit the lenght
+          stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * actualLenghtByLane * 100);
         }
-        stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * 30000);// set a very large distance 300 ml
-        stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 30000);
+        else {
+         stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * 30000);// set a very large distance 300 ml
+         stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 30000);
+        }
       }
-
-
+   
       OdoRampCompute();
 
       statsMowTimeTotalStart = true;
@@ -5601,6 +5598,11 @@ void Robot::loop()  {
           imu.CompassGyroOffset = distancePI( scalePI(accelGyroYawMedian.getMedian() -  imu.CompassGyroOffset), compassYawMedian.getMedian()); //change the Gyro offset according to Compass Yaw
           Console.println("Drift is OK");
           setBeeper(0, 0, 0, 0, 0); //stop sound immediatly
+          //bber60
+          //if (mowPatternCurr == MOW_LANES) {  //change the rolldir now because again when new forward_odo only in lane mowing
+          //   if (rollDir == 0) rollDir = 1;
+          //   else rollDir = 0;
+          //}
           if (stopMotorDuringCalib) motorMowEnable = true;//restart the mow motor
           if (perimeterInside) {
             setNextState(STATE_ACCEL_FRWRD, rollDir); //if not outside continue in forward

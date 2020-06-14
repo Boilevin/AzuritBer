@@ -313,7 +313,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->sonarCenterUse;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->sonarLeftUse;  //9
+    lineToSend = lineToSend + robot->sonarLeftUse;  //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
     //page 4
@@ -340,7 +340,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->perimeterTrackRollTime;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterTrackRevTime; //0
+    lineToSend = lineToSend + robot->perimeterTrackRevTime; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -369,7 +369,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->imuUse;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->stopMotorDuringCalib; //0
+    lineToSend = lineToSend + robot->stopMotorDuringCalib; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -397,7 +397,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->batGoHomeIfBelow;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->batSwitchOffIfBelow; //0
+    lineToSend = lineToSend + robot->batSwitchOffIfBelow; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -425,7 +425,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->stationRollAngle;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->stationForwDist; //0
+    lineToSend = lineToSend + robot->stationForwDist; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -454,7 +454,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->buttonUse;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->userSwitch1; //0
+    lineToSend = lineToSend + robot->userSwitch1; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -482,7 +482,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->statsOverride;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->bluetoothUse; //0
+    lineToSend = lineToSend + robot->bluetoothUse; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -511,7 +511,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->circleTimeForObstacle;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->DistPeriOutRev; //0
+    lineToSend = lineToSend + robot->DistPeriOutRev; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -587,11 +587,11 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->RaspberryPIUse;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->sonarToFrontDist;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->UseBumperDock;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->dockingSpeed; //8
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + "0";
     lineToSend = lineToSend + ",";
@@ -1475,6 +1475,19 @@ void RpiRemote::readWrite_setting()
         robot->DistPeriOutStop = val[2];
         robot->DHT22Use = val[3];
         robot->RaspberryPIUse = val[4];
+        robot->sonarToFrontDist = val[5];
+        robot->UseBumperDock = val[6];
+        robot->dockingSpeed = val[7];
+        
+
+
+
+
+
+
+
+
+        
       }
 
     }

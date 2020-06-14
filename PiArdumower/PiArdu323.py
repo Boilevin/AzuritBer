@@ -986,8 +986,6 @@ def decode_message(message):  #decode the nmea message
                         myRobot.motorRollDegMax=message.val8
                         myRobot.motorRollDegMin=message.val9
                         myRobot.DistPeriOutRev=message.val10
-                
-
                     if message.pageNr =='2':   
                         myRobot.motorPowerIgnoreTime=message.val1
                         myRobot.motorForwTimeMax=message.val2
@@ -1015,7 +1013,6 @@ def decode_message(message):  #decode the nmea message
                         myRobot.sonarTriggerBelow=message.val2
                         myRobot.perimeterUse=message.val3
                         myRobot.perimeter_timedOutIfBelowSmag=message.val4
-                        #myRobot.perimeterTriggerTimeout=message.val5
                         myRobot.perimeterTriggerMinSmag=message.val5
                         myRobot.perimeterOutRollTimeMax=message.val6
                         myRobot.perimeterOutRollTimeMin=message.val7
@@ -1116,6 +1113,10 @@ def decode_message(message):  #decode the nmea message
                         myRobot.DistPeriOutStop=message.val3
                         myRobot.DHT22Use=message.val4
                         myRobot.RaspberryPIUse=message.val5
+                        myRobot.sonarToFrontDist=message.val6
+                        myRobot.UseBumperDock=message.val7
+                        myRobot.dockingSpeed=message.val8
+                        
                         refreshAllSettingPage() 
  
 
@@ -1262,7 +1263,9 @@ def ButtonSetBatteryApply_click():
 
     
 def ButtonSetSonarApply_click(): 
-    myRobot.sonarTriggerBelow=slidersonarTriggerBelow.get()     
+    myRobot.sonarTriggerBelow=slidersonarTriggerBelow.get()
+    myRobot.sonarToFrontDist=slidersonarToFront.get()
+    
     myRobot.sonarCenterUse='0'
     if SonVar1.get()==1:
         myRobot.sonarCenterUse='1'
@@ -1516,7 +1519,9 @@ def refreshBatterySettingPage():
     
 def refreshSonarSettingPage():
     
-    slidersonarTriggerBelow.set(myRobot.sonarTriggerBelow)  
+    slidersonarTriggerBelow.set(myRobot.sonarTriggerBelow)
+    slidersonarToFront.set(myRobot.sonarToFrontDist)
+    
         
     ChkBtnsonarRightUse.deselect()
     if myRobot.sonarRightUse=='1':
@@ -1976,11 +1981,14 @@ def ButtonSendSettingToDue_click():
                             '',''+str(myRobot.DistPeriOutStop)+\
                             '',''+str(myRobot.DHT22Use)+\
                             '',''+str(myRobot.RaspberryPIUse)+\
-                            '',''+str(0)+\
-                            '',''+str(0)+\
-                            '',''+str(0)+\
+                            '',''+str(myRobot.sonarToFrontDist)+\
+                            '',''+str(myRobot.UseBumperDock)+\
+                            '',''+str(myRobot.dockingSpeed)+\
                             '',''+str(0)+\
                             '',''+str(0)+'',)
+
+
+
     consoleInsertText("All Setting are change into the Due but not save for the moment" + '\n') 
     
 
@@ -2430,8 +2438,11 @@ ChkBtnsonarLeftUse.place(x=10,y=40,width=250, height=20)
 ChkBtnsonarRightUse=tk.Checkbutton(tabSonar, text="Use Sonar Right",relief=tk.SOLID,variable=SonVar3,anchor='nw')
 ChkBtnsonarRightUse.place(x=10,y=70,width=250, height=20)
 
-slidersonarTriggerBelow = tk.Scale(tabSonar,orient='horizontal',relief=tk.SOLID, from_=20, to=150, label='Reverse Below in CM (20 to 150)')
+slidersonarTriggerBelow = tk.Scale(tabSonar,orient='horizontal',relief=tk.SOLID, from_=20, to=150, label='Detect Below in CM ')
 slidersonarTriggerBelow.place(x=10,y=130,width=250, height=50)
+
+slidersonarToFront = tk.Scale(tabSonar,orient='horizontal',relief=tk.SOLID, from_=0, to=100, label='Sonar to mower Front in CM ')
+slidersonarToFront.place(x=10,y=200,width=250, height=50)
 
 ButtonRequestMainSettingFomMower = tk.Button(tabSonar)
 ButtonRequestMainSettingFomMower.place(x=10,y=350, height=25, width=150)
