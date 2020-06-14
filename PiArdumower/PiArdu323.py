@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import traceback
 import sys
 import serial
 import pynmea2
@@ -32,7 +32,6 @@ from config import Mqtt_MowerName
 from config import Sender2AdressIP
 from config import Sender3AdressIP
 
-#bber30 test MQTT 
 
 if(useMqtt):   
     import paho.mqtt.client as mqtt_client
@@ -163,7 +162,7 @@ if(useMqtt):
             pass
             #consoleInsertText("MQTT not Connected fail to send " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
 
-    #END ADDon For MQTT
+#END ADDon For MQTT
             
 
 
@@ -545,43 +544,29 @@ def checkSerial():  #the main loop is that
                     message = pynmea2.parse(response2)
                     decode_message(message)
                 except :
-                    print("PARSE ERROR FROM NANO MESSAGE" + str(response2))
+                    print("PARSE ERROR FROM NANO MESSAGE")
                     consoleInsertText("PARSE ERROR FROM NANO MESSAGE  RECU ????????"+ '\n')
                     consoleInsertText(response2)
 
-    if DueConnectedOnPi :  
-        mymower.dueSerialReceived=Due_Serial.readline()
-        if str(mymower.dueSerialReceived)!="b''":  
-            
-            mymower.dueSerialReceived=str(mymower.dueSerialReceived,'utf8')
-            if mymower.dueSerialReceived[:1] != '$' : #it is console message because the first digit is not $
-                if(len(mymower.dueSerialReceived))>2:
-                    consoleInsertText(mymower.dueSerialReceived)
-                    
-            
-            else :  # here a nmea message
-                
-                #print(mymower.dueSerialReceived)
-                message = pynmea2.parse(mymower.dueSerialReceived)
-                decode_message(message)
-                """
-                try:
+    try:
+        if (DueConnectedOnPi and Due_Serial.inWaiting() != 0) :  
+            mymower.dueSerialReceived=Due_Serial.readline()
+            if str(mymower.dueSerialReceived)!="b''":
+                mymower.dueSerialReceived = mymower.dueSerialReceived.decode('utf-8', errors='ignore')
+                if mymower.dueSerialReceived[:1] != '$' : #it is console message because the first digit is not $
+                    if(len(mymower.dueSerialReceived))>2:
+                        consoleInsertText(mymower.dueSerialReceived)                  
+                else :
                     message = pynmea2.parse(mymower.dueSerialReceived)
                     decode_message(message)
-                except :
-                #    print("INCOMMING MESSAGE ERROR FROM DUE --> " + str(mymower.dueSerialReceived))
-                    consoleInsertText("INCOMMING MESSAGE ERROR FROM DUE" + '\n')
-                    consoleInsertText(str(mymower.dueSerialReceived) + '\n')
 
-                 """ 
-                
-
-                
-
-           
+    except Exception:
+        traceback.print_exc()
+        print("ERROR PLEASE CHECK TRACEBACK INFO")
+        consoleInsertText("ERROR PLEASE CHECK TRACEBACK INFO" + '\n')
+        
 
 
-                
     if mymower.useJoystick :
         myps4.listen()
         if myps4.leftClick:
@@ -617,11 +602,6 @@ def checkSerial():  #the main loop is that
         txtSend.delete('5000.0',tk.END) #keep only  lines
     txtConsoleRecu.delete('2500.0',tk.END) #keep only  lines
    
-
-
-
-    #bber30
-    #need to test if broker not present the Pi freeze ?????????
     
     if (useMqtt):
         if (Mqqt_client.connected_flag):            
@@ -990,12 +970,7 @@ def decode_message(message):  #decode the nmea message
                 if message.setting_page =='Timer1':
                     myRobot.TimerstartArea[int(message.pageNr)]=int(message.val1)
                     myRobot.TimerdaysOfWeek[int(message.pageNr)]=int(message.val2)
-                    for i in range(5):
-                            for j in range(7):
-                                
-                                result=[bool((myRobot.TimerdaysOfWeek[i]) & (1<<n)) for n in range(8)]
-                                #print(result)
-                                tk_timerDayVar[i][j].set(result[j])
+                    
                     if int(message.pageNr)== 4:#refresh when receive the last page
                         refreshTimerSettingPage()
                             
@@ -1570,7 +1545,8 @@ def refreshImuSettingPage():
 
         
 def refreshTimerSettingPage():
-    print("refresh setting timer")
+    
+    
     for i in range(5):
         
         tk_timerActive[i].set(myRobot.Timeractive[i])
@@ -1584,27 +1560,11 @@ def refreshTimerSettingPage():
         tk_timerStartRollDir[i].set(myRobot.TimerstartRollDir[i])
         tk_timerStartLaneMaxlengh[i].set(myRobot.TimerstartLaneMaxlengh[i])
         tk_timerStartArea[i].set(myRobot.TimerstartArea[i])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #print(tk_timerStartArea[i])
-                           
-        for j in range(7):
-            
-            tk_timerDayVar[i][j].set(myRobot.TimerdaysOfWeek[i])
+                
+        for j in range(7):                 
+            result=[bool((myRobot.TimerdaysOfWeek[i]) & (1<<n)) for n in range(8)]
+            tk_timerDayVar[i][j].set(result[j])
+             
   
 
   
@@ -2115,10 +2075,15 @@ try:
     if DueConnectedOnPi :
         if myOS == "Linux":
             if os.path.exists('/dev/ttyACM0') == True:
-                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=0)
+                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=0,write_timeout = 0)
+                Due_Serial.flushInput()
+                Due_Serial.flushOutput()  # clear the output buffer
                 print("Find Serial on ttyACM0")
+
             if os.path.exists('/dev/ttyACM1') == True:
-                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=0)
+                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=0,write_timeout = 0)
+                Due_Serial.flushInput()
+                Due_Serial.flushOutput()  # clear the output buffer
                 print("Find Serial on ttyACM1")
         else:
             Due_Serial = serial.Serial('COM9',115200,timeout=0)
