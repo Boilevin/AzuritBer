@@ -14,7 +14,7 @@ void RpiRemote::init() {
 }
 void RpiRemote::run() {
   readPi();
-  if ((millis() >= nextTimeRaspberryPISendStat) && (millis()>=30000)) {   // start to send the stat only after 30sec on power up to wait pi start
+  if ((millis() >= nextTimeRaspberryPISendStat) && (millis() >= 30000)) { // start to send the stat only after 30sec on power up to wait pi start
     nextTimeRaspberryPISendStat = millis() + 500;  //better to put 200
     RaspberryPISendStat();
   }
@@ -47,6 +47,11 @@ void RpiRemote::run() {
     maxRepetByLaneToPi = maxRepetByLaneToPi - 1;
     nextTimeRaspberryPISendByLane = millis() + delayByLaneToPi;
     RaspberryPISendByLane();
+  }
+  if ((millis() >= nextTimeRaspberryPISendImu) && (maxRepetImuToPi > 0)) {
+    maxRepetImuToPi = maxRepetImuToPi - 1;
+    nextTimeRaspberryPISendImu = millis() + delayImuToPi;
+    RaspberryPISendImu();
   }
 }
 
@@ -679,6 +684,19 @@ void RpiRemote::RaspberryPISendByLane () {
   writePi(lineToSend);
 }
 
+void RpiRemote::RaspberryPISendImu () {
+  String lineToSend;
+  lineToSend = "RMIMU";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + millis();
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + robot->imu.ypr.yaw * 180 / PI;
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + robot->imu.comYaw * 180 / PI;
+  lineToSend = lineToSend + ",";
+  writePi(lineToSend);
+}
+
 void RpiRemote::RaspberryPISendInfo () {
 
   //Console.print(motorPowerMax);
@@ -1046,7 +1064,11 @@ void RpiRemote::receive_request() {
     maxRepetByLaneToPi = max_repetition;
     nextTimeRaspberryPISendByLane = millis() + delayByLaneToPi;
   }
-
+  if (messageType == "IMU") {
+    delayImuToPi = 1000 / frequency;
+    maxRepetImuToPi = max_repetition;
+    nextTimeRaspberryPISendImu = millis() + delayImuToPi;
+  }
 }
 
 void RpiRemote::receive_command() {
@@ -1140,21 +1162,21 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "rollDir", 20) == 0)  robot->rollDir = atoi(received_value[i]);
       if (strncmp(variable_name[i], "whereToStart", 20) == 0)  robot->whereToStart = atoi(received_value[i]);
       if (strncmp(variable_name[i], "actualLenghtByLane", 20) == 0) robot->actualLenghtByLane = atoi(received_value[i]);
-             
+
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle1", 20) == 0) robot->newtagRotAngle1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle2", 20) == 0) robot->newtagRotAngle2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorSpeedMaxPwm", 20) == 0)  robot->motorSpeedMaxPwm = atoi(received_value[i]);
-//bber50     
+      //bber50
       if (strncmp(variable_name[i], "ActualSpeedPeriPWM", 20) == 0) {
         robot->ActualSpeedPeriPWM = atoi(received_value[i]);
         Console.print("Set New perimeter tracking speed  ");
         Console.println(robot->ActualSpeedPeriPWM);
-        
+
       }
 
-      
+
       //if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)  robot->newtagDistance1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagDistance2", 20) == 0)  robot->newtagDistance2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "areaToGo", 20) == 0)  robot->areaToGo = atoi(received_value[i]);
@@ -1162,7 +1184,7 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "statusCurr", 20) == 0)  robot->statusCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "nextTimeTimer", 20) == 0)  robot->nextTimeTimer = atoi(received_value[i]);
 
-//bber50
+      //bber50
       if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)
       {
         robot->newtagDistance1 = atoi(received_value[i]);
@@ -1170,7 +1192,7 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
         Console.print("Change speed for ");
         Console.print(robot->newtagDistance1);
         Console.println(" centimeters");
-        
+
       }
 
 
@@ -1478,26 +1500,13 @@ void RpiRemote::readWrite_setting()
         robot->sonarToFrontDist = val[5];
         robot->UseBumperDock = val[6];
         robot->dockingSpeed = val[7];
-        
-
-
-
-
-
-
-
-
-        
       }
-
     }
   }
   if (readOrWrite == 'r') {
     receivePiReqSetting (Setting_page, nr_page);
   }
-
 }
-
 
 
 

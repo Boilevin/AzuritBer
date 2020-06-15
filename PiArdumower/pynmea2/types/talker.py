@@ -57,6 +57,17 @@ class BAT(TalkerSentence):
 	("chgSense", "chgSense"),
 	
     )
+    
+class IMU(TalkerSentence):
+    """ non stop message from DUE to PI  for imu plot and visu etc....
+    """
+    fields = (
+        ("Millis", "millis"),
+        ("gyroYaw", "gyroYaw"),
+        ("compassYaw", "compassYaw"),
+	
+	
+    )
 
 class MOT(TalkerSentence):
     """ non stop message from DUE to PI  for wheel motor plot and visu etc....

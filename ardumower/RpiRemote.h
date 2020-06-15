@@ -40,6 +40,7 @@ class RpiRemote
     unsigned long nextTimeRaspberryPISendPeri; // delay between 2 data send to RPI for perimeter
     unsigned long nextTimeRaspberryPISendBat; // delay between 2 data send to RPI for battery
     unsigned long nextTimeRaspberryPISendByLane; // delay between 2 data send to RPI for bylane
+    unsigned long nextTimeRaspberryPISendImu; // delay between 2 data send to RPI for Imu
 
 
 
@@ -56,6 +57,8 @@ class RpiRemote
     int maxRepetBatToPi ;  // max number of answer
     int delayByLaneToPi ;  //duration between 2 answers
     int maxRepetByLaneToPi ;  // max number of answer
+    int delayImuToPi ;  //duration between 2 answers
+    int maxRepetImuToPi ;  // max number of answer
     
     bool check_checksum();
     Robot *robot;
@@ -81,6 +84,7 @@ class RpiRemote
     void RaspberryPISendPeri ();
     void RaspberryPISendBat ();
     void RaspberryPISendByLane ();
+    void RaspberryPISendImu ();
     
 };
 
