@@ -107,7 +107,7 @@ int ADCManager::getConvCounter(){
   return res;
 }
 
-void ADCManager::setupChannel(byte pin, int samplecount, bool autocalibrate){
+void ADCManager::setupChannel(byte pin, int samplecount, boolean autocalibrate){
   byte ch = pin-A0;
   pinMode(pin, INPUT);
   channels[ch].pin = pin; 
@@ -124,7 +124,7 @@ void ADCManager::setSampleCount(byte ch, int samplecount){
   channels[ch].sampleCount = samplecount;  
 }
 
-bool ADCManager::isConvComplete(byte pin){
+boolean ADCManager::isConvComplete(byte pin){
   byte ch = pin-A0;
   return channels[ch].convComplete;
 }

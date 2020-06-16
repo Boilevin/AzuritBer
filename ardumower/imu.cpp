@@ -41,10 +41,10 @@ int giro_deadzone = 1;   //Giro error allowed, make it lower to get more precisi
 MPU6050 mpu(0x69);
 
 
-bool blinkState = false;
+boolean blinkState = false;
 float nextTimeLoop;
 // MPU control/status vars
-bool dmpReady = false;  // set true if DMP init was successful
+boolean dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
 uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)

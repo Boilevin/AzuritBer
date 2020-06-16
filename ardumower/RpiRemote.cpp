@@ -867,7 +867,7 @@ RpiRemote::Tokeniser::Tokeniser(char* _str, char _token)
 }
 
 
-bool RpiRemote::Tokeniser::next(char* out, int len)
+boolean RpiRemote::Tokeniser::next(char* out, int len)
 {
   uint8_t count = 0;
   if (str[0] == 0)
@@ -897,7 +897,7 @@ bool RpiRemote::Tokeniser::next(char* out, int len)
   return false;
 }
 
-bool RpiRemote::encode(char c)
+boolean RpiRemote::encode(char c)
 {
   buf[pos] = c;
   pos++;
@@ -906,7 +906,7 @@ bool RpiRemote::encode(char c)
   {
     //Console.println("..........FIND THE END LINE................");
     //Console.println(buf);
-    bool ret = process_buf();
+    boolean ret = process_buf();
     memset(buf, '\0', 120);
     pos = 0;
     return ret;
@@ -923,7 +923,7 @@ bool RpiRemote::encode(char c)
 }
 
 
-bool RpiRemote::process_buf()
+boolean RpiRemote::process_buf()
 {
   if (!check_checksum()) //if checksum is bad
   {
@@ -969,7 +969,7 @@ uint8_t RpiRemote::create_checksum(String lineOfString)
 
 
 
-bool RpiRemote::check_checksum()
+boolean RpiRemote::check_checksum()
 {
 
   if (buf[strlen(buf) - 5] == '*')

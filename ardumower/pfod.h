@@ -57,7 +57,7 @@ class RemoteControl
     RemoteControl();
     void setRobot(Robot *aRobot);
     void initSerial(HardwareSerial* serialPort, uint32_t baudrate);
-    bool readSerial();
+    boolean readSerial();
     //bb10
     void processPI(String RpiCmd, float v1, float v2, float v3) ;
     void run();

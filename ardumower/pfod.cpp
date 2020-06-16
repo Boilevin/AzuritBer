@@ -1828,9 +1828,9 @@ void RemoteControl::run() {
 }
 
 // process serial input from pfod App
-bool RemoteControl::readSerial() {
+boolean RemoteControl::readSerial() {
   dataFromPi = false;
-  bool res = false;
+  boolean res = false;
   while (serialPort->available() > 0) {
     res = true;
     if (serialPort->available() > 0) {

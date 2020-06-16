@@ -40,7 +40,7 @@ FlashClass::FlashClass() {
 
 void FlashClass::test(){    
   Console.println(F("EEPROM test - Please wait..."));
-  bool success = true;
+  boolean success = true;
   for (int i=0; i < 1024; i++){ // test 1024 addresses
     byte temp = read(i);  // read original value
     write(i, ((byte)i));  // write test value

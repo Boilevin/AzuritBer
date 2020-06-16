@@ -294,7 +294,7 @@ boolean PerimeterClass::isInside(byte idx) {
   }
 }
 
-bool PerimeterClass::signalTimedOut() {
+boolean PerimeterClass::signalTimedOut() {
 
   return (signalTimedOut(IDX_LEFT) && signalTimedOut(IDX_RIGHT));
 }

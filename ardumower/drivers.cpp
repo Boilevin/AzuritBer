@@ -237,7 +237,7 @@ boolean setDS1307(datetime_t &dt){
   return true;
 }
 
-bool checkAT24C32() {
+boolean checkAT24C32() {
   byte b = 0;
   int r = 0;
   unsigned int address = 0;

@@ -419,7 +419,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, odometryTicksPerCm);
   eereadwrite(readflag, addr, odometryWheelBaseCm);
   eereadwrite(readflag, addr, autoResetActive);
-  eereadwrite(readflag, addr, odometryRightSwapDir);     // bool adress free for something else
+  eereadwrite(readflag, addr, odometryRightSwapDir);     // boolean adress free for something else
   eereadwrite(readflag, addr, twoWayOdometrySensorUse);   // char YES NO adress free for something else
   eereadwrite(readflag, addr, buttonUse);
   eereadwrite(readflag, addr, userSwitch1);
@@ -1723,8 +1723,8 @@ void Robot::motorControlPerimeter() {
 // check for odometry sensor faults
 void Robot::checkOdometryFaults() {
 
-  bool leftErr = false;
-  bool rightErr = false;
+  boolean leftErr = false;
+  boolean rightErr = false;
   if ((stateCurr == STATE_FORWARD) &&  (millis() - stateStartTime > 8000) ) {
     // just check if odometry sensors may not be working at all
     if ( (motorLeftPWMCurr > 100) && (abs(motorLeftRpmCurr) < 1)  )  leftErr = true;
@@ -2015,7 +2015,7 @@ void Robot::setup()  {
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
     Console.println ("Watchdog is enable and set to 2 secondes");
-    watchdogEnable(5000);// Watchdog trigger after  2 sec if not reseted.
+    watchdogEnable(2000);// Watchdog trigger after  2 sec if not reseted.
 
   }
   else
@@ -2724,17 +2724,14 @@ void Robot::setNextState(byte stateNew, byte dir) {
       motorRightSpeedRpmSet = motorSpeedMaxRpm ;
       motorLeftSpeedRpmSet = motorSpeedMaxRpm ;
       //bber60
-      if (mowPatternCurr == MOW_LANES){
-        if (!justChangeLaneDir){ //it s a new lane so don't limit the forward distance 
+      
+      stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * 30000);// set a very large distance 300 ml for random mowing
+      stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 30000);
+      if ((mowPatternCurr == MOW_LANES) && (!justChangeLaneDir)) { //it s a not new lane so limit the forward distance
           stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * actualLenghtByLane * 100); //limit the lenght
           stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * actualLenghtByLane * 100);
-        }
-        else {
-         stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * 30000);// set a very large distance 300 ml
-         stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 30000);
-        }
       }
-   
+
       OdoRampCompute();
 
       statsMowTimeTotalStart = true;
@@ -3862,7 +3859,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
     //bber50
     case STATE_ACCEL_FRWRD:
-    // after this state the mower use pid imu to drive straight so accelerate only at half the max speed
+      // after this state the mower use pid imu to drive straight so accelerate only at half the max speed
       UseAccelLeft = 1;
       UseBrakeLeft = 0;
       UseAccelRight = 1;
@@ -4205,10 +4202,10 @@ void Robot::checkBumpers() {
       setMotorPWM( 0, 0, false );
       if (bumperLeft) {
         Console.println("Bumper left trigger");
-        reverseOrBidir(RIGHT);
+        reverseOrBidir(LEFT);
       } else {
         Console.println("Bumper right trigger");
-        reverseOrBidir(LEFT);
+        reverseOrBidir(RIGHT);
       }
     }
 
@@ -4834,12 +4831,10 @@ void Robot::loop()  {
         }
 
         //-----------here and before reverse the mower is stop so mark a pause to autocalibrate DMP-----------
-        if ((millis() > nextTimeToDmpAutoCalibration) && (imu.ypr.yaw > 0) && ((millis() - stateStartTime) > 4000) && ((millis() - stateStartTime) < 5000)  ) {
+        if ((millis() > nextTimeToDmpAutoCalibration) && (mowPatternCurr == MOW_LANES) && (imu.ypr.yaw > 0) && ((millis() - stateStartTime) > 4000) && ((millis() - stateStartTime) < 5000)  ) {
           setNextState(STATE_STOP_TO_FIND_YAW, rollDir);
           return;
-          // needDmpAutoCalibration = true; //the calibration start each x minutes
-          // nextTimeToDmpAutoCalibration = millis() + delayBetweenTwoDmpAutocalib * 1000;
-          // endTimeCalibration = millis() + maxDurationDmpAutocalib * 1000;  //max duration calibration
+          
         }
       }
       //-----------------------------------------------------------------------------
@@ -5281,21 +5276,38 @@ void Robot::loop()  {
 
 
     case STATE_ROLL_TO_FIND_YAW:
+      boolean finish_4rev;
+      finish_4rev = false;
       motorControlOdo();
       imu.run();
+      //it's ok
       if ((yawToFind - 2 < (imu.comYaw / PI * 180)) && (yawToFind + 2 > (imu.comYaw / PI * 180)))  { //at +-2 degres
-
         findedYaw = (imu.comYaw / PI * 180);
         setNextState(STATE_STOP_CALIBRATE, rollDir);
+        return;
       }
+      //it's not ok
+      if ((actualRollDirToCalibrate == RIGHT) && ((odometryRight <= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft))) finish_4rev = true;
+      if ((actualRollDirToCalibrate == LEFT) && ((odometryRight >= stateEndOdometryRight) || (odometryLeft <= stateEndOdometryLeft))) finish_4rev = true;
+      if (millis() > (stateStartTime + MaxOdoStateDuration + 6000)) finish_4rev = true;
 
-      if (millis() > (stateStartTime + MaxOdoStateDuration + 6000)) {
+      if (finish_4rev == true) {
         if (developerActive) {
-          Console.println ("Warning can t roll to find yaw in time The Compass is certainly HS ");
+          Console.println ("Warning can t roll to find yaw The Compass is certainly not calibrate correctly ");
+          Console.println ("Continue to mow in random mode without compass ");
         }
-        setNextState(STATE_STOP_CALIBRATE, rollDir);
+        endTimeCalibration = millis();  
+        compassYawMedian.clear();
+        accelGyroYawMedian.clear();        
+        mowPatternCurr = MOW_RANDOM;
+        findedYaw = yawToFind;
+        nextTimeToDmpAutoCalibration = millis() + 7200 * 1000; //do not try to calibration for the next 2 hours
+        setBeeper(0, 0, 0, 0, 0);
+        if (perimeterInside) setNextState(STATE_ACCEL_FRWRD, rollDir);
+        else setNextState(STATE_PERI_OUT_REV, rollDir);
+        return;
       }
-
+      
       break;
 
     //not use actually

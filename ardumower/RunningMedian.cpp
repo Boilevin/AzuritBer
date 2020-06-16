@@ -163,7 +163,7 @@ void RunningMedian::sort()
     // bubble sort with flag
     for (uint8_t i = 0; i < _cnt-1; i++)
     {
-        bool flag = true;
+        boolean flag = true;
         for (uint8_t j = 1; j < _cnt-i; j++)
         {
             if (_ar[_p[j-1]] > _ar[_p[j]])

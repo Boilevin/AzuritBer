@@ -217,7 +217,7 @@ class Robot
 {
   public:
     String name;
-    bool developerActive;
+    boolean developerActive;
     // --------- state machine --------------------------
     byte stateCurr;
     byte stateLast;
@@ -342,8 +342,8 @@ class Robot
     long motorForwTimeMax; // max. forward time (ms) / timeout
     float motorBiDirSpeedRatio1 ;   // bidir mow pattern speed ratio 1
     float motorBiDirSpeedRatio2 ;   // bidir mow pattern speed ratio 2
-    bool motorRightSwapDir     ;    // inverse right motor direction?
-    bool motorLeftSwapDir      ;    // inverse left motor direction?
+    boolean motorRightSwapDir     ;    // inverse right motor direction?
+    boolean motorLeftSwapDir      ;    // inverse left motor direction?
     int motorLeftSpeedRpmSet ; // set speed
     int motorRightSpeedRpmSet ;
     //bb
@@ -630,10 +630,10 @@ class Robot
     unsigned long nextTimePfodLoop ;
     // ----- other -----------------------------------------
     boolean buttonUse         ;       // has digital ON/OFF button?
-    bool RaspberryPIUse;  //a raspberryPI is connected to USBNativeport
-    bool MyrpiStatusSync;
+    boolean RaspberryPIUse;  //a raspberryPI is connected to USBNativeport
+    boolean MyrpiStatusSync;
     unsigned long beepOnOFFDuration; //variable use for the beeper
-    bool beepState;//for the beeper true when sound
+    boolean beepState;//for the beeper true when sound
     unsigned long  nextTimeBeeper;// use for beeper
     boolean startByTimer; // use to know if the start is initiate by timer or manual via PFOD
     int whereToStart; // use to know where the mower need to leave the wire and start to mow
@@ -642,7 +642,7 @@ class Robot
     int beaconToStart; // use to know where the mower need to leave the wire and start to mow
     byte areaToGo;// use to know the area where to start by timer
     //-------- DHT22 Temperature humidity ------------------
-    bool DHT22Use;//for the DHT22
+    boolean DHT22Use;//for the DHT22
     unsigned long  nextTimeReadDHT22;
     float humidityDht;
     float temperatureDht;
