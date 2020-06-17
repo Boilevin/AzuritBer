@@ -113,7 +113,7 @@ if(useMqtt):
 
 
     #the on_log and on_publish show debug message in terminal
-    Mqqt_client.on_log = Mqqt_on_log
+    #Mqqt_client.on_log = Mqqt_on_log
     #Mqqt_client.on_publish = Mqqt_on_publish
     Mqqt_client.on_message = Mqqt_on_message
     Mqqt_client.on_connect = Mqqt_on_connect
@@ -199,7 +199,7 @@ class streamVideo_class(object):
 
     def start(self,resolution):
         self.stop()
-        print(resolution)
+        
         if resolution==0:
             self.streamVideo=subprocess.Popen(["/home/pi/Documents/PiArdumower/streamVideo320.py","shell=True","stdout=subprocess.PIPE"])
         if resolution==1:
@@ -333,11 +333,14 @@ motPlotterKst = PlotterKst_class()
 mowPlotterKst = PlotterKst_class()
 periPlotterKst = PlotterKst_class()
 batPlotterKst = PlotterKst_class()
+ImuPlotterKst = PlotterKst_class()
+
 
 firstplotMotx=0
 firstplotMowx=0
 firstplotBatx=0
 firstplotPerx=0
+firstplotImux=0
 
 actualRep=os.getcwd()
 dateNow=time.strftime('%d/%m/%y %H:%M:%S',time.localtime())
@@ -394,6 +397,8 @@ tk_chgVoltage=tk.DoubleVar()
 tk_chgSense=tk.DoubleVar()
 tk_perimeterMag=tk.IntVar()
 tk_perimeterMagRight=tk.IntVar()
+tk_gyroYaw=tk.DoubleVar()
+tk_compassYaw=tk.DoubleVar()
 
 
 ManualKeyboardUse=tk.IntVar()
@@ -820,6 +825,26 @@ def decode_message(message):  #decode the nmea message
                 f=open(cwd + "/plot/PlotPeri.txt",'a+')
                 f.write("{};{};{}\n".format((int(mymower.millis)-firstplotPerx)/1000,float(mymower.perimeterMag) , float(mymower.perimeterMagRight)))
                 f.close()
+
+            if message.sentence_type =='IMU': #to refresh the plot page of Imu
+                global firstplotImux
+                mymower.millis=int(message.millis)
+                mymower.gyroYaw=message.gyroYaw
+                mymower.compassYaw=message.compassYaw
+                
+                                
+                if firstplotImux==0:
+                    firstplotImux=int(mymower.millis)
+                
+                tk_millis.set(mymower.millis)
+                tk_gyroYaw.set(mymower.gyroYaw)
+                tk_compassYaw.set(mymower.compassYaw)
+                
+                
+                f=open(cwd + "/plot/PlotImu.txt",'a+')
+                f.write("{};{};{}\n".format((int(mymower.millis)-firstplotPerx)/1000,mymower.gyroYaw , mymower.compassYaw))
+                f.close()
+                
          
             if message.sentence_type =='STU': # message for status info send on change only       
                 mymower.status=int(message.status)
@@ -922,19 +947,21 @@ def decode_message(message):  #decode the nmea message
                     tk_date_day.set(myDate.day)
                     tk_date_month.set(myDate.month)
                     tk_date_year.set(myDate.year)
-
-                    cmdline="sudo date -s " + "'" + myDate.year + "-"
-                    cmdline=cmdline + myDate.month + "-" + myDate.day +" "
-                    cmdline=cmdline + myDate.hour +":" + myDate.minute + ":"
-                    cmdline=cmdline + "0" +"'"
-            
-                    if myOS == "Linux":
-                        print("Set the new time and date to PI" )
-                        print(cmdline)
-                        os.system(cmdline)
-
-                    dateNow=time.strftime('%d/%m/%y %H:%M:%S',time.localtime())
-                    print(dateNow)
+                    myDateFormatted= myDate.day+"/"+myDate.month+"/"+myDate.year+" "+myDate.hour+":"+myDate.minute
+                    consoleInsertText("Date Time from PCB1.3       : " + myDateFormatted + '\n')
+                    dateNow=time.strftime('%-d/%-m/%Y %-H:%-M',time.localtime())
+                    consoleInsertText("Date Time from Raspberry Pi : " + dateNow + '\n')
+                    if myDate.year != time.strftime('%Y',time.localtime()):
+                        consoleInsertText("PLEASE SET YEAR CORRECTLY"+ '\n')
+                    if myDate.month != time.strftime('%-m',time.localtime()):
+                        consoleInsertText("PLEASE SET MONTH CORRECTLY"+ '\n')
+                    if myDate.day != time.strftime('%-d',time.localtime()):
+                        consoleInsertText("PLEASE SET DAY CORRECTLY"+ '\n')
+                    if myDate.hour != time.strftime('%-H',time.localtime()):
+                        consoleInsertText("PLEASE SET HOUR CORRECTLY"+ '\n')
+                    if (abs(int(myDate.minute)-int(time.strftime('%-M',time.localtime()))) >=10):
+                        consoleInsertText("PLEASE SET MINUTE CORRECTLY"+ '\n')
+                   
             
                 
                             
@@ -1426,6 +1453,31 @@ def BtnBatPlotStopRec_click():
     f.write("{};{};{};{}\n".format("Time","chgVoltage","chgSense","batVoltage"))
     f.write("{};{};{};{}\n".format("0","0","0","0"))
     f.close()
+
+def BtnImuPlotStartRec_click():
+    ImuPlotterKst.start('/home/pi/Documents/PiArdumower/plotImu.kst')
+    send_req_message('IMU',''+str(SldMainBatRefresh.get())+'','1','10000','0','0','0',)    
+
+def BtnImuPlotStopRec_click():
+    global firstplotImux
+    firstplotImux=0
+    ImuPlotterKst.stop() #close the kst prog
+    
+    send_req_message('IMU','1','0','0','0','0','0',)
+    
+    filename=cwd + "/plot/PlotImu" + time.strftime("%Y%m%d%H%M") + ".CSV"
+    try:
+        os.rename(cwd + "/plot/PlotImu.txt",filename) #keep a copy of the plot and clear the last kst file
+        messagebox.showinfo('Info',"File " + filename + " created in plot directory")
+    except OSError:
+        pass
+    """recreate an empty txt file to have correct auto legend into the graph """
+    f=open(cwd + "/plot/PlotImu.txt",'w')
+    f.write("{};{};{}\n".format("Time","GyroYaw","CompassYaw"))
+    f.write("{};{};{}\n".format("0","0","0"))
+    f.close()
+ 
+
    
 def BtnBylaneStartRec_click():
     send_req_message('BYL','3','1','6000','0','0','0',)
@@ -1724,18 +1776,6 @@ def ButtonCompasCal_click():
     send_pfo_message('g19','1','2','3','4','5','6',)
     mymower.focusOnPage=4
     ConsolePage.tkraise()
-
-
-
-
-
-
-
-
-
-
-
-    
 
 
     
@@ -2393,12 +2433,6 @@ ButtonSetMainApply = tk.Button(tabDateTime,command = ButtonSendSettingDateTimeTo
 ButtonSetMainApply.place(x=300,y=350, height=25, width=150)
 
 
-tk.Label(tabDateTime,text="To use the date and time the Use Timer need to be checked into the Main Setting",fg='green').place(x=50,y=300,width=700, height=20)
-
-
-
-
-
 """************* Battery setting *****************************"""
 
 ChkBtnbatMonitor=tk.Checkbutton(tabBattery, text="Monitor low Battery",relief=tk.SOLID,variable=BatVar1,anchor='nw')
@@ -3023,12 +3057,14 @@ tabPlotWheelMotor=tk.Frame(TabPlot,width=800,height=200)
 tabPlotMowMotor=tk.Frame(TabPlot,width=800,height=200)
 tabPlotPerimeter=tk.Frame(TabPlot,width=800,height=200)
 tabPlotBattery=tk.Frame(TabPlot,width=800,height=200)
+tabPlotImu=tk.Frame(TabPlot,width=800,height=200)
 
 TabPlot.add(tabPlotMain,text="Main")
 TabPlot.add(tabPlotWheelMotor,text="Wheels Motor")
 TabPlot.add(tabPlotMowMotor,text="Mow Motor")
 TabPlot.add(tabPlotPerimeter,text="Perimeter")
 TabPlot.add(tabPlotBattery,text="Battery")
+TabPlot.add(tabPlotImu,text="Imu")
 
 TabPlot.place(x=0, y=0, height=400, width=800)
 
@@ -3116,6 +3152,24 @@ tk.Label(Frame15, text='Left',fg='green').place(x=350,y=15)
 tk.Label(Frame15, textvariable=tk_perimeterMag).place(x=400,y=15)
 tk.Label(Frame15, text='Right',fg='green').place(x=350,y=35)
 tk.Label(Frame15, textvariable=tk_perimeterMagRight).place(x=400,y=35)
+
+#'Imu'
+tk.Label(tabPlotImu, text="Mower Millis : ").place(x=0,y=200)
+tk.Label(tabPlotImu, textvariable=tk_millis).place(x=100,y=200)
+Frame16= tk.Frame(tabPlotImu,relief=tk.GROOVE,borderwidth="3")
+Frame16.place(x=5, y=5, height=155, width=390)
+BtnImuPlotStartRec= tk.Button(Frame16,command = BtnImuPlotStartRec_click,text="Start")
+BtnImuPlotStartRec.place(x=0,y=0, height=25, width=60)
+BtnImuPlotStopRec= tk.Button(Frame16,command = BtnImuPlotStopRec_click,text="Stop")
+BtnImuPlotStopRec.place(x=0,y=25, height=25, width=60)
+SldMainImuRefresh = tk.Scale(Frame16, from_=1, to=100, label='Refresh Rate per seconde',relief=tk.SOLID,orient='horizontal')
+SldMainImuRefresh.place(x=70,y=0,width=250, height=50)
+
+tk.Label(Frame16, text='Gyro',fg='green').place(x=50,y=75)
+tk.Label(Frame16, text='Compass',fg='green').place(x=50,y=95)
+tk.Label(Frame16, text='Value',fg='green').place(x=160,y=60)
+tk.Label(Frame16, textvariable=tk_gyroYaw).place(x=160,y=75)
+tk.Label(Frame16, textvariable=tk_compassYaw).place(x=160,y=95)
 
 ButtonBackHome = tk.Button(TabPlot, image=imgBack, command = ButtonBackToMain_click)
 ButtonBackHome.place(x=680, y=280, height=120, width=120)
@@ -3892,9 +3946,9 @@ if(useMqtt):
     consoleInsertText('Wait update Date/Time from internet'+ '\n')
     consoleInsertText('Initial start MQTT after 1 minute'+ '\n')
     mymower.timeToReconnectMqtt=time.time()+60
-else:
-    consoleInsertText('Adjust PI time from PCB1.3'+ '\n')
-    read_time_setting()
+
+consoleInsertText('Control PI time and PCB1.3 time'+ '\n')
+read_time_setting()
 
 BtnGpsRecordStop_click()
 

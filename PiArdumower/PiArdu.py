@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import traceback
 import sys
 import serial
 import pynmea2
@@ -32,7 +32,6 @@ from config import Mqtt_MowerName
 from config import Sender2AdressIP
 from config import Sender3AdressIP
 
-#bber30 test MQTT 
 
 if(useMqtt):   
     import paho.mqtt.client as mqtt_client
@@ -114,7 +113,7 @@ if(useMqtt):
 
 
     #the on_log and on_publish show debug message in terminal
-    Mqqt_client.on_log = Mqqt_on_log
+    #Mqqt_client.on_log = Mqqt_on_log
     #Mqqt_client.on_publish = Mqqt_on_publish
     Mqqt_client.on_message = Mqqt_on_message
     Mqqt_client.on_connect = Mqqt_on_connect
@@ -163,7 +162,7 @@ if(useMqtt):
             pass
             #consoleInsertText("MQTT not Connected fail to send " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
 
-    #END ADDon For MQTT
+#END ADDon For MQTT
             
 
 
@@ -200,7 +199,7 @@ class streamVideo_class(object):
 
     def start(self,resolution):
         self.stop()
-        print(resolution)
+        
         if resolution==0:
             self.streamVideo=subprocess.Popen(["/home/pi/Documents/PiArdumower/streamVideo320.py","shell=True","stdout=subprocess.PIPE"])
         if resolution==1:
@@ -334,11 +333,14 @@ motPlotterKst = PlotterKst_class()
 mowPlotterKst = PlotterKst_class()
 periPlotterKst = PlotterKst_class()
 batPlotterKst = PlotterKst_class()
+ImuPlotterKst = PlotterKst_class()
+
 
 firstplotMotx=0
 firstplotMowx=0
 firstplotBatx=0
 firstplotPerx=0
+firstplotImux=0
 
 actualRep=os.getcwd()
 dateNow=time.strftime('%d/%m/%y %H:%M:%S',time.localtime())
@@ -395,6 +397,8 @@ tk_chgVoltage=tk.DoubleVar()
 tk_chgSense=tk.DoubleVar()
 tk_perimeterMag=tk.IntVar()
 tk_perimeterMagRight=tk.IntVar()
+tk_gyroYaw=tk.DoubleVar()
+tk_compassYaw=tk.DoubleVar()
 
 
 ManualKeyboardUse=tk.IntVar()
@@ -545,43 +549,29 @@ def checkSerial():  #the main loop is that
                     message = pynmea2.parse(response2)
                     decode_message(message)
                 except :
-                    print("PARSE ERROR FROM NANO MESSAGE" + str(response2))
+                    print("PARSE ERROR FROM NANO MESSAGE")
                     consoleInsertText("PARSE ERROR FROM NANO MESSAGE  RECU ????????"+ '\n')
                     consoleInsertText(response2)
 
-    if DueConnectedOnPi :  
-        mymower.dueSerialReceived=Due_Serial.readline()
-        if str(mymower.dueSerialReceived)!="b''":  
-            
-            mymower.dueSerialReceived=str(mymower.dueSerialReceived,'utf8')
-            if mymower.dueSerialReceived[:1] != '$' : #it is console message because the first digit is not $
-                if(len(mymower.dueSerialReceived))>2:
-                    consoleInsertText(mymower.dueSerialReceived)
-                    
-            
-            else :  # here a nmea message
-                
-                #print(mymower.dueSerialReceived)
-                message = pynmea2.parse(mymower.dueSerialReceived)
-                decode_message(message)
-                """
-                try:
+    try:
+        if (DueConnectedOnPi and Due_Serial.inWaiting() != 0) :  
+            mymower.dueSerialReceived=Due_Serial.readline()
+            if str(mymower.dueSerialReceived)!="b''":
+                mymower.dueSerialReceived = mymower.dueSerialReceived.decode('utf-8', errors='ignore')
+                if mymower.dueSerialReceived[:1] != '$' : #it is console message because the first digit is not $
+                    if(len(mymower.dueSerialReceived))>2:
+                        consoleInsertText(mymower.dueSerialReceived)                  
+                else :
                     message = pynmea2.parse(mymower.dueSerialReceived)
                     decode_message(message)
-                except :
-                #    print("INCOMMING MESSAGE ERROR FROM DUE --> " + str(mymower.dueSerialReceived))
-                    consoleInsertText("INCOMMING MESSAGE ERROR FROM DUE" + '\n')
-                    consoleInsertText(str(mymower.dueSerialReceived) + '\n')
 
-                 """ 
-                
-
-                
-
-           
+    except Exception:
+        traceback.print_exc()
+        print("ERROR PLEASE CHECK TRACEBACK INFO")
+        consoleInsertText("ERROR PLEASE CHECK TRACEBACK INFO" + '\n')
+        
 
 
-                
     if mymower.useJoystick :
         myps4.listen()
         if myps4.leftClick:
@@ -617,11 +607,6 @@ def checkSerial():  #the main loop is that
         txtSend.delete('5000.0',tk.END) #keep only  lines
     txtConsoleRecu.delete('2500.0',tk.END) #keep only  lines
    
-
-
-
-    #bber30
-    #need to test if broker not present the Pi freeze ?????????
     
     if (useMqtt):
         if (Mqqt_client.connected_flag):            
@@ -840,6 +825,26 @@ def decode_message(message):  #decode the nmea message
                 f=open(cwd + "/plot/PlotPeri.txt",'a+')
                 f.write("{};{};{}\n".format((int(mymower.millis)-firstplotPerx)/1000,float(mymower.perimeterMag) , float(mymower.perimeterMagRight)))
                 f.close()
+
+            if message.sentence_type =='IMU': #to refresh the plot page of Imu
+                global firstplotImux
+                mymower.millis=int(message.millis)
+                mymower.gyroYaw=message.gyroYaw
+                mymower.compassYaw=message.compassYaw
+                
+                                
+                if firstplotImux==0:
+                    firstplotImux=int(mymower.millis)
+                
+                tk_millis.set(mymower.millis)
+                tk_gyroYaw.set(mymower.gyroYaw)
+                tk_compassYaw.set(mymower.compassYaw)
+                
+                
+                f=open(cwd + "/plot/PlotImu.txt",'a+')
+                f.write("{};{};{}\n".format((int(mymower.millis)-firstplotPerx)/1000,mymower.gyroYaw , mymower.compassYaw))
+                f.close()
+                
          
             if message.sentence_type =='STU': # message for status info send on change only       
                 mymower.status=int(message.status)
@@ -942,19 +947,21 @@ def decode_message(message):  #decode the nmea message
                     tk_date_day.set(myDate.day)
                     tk_date_month.set(myDate.month)
                     tk_date_year.set(myDate.year)
-
-                    cmdline="sudo date -s " + "'" + myDate.year + "-"
-                    cmdline=cmdline + myDate.month + "-" + myDate.day +" "
-                    cmdline=cmdline + myDate.hour +":" + myDate.minute + ":"
-                    cmdline=cmdline + "0" +"'"
-            
-                    if myOS == "Linux":
-                        print("Set the new time and date to PI" )
-                        print(cmdline)
-                        os.system(cmdline)
-
-                    dateNow=time.strftime('%d/%m/%y %H:%M:%S',time.localtime())
-                    print(dateNow)
+                    myDateFormatted= myDate.day+"/"+myDate.month+"/"+myDate.year+" "+myDate.hour+":"+myDate.minute
+                    consoleInsertText("Date Time from PCB1.3       : " + myDateFormatted + '\n')
+                    dateNow=time.strftime('%-d/%-m/%Y %-H:%-M',time.localtime())
+                    consoleInsertText("Date Time from Raspberry Pi : " + dateNow + '\n')
+                    if myDate.year != time.strftime('%Y',time.localtime()):
+                        consoleInsertText("PLEASE SET YEAR CORRECTLY"+ '\n')
+                    if myDate.month != time.strftime('%-m',time.localtime()):
+                        consoleInsertText("PLEASE SET MONTH CORRECTLY"+ '\n')
+                    if myDate.day != time.strftime('%-d',time.localtime()):
+                        consoleInsertText("PLEASE SET DAY CORRECTLY"+ '\n')
+                    if myDate.hour != time.strftime('%-H',time.localtime()):
+                        consoleInsertText("PLEASE SET HOUR CORRECTLY"+ '\n')
+                    if (abs(int(myDate.minute)-int(time.strftime('%-M',time.localtime()))) >=10):
+                        consoleInsertText("PLEASE SET MINUTE CORRECTLY"+ '\n')
+                   
             
                 
                             
@@ -990,12 +997,7 @@ def decode_message(message):  #decode the nmea message
                 if message.setting_page =='Timer1':
                     myRobot.TimerstartArea[int(message.pageNr)]=int(message.val1)
                     myRobot.TimerdaysOfWeek[int(message.pageNr)]=int(message.val2)
-                    for i in range(5):
-                            for j in range(7):
-                                
-                                result=[bool((myRobot.TimerdaysOfWeek[i]) & (1<<n)) for n in range(8)]
-                                #print(result)
-                                tk_timerDayVar[i][j].set(result[j])
+                    
                     if int(message.pageNr)== 4:#refresh when receive the last page
                         refreshTimerSettingPage()
                             
@@ -1011,8 +1013,6 @@ def decode_message(message):  #decode the nmea message
                         myRobot.motorRollDegMax=message.val8
                         myRobot.motorRollDegMin=message.val9
                         myRobot.DistPeriOutRev=message.val10
-                
-
                     if message.pageNr =='2':   
                         myRobot.motorPowerIgnoreTime=message.val1
                         myRobot.motorForwTimeMax=message.val2
@@ -1040,7 +1040,6 @@ def decode_message(message):  #decode the nmea message
                         myRobot.sonarTriggerBelow=message.val2
                         myRobot.perimeterUse=message.val3
                         myRobot.perimeter_timedOutIfBelowSmag=message.val4
-                        #myRobot.perimeterTriggerTimeout=message.val5
                         myRobot.perimeterTriggerMinSmag=message.val5
                         myRobot.perimeterOutRollTimeMax=message.val6
                         myRobot.perimeterOutRollTimeMin=message.val7
@@ -1141,6 +1140,10 @@ def decode_message(message):  #decode the nmea message
                         myRobot.DistPeriOutStop=message.val3
                         myRobot.DHT22Use=message.val4
                         myRobot.RaspberryPIUse=message.val5
+                        myRobot.sonarToFrontDist=message.val6
+                        myRobot.UseBumperDock=message.val7
+                        myRobot.dockingSpeed=message.val8
+                        
                         refreshAllSettingPage() 
  
 
@@ -1287,7 +1290,9 @@ def ButtonSetBatteryApply_click():
 
     
 def ButtonSetSonarApply_click(): 
-    myRobot.sonarTriggerBelow=slidersonarTriggerBelow.get()     
+    myRobot.sonarTriggerBelow=slidersonarTriggerBelow.get()
+    myRobot.sonarToFrontDist=slidersonarToFront.get()
+    
     myRobot.sonarCenterUse='0'
     if SonVar1.get()==1:
         myRobot.sonarCenterUse='1'
@@ -1448,6 +1453,31 @@ def BtnBatPlotStopRec_click():
     f.write("{};{};{};{}\n".format("Time","chgVoltage","chgSense","batVoltage"))
     f.write("{};{};{};{}\n".format("0","0","0","0"))
     f.close()
+
+def BtnImuPlotStartRec_click():
+    ImuPlotterKst.start('/home/pi/Documents/PiArdumower/plotImu.kst')
+    send_req_message('IMU',''+str(SldMainBatRefresh.get())+'','1','10000','0','0','0',)    
+
+def BtnImuPlotStopRec_click():
+    global firstplotImux
+    firstplotImux=0
+    ImuPlotterKst.stop() #close the kst prog
+    
+    send_req_message('IMU','1','0','0','0','0','0',)
+    
+    filename=cwd + "/plot/PlotImu" + time.strftime("%Y%m%d%H%M") + ".CSV"
+    try:
+        os.rename(cwd + "/plot/PlotImu.txt",filename) #keep a copy of the plot and clear the last kst file
+        messagebox.showinfo('Info',"File " + filename + " created in plot directory")
+    except OSError:
+        pass
+    """recreate an empty txt file to have correct auto legend into the graph """
+    f=open(cwd + "/plot/PlotImu.txt",'w')
+    f.write("{};{};{}\n".format("Time","GyroYaw","CompassYaw"))
+    f.write("{};{};{}\n".format("0","0","0"))
+    f.close()
+ 
+
    
 def BtnBylaneStartRec_click():
     send_req_message('BYL','3','1','6000','0','0','0',)
@@ -1541,7 +1571,9 @@ def refreshBatterySettingPage():
     
 def refreshSonarSettingPage():
     
-    slidersonarTriggerBelow.set(myRobot.sonarTriggerBelow)  
+    slidersonarTriggerBelow.set(myRobot.sonarTriggerBelow)
+    slidersonarToFront.set(myRobot.sonarToFrontDist)
+    
         
     ChkBtnsonarRightUse.deselect()
     if myRobot.sonarRightUse=='1':
@@ -1570,7 +1602,8 @@ def refreshImuSettingPage():
 
         
 def refreshTimerSettingPage():
-    print("refresh setting timer")
+    
+    
     for i in range(5):
         
         tk_timerActive[i].set(myRobot.Timeractive[i])
@@ -1584,27 +1617,11 @@ def refreshTimerSettingPage():
         tk_timerStartRollDir[i].set(myRobot.TimerstartRollDir[i])
         tk_timerStartLaneMaxlengh[i].set(myRobot.TimerstartLaneMaxlengh[i])
         tk_timerStartArea[i].set(myRobot.TimerstartArea[i])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #print(tk_timerStartArea[i])
-                           
-        for j in range(7):
-            
-            tk_timerDayVar[i][j].set(myRobot.TimerdaysOfWeek[i])
+                
+        for j in range(7):                 
+            result=[bool((myRobot.TimerdaysOfWeek[i]) & (1<<n)) for n in range(8)]
+            tk_timerDayVar[i][j].set(result[j])
+             
   
 
   
@@ -1759,18 +1776,6 @@ def ButtonCompasCal_click():
     send_pfo_message('g19','1','2','3','4','5','6',)
     mymower.focusOnPage=4
     ConsolePage.tkraise()
-
-
-
-
-
-
-
-
-
-
-
-    
 
 
     
@@ -2016,11 +2021,14 @@ def ButtonSendSettingToDue_click():
                             '',''+str(myRobot.DistPeriOutStop)+\
                             '',''+str(myRobot.DHT22Use)+\
                             '',''+str(myRobot.RaspberryPIUse)+\
-                            '',''+str(0)+\
-                            '',''+str(0)+\
-                            '',''+str(0)+\
+                            '',''+str(myRobot.sonarToFrontDist)+\
+                            '',''+str(myRobot.UseBumperDock)+\
+                            '',''+str(myRobot.dockingSpeed)+\
                             '',''+str(0)+\
                             '',''+str(0)+'',)
+
+
+
     consoleInsertText("All Setting are change into the Due but not save for the moment" + '\n') 
     
 
@@ -2115,10 +2123,15 @@ try:
     if DueConnectedOnPi :
         if myOS == "Linux":
             if os.path.exists('/dev/ttyACM0') == True:
-                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=0)
+                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=0,write_timeout = 0)
+                Due_Serial.flushInput()
+                Due_Serial.flushOutput()  # clear the output buffer
                 print("Find Serial on ttyACM0")
+
             if os.path.exists('/dev/ttyACM1') == True:
-                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=0)
+                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=0,write_timeout = 0)
+                Due_Serial.flushInput()
+                Due_Serial.flushOutput()  # clear the output buffer
                 print("Find Serial on ttyACM1")
         else:
             Due_Serial = serial.Serial('COM9',115200,timeout=0)
@@ -2420,12 +2433,6 @@ ButtonSetMainApply = tk.Button(tabDateTime,command = ButtonSendSettingDateTimeTo
 ButtonSetMainApply.place(x=300,y=350, height=25, width=150)
 
 
-tk.Label(tabDateTime,text="To use the date and time the Use Timer need to be checked into the Main Setting",fg='green').place(x=50,y=300,width=700, height=20)
-
-
-
-
-
 """************* Battery setting *****************************"""
 
 ChkBtnbatMonitor=tk.Checkbutton(tabBattery, text="Monitor low Battery",relief=tk.SOLID,variable=BatVar1,anchor='nw')
@@ -2465,8 +2472,11 @@ ChkBtnsonarLeftUse.place(x=10,y=40,width=250, height=20)
 ChkBtnsonarRightUse=tk.Checkbutton(tabSonar, text="Use Sonar Right",relief=tk.SOLID,variable=SonVar3,anchor='nw')
 ChkBtnsonarRightUse.place(x=10,y=70,width=250, height=20)
 
-slidersonarTriggerBelow = tk.Scale(tabSonar,orient='horizontal',relief=tk.SOLID, from_=20, to=150, label='Reverse Below in CM (20 to 150)')
+slidersonarTriggerBelow = tk.Scale(tabSonar,orient='horizontal',relief=tk.SOLID, from_=20, to=150, label='Detect Below in CM ')
 slidersonarTriggerBelow.place(x=10,y=130,width=250, height=50)
+
+slidersonarToFront = tk.Scale(tabSonar,orient='horizontal',relief=tk.SOLID, from_=0, to=100, label='Sonar to mower Front in CM ')
+slidersonarToFront.place(x=10,y=200,width=250, height=50)
 
 ButtonRequestMainSettingFomMower = tk.Button(tabSonar)
 ButtonRequestMainSettingFomMower.place(x=10,y=350, height=25, width=150)
@@ -3047,12 +3057,14 @@ tabPlotWheelMotor=tk.Frame(TabPlot,width=800,height=200)
 tabPlotMowMotor=tk.Frame(TabPlot,width=800,height=200)
 tabPlotPerimeter=tk.Frame(TabPlot,width=800,height=200)
 tabPlotBattery=tk.Frame(TabPlot,width=800,height=200)
+tabPlotImu=tk.Frame(TabPlot,width=800,height=200)
 
 TabPlot.add(tabPlotMain,text="Main")
 TabPlot.add(tabPlotWheelMotor,text="Wheels Motor")
 TabPlot.add(tabPlotMowMotor,text="Mow Motor")
 TabPlot.add(tabPlotPerimeter,text="Perimeter")
 TabPlot.add(tabPlotBattery,text="Battery")
+TabPlot.add(tabPlotImu,text="Imu")
 
 TabPlot.place(x=0, y=0, height=400, width=800)
 
@@ -3140,6 +3152,24 @@ tk.Label(Frame15, text='Left',fg='green').place(x=350,y=15)
 tk.Label(Frame15, textvariable=tk_perimeterMag).place(x=400,y=15)
 tk.Label(Frame15, text='Right',fg='green').place(x=350,y=35)
 tk.Label(Frame15, textvariable=tk_perimeterMagRight).place(x=400,y=35)
+
+#'Imu'
+tk.Label(tabPlotImu, text="Mower Millis : ").place(x=0,y=200)
+tk.Label(tabPlotImu, textvariable=tk_millis).place(x=100,y=200)
+Frame16= tk.Frame(tabPlotImu,relief=tk.GROOVE,borderwidth="3")
+Frame16.place(x=5, y=5, height=155, width=390)
+BtnImuPlotStartRec= tk.Button(Frame16,command = BtnImuPlotStartRec_click,text="Start")
+BtnImuPlotStartRec.place(x=0,y=0, height=25, width=60)
+BtnImuPlotStopRec= tk.Button(Frame16,command = BtnImuPlotStopRec_click,text="Stop")
+BtnImuPlotStopRec.place(x=0,y=25, height=25, width=60)
+SldMainImuRefresh = tk.Scale(Frame16, from_=1, to=100, label='Refresh Rate per seconde',relief=tk.SOLID,orient='horizontal')
+SldMainImuRefresh.place(x=70,y=0,width=250, height=50)
+
+tk.Label(Frame16, text='Gyro',fg='green').place(x=50,y=75)
+tk.Label(Frame16, text='Compass',fg='green').place(x=50,y=95)
+tk.Label(Frame16, text='Value',fg='green').place(x=160,y=60)
+tk.Label(Frame16, textvariable=tk_gyroYaw).place(x=160,y=75)
+tk.Label(Frame16, textvariable=tk_compassYaw).place(x=160,y=95)
 
 ButtonBackHome = tk.Button(TabPlot, image=imgBack, command = ButtonBackToMain_click)
 ButtonBackHome.place(x=680, y=280, height=120, width=120)
@@ -3916,9 +3946,9 @@ if(useMqtt):
     consoleInsertText('Wait update Date/Time from internet'+ '\n')
     consoleInsertText('Initial start MQTT after 1 minute'+ '\n')
     mymower.timeToReconnectMqtt=time.time()+60
-else:
-    consoleInsertText('Adjust PI time from PCB1.3'+ '\n')
-    read_time_setting()
+
+consoleInsertText('Control PI time and PCB1.3 time'+ '\n')
+read_time_setting()
 
 BtnGpsRecordStop_click()
 
