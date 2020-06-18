@@ -2724,12 +2724,12 @@ void Robot::setNextState(byte stateNew, byte dir) {
       motorRightSpeedRpmSet = motorSpeedMaxRpm ;
       motorLeftSpeedRpmSet = motorSpeedMaxRpm ;
       //bber60
-      
+
       stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * 30000);// set a very large distance 300 ml for random mowing
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 30000);
       if ((mowPatternCurr == MOW_LANES) && (!justChangeLaneDir)) { //it s a not new lane so limit the forward distance
-          stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * actualLenghtByLane * 100); //limit the lenght
-          stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * actualLenghtByLane * 100);
+        stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * actualLenghtByLane * 100); //limit the lenght
+        stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * actualLenghtByLane * 100);
       }
 
       OdoRampCompute();
@@ -4834,7 +4834,7 @@ void Robot::loop()  {
         if ((millis() > nextTimeToDmpAutoCalibration) && (mowPatternCurr == MOW_LANES) && (imu.ypr.yaw > 0) && ((millis() - stateStartTime) > 4000) && ((millis() - stateStartTime) < 5000)  ) {
           setNextState(STATE_STOP_TO_FIND_YAW, rollDir);
           return;
-          
+
         }
       }
       //-----------------------------------------------------------------------------
@@ -5296,9 +5296,9 @@ void Robot::loop()  {
           Console.println ("Warning can t roll to find yaw The Compass is certainly not calibrate correctly ");
           Console.println ("Continue to mow in random mode without compass ");
         }
-        endTimeCalibration = millis();  
+        endTimeCalibration = millis();
         compassYawMedian.clear();
-        accelGyroYawMedian.clear();        
+        accelGyroYawMedian.clear();
         mowPatternCurr = MOW_RANDOM;
         findedYaw = yawToFind;
         nextTimeToDmpAutoCalibration = millis() + 7200 * 1000; //do not try to calibration for the next 2 hours
@@ -5307,7 +5307,7 @@ void Robot::loop()  {
         else setNextState(STATE_PERI_OUT_REV, rollDir);
         return;
       }
-      
+
       break;
 
     //not use actually
