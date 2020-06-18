@@ -433,8 +433,6 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("a18")) processSlider(pfodCmd, robot->motorPowerIgnoreTime, 1);
   else if (pfodCmd.startsWith("a22")) processSlider(pfodCmd, robot->motorRightOffsetFwd, 1);
   else if (pfodCmd.startsWith("a23")) processSlider(pfodCmd, robot->motorRightOffsetRev, 1);
-
-
   else if (pfodCmd.startsWith("a30")) processSlider(pfodCmd, robot->SpeedOdoMin, 1);
   else if (pfodCmd.startsWith("a31")) processSlider(pfodCmd, robot->SpeedOdoMax, 1);
 
@@ -447,7 +445,6 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
     robot->setNextState(STATE_CALIB_MOTOR_SPEED, robot->rollDir);
     sendTestOdoMenu(true);
   }
-
   else if (pfodCmd == "a10") {
     testmode = (testmode + 1) % 3;
     switch (testmode) {
@@ -474,7 +471,6 @@ void RemoteControl::sendMowMenu(boolean update) {
   serialPort->print(F("|o11~Actual Max Value "));
   serialPort->print(robot->motorMowPower);
   sendSlider("o02", F("Power max"), robot->motorMowPowerMax, "", 0.1, 100);
-
   serialPort->print(F("|o04~Speed "));
   serialPort->print(robot->motorMowPWMCurr);
   sendSlider("o05", F("PWM Speed max"), robot->motorMowSpeedMaxPwm, "", 1, 255, 0);
@@ -835,7 +831,6 @@ void RemoteControl::processImuMenu(String pfodCmd) {
   if (pfodCmd == "g00" ) {
     robot->nextTimeImuLoop = millis() + 120000; //don't read the Imu immediatly need time to save the setting and reset
     robot->imuUse = !robot->imuUse;
-
   }
   else if (pfodCmd == "g04" ) robot->stopMotorDuringCalib = !robot->stopMotorDuringCalib;
   else if (pfodCmd.startsWith("g05")) processPIDSlider(pfodCmd, "g05", robot->imuDirPID, 0.1, 20);
@@ -937,14 +932,10 @@ void RemoteControl::sendStationMenu(boolean update) {
   sendSlider("k02", F("Accel Distance after Roll"), robot->stationForwDist, "", 1, 200, 0);
   sendSlider("k03", F("Station check Distance"), robot->stationCheckDist, "", 1, 20, 0);
   sendSlider("k06", F("Docking Speed % of MaxSpeed"), robot->dockingSpeed, "", 1, 100, 20);
-  //serialPort->println(F("|k04~Force State to Station "));
-
-
-  serialPort->println("}");
+   serialPort->println("}");
 }
 
 void RemoteControl::processStationMenu(String pfodCmd) {
-  //bber20
   if (pfodCmd == "k05" ) robot->UseBumperDock = !robot->UseBumperDock;
   else if (pfodCmd.startsWith("k07")) robot->autoResetActive = !robot->autoResetActive;
   else if (pfodCmd.startsWith("k00")) processSlider(pfodCmd, robot->stationRevDist, 1);
@@ -952,9 +943,6 @@ void RemoteControl::processStationMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("k02")) processSlider(pfodCmd, robot->stationForwDist, 1);
   else if (pfodCmd.startsWith("k03")) processSlider(pfodCmd, robot->stationCheckDist, 1);
   else if (pfodCmd.startsWith("k06")) processSlider(pfodCmd, robot->dockingSpeed, 1);
-  //else if (pfodCmd.startsWith("k04")) robot->setNextState(STATE_STATION, 0);
-
-
   sendStationMenu(true);
 }
 
@@ -1159,7 +1147,6 @@ void RemoteControl::processTimerDetailMenu(String pfodCmd) {
     minutes2time(stopmin, time);
     robot->timer[timerIdx].stopTime = time;
     robot->startByTimer = false;
-    // robot->actualLenghtByLane = robot->maxLenghtByLane;
     robot->whereToStart = 0;
     robot->actualLenghtByLane = robot->maxLenghtByLane;
   } else if (checkStart) {
@@ -1318,7 +1305,6 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
       robot->setNextState(STATE_PERI_STOP_TO_FAST_START, 0);
     }
     sendCommandMenu(true);
-
   }
   else if (pfodCmd == "rv") { //coming from pi starttimer mqtt addon
     Console.println("MQTT START FROM STATION");
