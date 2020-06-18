@@ -823,10 +823,8 @@ void RpiRemote::RaspberryPISendStat () {
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->loopsPerSec;
   lineToSend = lineToSend + ",";
-
   writePi(lineToSend);
 }
-
 
 void RpiRemote::setRobot(Robot *aRobot) {
   this->robot = aRobot;
@@ -848,7 +846,6 @@ void RpiRemote::writePi(String stringLine) {
   //Console.println(lineToSend);
 }
 
-
 void RpiRemote::readPi() {
   if (!RaspberryPIPort.available())
     return;
@@ -866,13 +863,11 @@ RpiRemote::Tokeniser::Tokeniser(char* _str, char _token)
   token = _token;
 }
 
-
 boolean RpiRemote::Tokeniser::next(char* out, int len)
 {
   uint8_t count = 0;
   if (str[0] == 0)
     return false;
-
   while (true)
   {
     if (str[count] == '\0')
@@ -881,7 +876,6 @@ boolean RpiRemote::Tokeniser::next(char* out, int len)
       str = &str[count];
       return true;
     }
-
     if (str[count] == token)
     {
       out[count] = '\0';
@@ -889,7 +883,6 @@ boolean RpiRemote::Tokeniser::next(char* out, int len)
       str = &str[count];
       return true;
     }
-
     if (count < len)
       out[count] = str[count];
     count++;
@@ -901,7 +894,6 @@ boolean RpiRemote::encode(char c)
 {
   buf[pos] = c;
   pos++;
-
   if (c == '\n') //linefeed
   {
     //Console.println("..........FIND THE END LINE................");
@@ -911,7 +903,6 @@ boolean RpiRemote::encode(char c)
     pos = 0;
     return ret;
   }
-
   if (pos >= 120) //avoid a buffer overrun
   {
     Console.print (buf);
@@ -921,7 +912,6 @@ boolean RpiRemote::encode(char c)
   }
   return false;
 }
-
 
 boolean RpiRemote::process_buf()
 {
@@ -940,14 +930,7 @@ boolean RpiRemote::process_buf()
     if (strncmp(buf, "$RMVAR", 6) == 0) readWrite_var();
     if (strncmp(buf, "$RMCMD", 6) == 0) receive_command();
     if (strncmp(buf, "$RMREQ", 6) == 0) receive_request();
-
-
-
-    //here add the reading case of all type of command
-
-
-
-
+    
     return true;
   }
 }
@@ -1143,12 +1126,9 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       case 8:
         strcpy(variable_name[3], token);
         break;
-
       case 9:
         strcpy(received_value[3] , token);
         break;
-
-
     }
     counter++;
   }
@@ -1162,7 +1142,6 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "rollDir", 20) == 0)  robot->rollDir = atoi(received_value[i]);
       if (strncmp(variable_name[i], "whereToStart", 20) == 0)  robot->whereToStart = atoi(received_value[i]);
       if (strncmp(variable_name[i], "actualLenghtByLane", 20) == 0) robot->actualLenghtByLane = atoi(received_value[i]);
-
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle1", 20) == 0) robot->newtagRotAngle1 = atoi(received_value[i]);
@@ -1192,6 +1171,7 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
         Console.print("Change speed for ");
         Console.print(robot->newtagDistance1);
         Console.println(" centimeters");
+
 
       }
 
