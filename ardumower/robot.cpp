@@ -5317,6 +5317,7 @@ void Robot::loop()  {
           Console.println ("Warning can t roll to find yaw The Compass is certainly not calibrate correctly ");
           Console.println ("Continue to mow in random mode without compass ");
         }
+        if (stopMotorDuringCalib) motorMowEnable = true;//restart the mow motor
         endTimeCalibration = millis();
         compassYawMedian.clear();
         accelGyroYawMedian.clear();
