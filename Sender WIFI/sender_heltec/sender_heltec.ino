@@ -3,8 +3,12 @@
 #include <WiFi.h>
 
 
-const char* ssid     = "YOUR SSID WIFI";   // put here your phone acces point ssid
-const char* password = "YOUR PASSWORD";  // put here the password
+const char* ssid     = "your ssid";   // put here your phone acces point ssid
+const char* password = "your password";  // put here the password
+IPAddress staticIP(10, 0, 0, 151); // put here the static IP
+IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
+IPAddress subnet(255, 255, 255, 0);
+IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
 
 
 int8_t sigcode_norm[128];
@@ -205,6 +209,9 @@ void setup()
 
 
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
+  if (WiFi.config(staticIP, gateway, subnet, dns, dns) == false) {
+    Serial.println("WIFI Configuration failed.");
+  }
   WiFi.mode(WIFI_STA);
   //WIFI_ALL_CHANNEL_SCAN
   //esp_wifi_set_config()

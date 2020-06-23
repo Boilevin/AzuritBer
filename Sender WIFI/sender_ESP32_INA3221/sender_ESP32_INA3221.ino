@@ -19,8 +19,13 @@
 #include <WiFi.h>
 
 //********************* user setting **********************************
-const char* ssid     = "My_ssid_wifi";   // put here your acces point ssid
-const char* password = "My_pass_wifi";  // put here the password
+const char* ssid     = "your ssid";   // put here your acces point ssid
+const char* password = "your passwork";  // put here the password
+IPAddress staticIP(10, 0, 0, 150); // put here the static IP
+IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
+IPAddress subnet(255, 255, 255, 0);
+IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
+
 #define USE_STATION     1 // a station is connected and is used to charge the mower
 #define USE_PERI_CURRENT      1     // use pinFeedback for perimeter current measurements? (set to '0' if not connected!)
 #define USE_BUTTON      1     // use button to start mowing or send mower to station
@@ -218,6 +223,9 @@ void setup()
   }
   //------------------------  WIFI parts  ----------------------------------------
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
+  if (WiFi.config(staticIP, gateway, subnet, dns, dns) == false) {
+    Serial.println("WIFI Configuration failed.");
+  }
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);
