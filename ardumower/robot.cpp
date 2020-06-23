@@ -4016,7 +4016,7 @@ void Robot::checkRobotStats() {
 
 
 void Robot::reverseOrBidir(byte aRollDir) {
-
+  //Console.println(aRollDir);
   if (mowPatternCurr == MOW_LANES) setNextState(STATE_STOP_ON_BUMPER, rollDir);
   else  setNextState(STATE_STOP_ON_BUMPER, aRollDir);
 }
@@ -4108,8 +4108,8 @@ void Robot::checkCurrent() {
         }
         else
         {
-          if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
-          else reverseOrBidir(LEFT);
+
+          reverseOrBidir(LEFT);
         }
       }
     }
@@ -4147,8 +4147,8 @@ void Robot::checkCurrent() {
         }
         else
         {
-          if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
-          else reverseOrBidir(RIGHT);
+
+          reverseOrBidir(RIGHT);
         }
       }
     }
@@ -4204,10 +4204,10 @@ void Robot::checkBumpers() {
       setMotorPWM( 0, 0, false );
       if (bumperLeft) {
         Console.println("Bumper left trigger");
-        reverseOrBidir(LEFT);
+        reverseOrBidir(RIGHT);
       } else {
         Console.println("Bumper right trigger");
-        reverseOrBidir(RIGHT);
+        reverseOrBidir(LEFT);
       }
     }
 
