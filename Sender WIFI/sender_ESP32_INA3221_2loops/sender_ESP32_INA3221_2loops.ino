@@ -1,9 +1,11 @@
 /*
-  WIFI Communicating sender
+  WIFI Communicating sender with 2 possible loop
   Adjust IP according to your ESP32 value 10.0.0.150 in this example
   On your browser send :
   http://10.0.0.150/0   *********** to stop the sender
-  http://10.0.0.150/1   *********** to start the sender
+  http://10.0.0.150/1   *********** to start the sender on wire connected on output A
+  http://10.0.0.150/1   *********** to start the sender on wire connected on output B
+  
   http://10.0.0.150/sigCode/2 ******* to change the sigcode in use possible value are 0,1,2,3,4 ,see sigcode list
   http://10.0.0.150/?   *********** to see the state of the sender
   http://10.0.0.150/sigDuration/104    *********** to change the speed sender to 104 microsecondes
@@ -21,21 +23,23 @@
 //********************* user setting **********************************
 const char* ssid     = "your ssid";   // put here your acces point ssid
 const char* password = "your passwork";  // put here the password
+//********************* setting for current sensor **********************************
+float DcDcOutVoltage = 9.0;  //Use to have a correct value on perricurrent (Need to change the value each time you adjust the DC DC )
+
 IPAddress staticIP(10, 0, 0, 150); // put here the static IP
 IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
 
 #define USE_STATION     1 // a station is connected and is used to charge the mower
-#define USE_PERI_CURRENT      1     // use pinFeedback for perimeter current measurements? (set to '0' if not connected!)
-#define USE_BUTTON      1     // use button to start mowing or send mower to station
-#define USE_RAINFLOW    0     // check the amount of rain 
+#define USE_PERI_CURRENT      1     // use Feedback for perimeter current measurements? (set to '0' if not connected!)
+#define USE_BUTTON      1     // use button to start mowing or send mower to station not finish to dev
+#define USE_RAINFLOW    0     // check the amount of rain not finish to dev
 #define WORKING_TIMEOUT_MINS 300  // timeout for perimeter switch-off if robot not in station (minutes)
 #define PERI_CURRENT_MIN    100    // minimum milliAmpere for cutting wire detection
 
 
-//********************* setting for current sensor **********************************
-float DcDcOutVoltage = 9.0;  //Use to have a correct value on perricurrent (Need to change the value each time you adjust the DC DC )
+
 #define I2C_SDA 4
 #define I2C_SCL 15
 #define PERI_CURRENT_CHANNEL 1
@@ -53,20 +57,26 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 
 
-#define pinIN1       12  // M1_IN1         ( connect this pin to L298N-IN1)
-#define pinIN2       13  // M1_IN2         ( connect this pin to L298N-IN2)
-#define pinEnable    23  // EN             (connect this pin to L298N-EN)    
+#define pinIN1       12  // M1_IN1  ESP32 GPIO12       ( connect this pin to L298N-IN1)
+#define pinIN2       13  // M1_IN2  ESP32 GPIO13       ( connect this pin to L298N-IN2)
+#define pinEnableA    23  // ENA    ESP32 GPIO23         (connect this pin to L298N-ENA) 
+//possible to use the same gpio 12 and 13  instead of 14 and 18
+#define pinIN3       14  // M1_IN3  ESP32 GPIO14       ( connect this pin to L298N-IN3)
+#define pinIN4       18  // M1_IN4  ESP32 GPIO18       ( connect this pin to L298N-IN4)
+#define pinEnableB    19  // ENB    ESP32 GPIO19        (connect this pin to L298N-ENA) 
+
 #define pinPushButton      34  //           (connect to Button) //R1 2.2K R2 3.3K
 #define pinRainFlow       35  //           (connect to Rain box) //R3 2.2K R4 3.3K
 
 
 
 // code version
-#define VER "ESP32 2.0"
+#define VER "ESP32 2.1"
 
 volatile int step = 0;
-boolean enableSender = false; //OFF on start to autorise the reset
-boolean WiffiRequestOn = true;
+boolean enableSenderA = false; //OFF on start to autorise the reset
+boolean enableSenderB = false; //OFF on start to autorise the reset
+//boolean WiffiRequestOn = true;
 
 
 int timeSeconds = 0;
@@ -107,7 +117,7 @@ SDL_Arduino_INA3221 ina3221;
 void IRAM_ATTR onTimer()
 { // management of the signal
   portENTER_CRITICAL_ISR(&timerMux);
-  if (enableSender) {
+  if (enableSenderA) {
 
     if (sigcode_norm[step] == 1) {
       digitalWrite(pinIN1, LOW);
@@ -119,7 +129,26 @@ void IRAM_ATTR onTimer()
 
     } else {
       Serial.println("errreur");
-      //digitalWrite(pinEnable, LOW);
+      //digitalWrite(pinEnableA, LOW);
+    }
+    step ++;
+    if (step == sigcode_size) {
+      step = 0;
+    }
+  }
+  if (enableSenderB) {
+
+    if (sigcode_norm[step] == 1) {
+      digitalWrite(pinIN3, LOW);
+      digitalWrite(pinIN4, HIGH);
+
+    } else if (sigcode_norm[step] == -1) {
+      digitalWrite(pinIN3, HIGH);
+      digitalWrite(pinIN4, LOW);
+
+    } else {
+      Serial.println("errreur");
+      //digitalWrite(pinEnableA, LOW);
     }
     step ++;
     if (step == sigcode_size) {
@@ -141,7 +170,8 @@ String IPAddress2String(IPAddress address)
 
 void changeArea(byte areaInMowing) {  // not finish to dev
   step = 0;
-  enableSender = false;
+  enableSenderA = false;
+  enableSenderB = false;
   Serial.print("Change to Area : ");
   Serial.println(areaInMowing);
   for (int uu = 0 ; uu <= 128; uu++) { //clear the area
@@ -193,7 +223,8 @@ void changeArea(byte areaInMowing) {  // not finish to dev
   Serial.println();
   Serial.print("New sigcode size  : ");
   Serial.println(sigcode_size);
-  enableSender = true;
+  enableSenderA = true;
+  enableSenderB = true;
 }
 
 void setup()
@@ -207,7 +238,11 @@ void setup()
   timerAlarmEnable(timer);
   pinMode(pinIN1, OUTPUT);
   pinMode(pinIN2, OUTPUT);
-  pinMode(pinEnable, OUTPUT);
+  pinMode(pinEnableA, OUTPUT);
+  pinMode(pinIN3, OUTPUT);
+  pinMode(pinIN4, OUTPUT);
+  pinMode(pinEnableB, OUTPUT);
+
   pinMode(pinPushButton, INPUT);
   pinMode(pinRainFlow, INPUT);
 
@@ -218,8 +253,11 @@ void setup()
   Serial.println(USE_PERI_CURRENT);
 
   changeArea(sigCodeInUse);
-  if (enableSender) {
-    digitalWrite(pinEnable, HIGH);
+  if (enableSenderA) {
+    digitalWrite(pinEnableA, HIGH);
+  }
+  if (enableSenderB) {
+    digitalWrite(pinEnableB, HIGH);
   }
   //------------------------  WIFI parts  ----------------------------------------
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
@@ -291,7 +329,7 @@ static void ScanNetwork()
   WiFi.disconnect();
   oled.setTextXY(0, 0);
   oled.putString("Hotspot Lost");
-  if (enableSender) {
+  if (enableSenderA) {
     oled.setTextXY(3, 0);
     oled.putString("Sender ON ");
   }
@@ -344,7 +382,7 @@ static void ScanNetwork()
     oled.setTextXY(2, 0);
     oled.putString("If sender is OFF");
     delay(5000);
-    if (!enableSender) ESP.restart(); // do not reset if sender is ON
+    if ((!enableSenderA) && (!enableSenderB)) ESP.restart(); // do not reset if sender is ON
   }
   if (n == -2)
     //bug in esp32 if wifi is lost many time the esp32 fail to autoreconnect,maybe solve in other firmware ???????
@@ -356,7 +394,7 @@ static void ScanNetwork()
     oled.setTextXY(2, 0);
     oled.putString("If sender is Off");
     delay(5000);
-    if (!enableSender) ESP.restart();
+    if ((!enableSenderA) && (!enableSenderB)) ESP.restart();
   }
   if (n == 0)
   {
@@ -406,7 +444,7 @@ void loop()
       PeriCurrent = PeriCurrent * busvoltage1 / DcDcOutVoltage; // it's 3.2666 = 29.4/9.0 the power is read before the DC/DC converter so the current change according : 29.4V is the Power supply 9.0V is the DC/DC output voltage (Change according your setting)
       loadvoltage1 = busvoltage1 + (shuntvoltage1 / 1000);
 
-      if ((enableSender) && (PeriCurrent < PERI_CURRENT_MIN)) {
+      if ((enableSenderA) && (PeriCurrent < PERI_CURRENT_MIN)) {
         oled.setTextXY(5, 0);
         oled.putString("  Wire is Cut  ");
       }
@@ -424,11 +462,18 @@ void loop()
     if ( (WiFi.status() != WL_CONNECTED)) ScanNetwork();
     if  ( workTimeMins >= WORKING_TIMEOUT_MINS ) {
       // switch off perimeter
-      enableSender = false;
+      enableSenderA = false;
+      enableSenderB = false;
+
       workTimeMins = 0;
-      digitalWrite(pinEnable, LOW);
+      digitalWrite(pinEnableA, LOW);
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, LOW);
+
+      digitalWrite(pinEnableB, LOW);
+      digitalWrite(pinIN3, LOW);
+      digitalWrite(pinIN4, LOW);
+
       Serial.println("********************************   Timeout , so stop Sender  **********************************");
     }
 
@@ -460,35 +505,57 @@ void loop()
 
       if (ChargeCurrent > 200) { //mower is into the station ,in my test 410 ma are drained so possible to stop sender
 
+
+        enableSenderA = false;
+        enableSenderB = false;
+
         workTimeMins = 0;
-        enableSender = false;
-        digitalWrite(pinEnable, LOW);
+        digitalWrite(pinEnableA, LOW);
         digitalWrite(pinIN1, LOW);
         digitalWrite(pinIN2, LOW);
+
+        digitalWrite(pinEnableB, LOW);
+        digitalWrite(pinIN3, LOW);
+        digitalWrite(pinIN4, LOW);
+
       }
       else
       {
-        workTimeMins = 0;
-        enableSender = true;
-        digitalWrite(pinEnable, HIGH);
-        digitalWrite(pinIN1, LOW);
-        digitalWrite(pinIN2, LOW);
+        //always start to send a signal when mower leave station
+        if (!enableSenderB) {
+          workTimeMins = 0;
+          enableSenderA = true;
+          digitalWrite(pinEnableA, HIGH);
+          digitalWrite(pinIN1, LOW);
+          digitalWrite(pinIN2, LOW);
+        }
+        else {
+          workTimeMins = 0;
+          enableSenderB = true;
+          digitalWrite(pinEnableB, HIGH);
+          digitalWrite(pinIN3, LOW);
+          digitalWrite(pinIN4, LOW);
+
+        }
       }
     }
     timeSeconds++;
-    if ((enableSender) && (timeSeconds >= 60)) {
+    if (((enableSenderA) || (enableSenderB)) && (timeSeconds >= 60)) {
       if (workTimeMins < 1440) workTimeMins++;
       timeSeconds = 0;
     }
-    if (enableSender) {
+    oled.setTextXY(2, 0);
+    oled.putString("Sender OFF");
+    if (enableSenderA) {
       oled.setTextXY(2, 0);
-      oled.putString("Sender ON ");
+      oled.putString("Sender A ON ");
     }
-    else
-    {
+    if (enableSenderB) {
       oled.setTextXY(2, 0);
-      oled.putString("Sender OFF");
+      oled.putString("Sender B ON ");
     }
+
+
   }
 
   if (millis() >= nextTimeInfo) {
@@ -500,7 +567,7 @@ void loop()
   if (client) {
     // Read the first line of the request
     String req = client.readStringUntil('\r');
-    if (req=="") return;
+    if (req == "") return;
     Serial.print("Client say  ");
     Serial.println(req);
     Serial.println("------------------------ - ");
@@ -508,11 +575,15 @@ void loop()
     // Match the request
     if (req.indexOf("GET /0") != -1) {
       // WiffiRequestOn = false;
-      enableSender = false;
+      enableSenderA = false;
+      enableSenderB = false;
       workTimeMins = 0;
-      digitalWrite(pinEnable, LOW);
+      digitalWrite(pinEnableA, LOW);
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, LOW);
+      digitalWrite(pinEnableB, LOW);
+      digitalWrite(pinIN3, LOW);
+      digitalWrite(pinIN4, LOW);
       String sResponse;
       sResponse = "SENDER IS OFF";
       // Send the response to the client
@@ -523,13 +594,28 @@ void loop()
     if (req.indexOf("GET /1") != -1) {
       //WiffiRequestOn = 1;
       workTimeMins = 0;
-      enableSender = true;
-      digitalWrite(pinEnable, HIGH);
+      enableSenderA = true;
+      digitalWrite(pinEnableA, HIGH);
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, LOW);
       // Prepare the response
       String sResponse;
-      sResponse = "SENDER IS ON";
+      sResponse = "SENDER A IS ON";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+    }
+    if (req.indexOf("GET /2") != -1) {
+      //WiffiRequestOn = 1;
+      workTimeMins = 0;
+      enableSenderA = true;
+      digitalWrite(pinEnableB, HIGH);
+      digitalWrite(pinIN3, LOW);
+      digitalWrite(pinIN4, LOW);
+      // Prepare the response
+      String sResponse;
+      sResponse = "SENDER B IS ON";
       // Send the response to the client
       Serial.println(sResponse);
       client.print(sResponse);
@@ -661,8 +747,8 @@ void loop()
       Serial.println("Button pressed");
       //WiFiClient client = server.available();
       workTimeMins = 0;
-      enableSender = true;
-      digitalWrite(pinEnable, HIGH);
+      enableSenderA = true;
+      digitalWrite(pinEnableA, HIGH);
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, LOW);
       if (client) {
