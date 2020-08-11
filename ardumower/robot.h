@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.31-Azurit-ber"
+#define VER "1.35-Azuritber"
 
 
 // sensors
@@ -387,6 +387,7 @@ class Robot
     unsigned long nextTimeMotorPerimeterControl;
     unsigned long nextTimeMotorMowControl;
     int lastMowSpeedPWM;
+    byte timeToAddMowMedian;
     unsigned long lastSetMotorMowSpeedTime;
     unsigned long nextTimeCheckCurrent;
     unsigned long lastTimeMotorMowStuck;
@@ -434,24 +435,25 @@ class Robot
     // mower motor sppeed; range 0..motorMowSpeedMaxPwm
     float motorMowAccel       ;  // motor mower acceleration (warning: do not set too high)
     int motorMowSpeedMaxPwm ;    // motor mower max PWM
+    int motorMowSpeedMinPwm ;    // motor mower min PWM (only for speed modulation)
     float motorMowPowerMax ;     // motor mower max power (Watt)
-    //char motorMowModulate  ;      // motor mower cutter modulation?
+    
     //bb 8
     byte spiraleNbTurn;  //count the number of revolution of the spirale (10 revolutions for example before stop)
     byte halfLaneNb; //count the number of lane same as spirale (10  for example before stop)
 
-    boolean motorMowModulate  ;    // motor mower cutter modulation?
-    int motorMowRPMSet        ;   // motor mower RPM (only for cutter modulation)
+   
     float motorMowSenseScale ;   // motor mower sense scale (mA=(ADC-zero)/scale)
     PID motorMowPID ;    // motor mower RPM PID controller
     int motorMowSpeedPWMSet;
     int motorMowPWMCurr ;         // current speed
+    int motorMowPwmCoeff ;      // current coeff
     int motorMowSenseADC ;
     float motorMowSenseCurrent ;
     float motorMowPower ;       // motor power (range 0..MAX_MOW_POWER)
     int motorMowSenseCounter ;
     int motorMowSenseErrorCounter ;
-    int motorMowRpmCurr ;            // motor rpm (range 0..MOW_RPM)
+    
     unsigned long lastMotorMowRpmTime;
 
 
@@ -502,6 +504,8 @@ class Robot
     byte compassRollSpeedCoeff;
     RunningMedian compassYawMedian = RunningMedian(60);
     RunningMedian accelGyroYawMedian = RunningMedian(60);
+    RunningMedian motorMowPowerMedian = RunningMedian(30);
+    
     //bb 5
 
 

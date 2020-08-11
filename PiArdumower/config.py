@@ -1,7 +1,65 @@
 import os
-
 cwd = os.getcwd()
+#setting for Raspberry Pi
+if (os.name=='posix'):
+    print('Linux Platform')
+    myFrameWidth = 800
+    myFrameHeight = 430
+    myOS="Linux"
 
+    #If PCB1.3 is used with DUE normalu always true
+    DueConnectedOnPi=True
+    
+    #Old code possible to directly connect a GPS to PI for tracking only
+    GpsConnectedOnPi=False
+    GpsIsM6n=False
+    
+    #Old code a nano was used to control laser sensor and check env
+    NanoConnectedOnPi=False
+      
+    #the battery cycle can be recorded on each charging cycle see plot folder
+    AutoRecordBatCharging=True
+    #Possible to remove the in and out NMEA message visualisation in console
+    useDebugConsole=True
+    
+    #On multiple area it's the sender IP, Use to start and stop them over HTTP
+    Sender2AdressIP="10.0.0.151"
+    Sender3AdressIP="10.0.0.152"
+    
+    #if camera is rotate in the chassis
+    myCamAngle = 0 # Possible value = 0, 90, 180, 270
+    streamVideoOnPower = True #auto start of the streaming
+
+    #Setting for Mqtt and home automation
+    useMqtt=False
+    Mqtt_Broker_IP="10.0.0.8"
+    Mqtt_Port = 1883
+    #delay in second between 2 sends of the DUE loops/sec over mqtt
+    Mqtt_IdleFreqency = 5
+    #if more than one mower use different name
+    Mqtt_MowerName = "Denna"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#--------------------------------------------------------------
+#Setting for testing with a PC 
+#Do not use this parts of setting on normal config
 
 if (os.name=='nt'):
     print('Windows Platform')
@@ -24,27 +82,6 @@ if (os.name=='nt'):
     Mqtt_IdleFreqency = 5
     Mqtt_MowerName = "Denna"
 
-if (os.name=='posix'):
-    print('Linux Platform')
-    #myComPort = '/dev/ttyACM0'
-    myFrameWidth = 800
-    myFrameHeight = 430
-    #myBaudRate = 250000
-    myOS="Linux"
-    GpsConnectedOnPi=False
-    GpsIsM6n=False
-    NanoConnectedOnPi=False
-    DueConnectedOnPi=True
-    AutoRecordBatCharging=True
-    useDebugConsole=False
-    Sender2AdressIP="10.0.0.10"
-    Sender3AdressIP="10.0.0.30"
-    myCamAngle = 0 # Possible= 0, 90, 180, 270
-    useMqtt=True
-    Mqtt_Broker_IP="10.0.0.8"
-    Mqtt_Port = 1883
-    Mqtt_IdleFreqency = 5
-    Mqtt_MowerName = "Denna"
     
     
 

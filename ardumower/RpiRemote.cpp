@@ -279,7 +279,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->motorMowPowerMax;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->motorMowRPMSet;
+    lineToSend = lineToSend + robot->motorMowSpeedMinPwm;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->motorMowSenseScale;
     lineToSend = lineToSend + ",";
@@ -930,7 +930,7 @@ boolean RpiRemote::process_buf()
     if (strncmp(buf, "$RMVAR", 6) == 0) readWrite_var();
     if (strncmp(buf, "$RMCMD", 6) == 0) receive_command();
     if (strncmp(buf, "$RMREQ", 6) == 0) receive_request();
-    
+
     return true;
   }
 }
@@ -1190,8 +1190,19 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
         else robot->motorRightSwapDir = true;
       }
       if (strncmp(variable_name[i], "gpsUse", 20) == 0) {
-        if (strncmp(received_value[i], "0", 1) == 0) robot->gpsUse = false;
-        else robot->gpsUse = true;
+        if (strncmp(received_value[i], "0", 1) == 0)
+        {
+          robot->gpsUse = false;
+          robot->gpsReady=false;
+          GpsPort.flush();
+          GpsPort.end();
+        }
+        else
+        {
+          robot->gpsUse = true;
+          robot->gps.init();
+          
+        }
       }
     }
   }
@@ -1344,7 +1355,7 @@ void RpiRemote::readWrite_setting()
         robot->motorForwTimeMax = val[1];
         robot->motorMowSpeedMaxPwm = val[2];
         robot->motorMowPowerMax = val[3];
-        robot->motorMowRPMSet = val[4];
+        robot->motorMowSpeedMinPwm = val[4];
         robot->motorMowSenseScale = val[5];
         robot->motorLeftPID.Kp = val[6];
         robot->motorLeftPID.Ki = val[7];

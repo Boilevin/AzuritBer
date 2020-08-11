@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-PiVersion="342"
 import traceback
 import sys
 import serial
@@ -30,7 +29,6 @@ from config import Mqtt_Broker_IP
 from config import Mqtt_Port
 from config import Mqtt_IdleFreqency
 from config import Mqtt_MowerName
-from config import streamVideoOnPower
 
 from config import Sender2AdressIP
 from config import Sender3AdressIP
@@ -157,7 +155,7 @@ if(useMqtt):
         if (Mqqt_client.connected_flag):
             r=Mqqt_client.publish(topic=var_topic,payload=var_payload,qos=0, retain=False)
             #mymower.mqtt_message_id=int(r[1])
-            #consoleInsertText("MQTT send message " + var_topic + " " + var_payload + '\n')   
+            consoleInsertText("MQTT send message " + var_topic + " " + var_payload + '\n')   
                          
 
         else:
@@ -773,7 +771,7 @@ def decode_message(message):  #decode the nmea message
                 mymower.millis=int(message.millis)
                 mymower.developerActive=message.developerActive
                 mymower.version=message.version
-                Infoline1.set("DUE Firmware : " + mymower.version + "           Pi version : " + PiVersion)
+                Infoline1.set("Firmware Version : " + mymower.version)
                 mymower.statsOverride=message.statsOverride
                 Infoline2.set("Developer Active : " + mymower.developerActive +" / statsOverride : " + str(mymower.statsOverride))
                 mymower.statsMowTimeMinutesTrip=message.statsMowTimeMinutesTrip
@@ -807,7 +805,7 @@ def decode_message(message):  #decode the nmea message
                 tk_motorRightPWMCurr.set(mymower.motorRightPWMCurr)
 
                 f=open(cwd + "/plot/PlotMot.txt",'a+')
-                f.write("{};{};{};{};{}\n".format(int((int(mymower.millis)-firstplotMotx)/100),float(mymower.motorLeftPower) , float(mymower.motorRightPower),float(mymower.motorLeftPWMCurr) , float(mymower.motorRightPWMCurr)))
+                f.write("{};{};{};{};{}\n".format((int(mymower.millis)-firstplotMotx)/1000,float(mymower.motorLeftPower) , float(mymower.motorRightPower),float(mymower.motorLeftPWMCurr) , float(mymower.motorRightPWMCurr)))
                 f.close()
                 
             if message.sentence_type =='MOW': #to refresh the plot page of motor mow
@@ -826,7 +824,7 @@ def decode_message(message):  #decode the nmea message
                 tk_batVoltage.set(mymower.batVoltage)
 
                 f=open(cwd + "/plot/PlotMow.txt",'a+')
-                f.write("{};{};{}\n".format(int((int(mymower.millis)-firstplotMowx)/100),float(mymower.motorMowPower) , float(mymower.motorMowPWMCurr)))
+                f.write("{};{};{}\n".format((int(mymower.millis)-firstplotMowx)/1000,float(mymower.motorMowPower) , float(mymower.motorMowPWMCurr)))
                 f.close()
                
                 
@@ -846,7 +844,7 @@ def decode_message(message):  #decode the nmea message
                 tk_batVoltage.set(mymower.batVoltage)
                 
                 f=open(cwd + "/plot/PlotBat.txt",'a+')
-                f.write("{};{};{};{}\n".format(int((int(mymower.millis)-firstplotBatx)/100),float(mymower.chgVoltage) , float(mymower.chgSense), float(mymower.batVoltage)))
+                f.write("{};{};{};{}\n".format((int(mymower.millis)-firstplotBatx)/1000,float(mymower.chgVoltage) , float(mymower.chgSense), float(mymower.batVoltage)))
                 f.close()
 
 
@@ -866,7 +864,7 @@ def decode_message(message):  #decode the nmea message
                 tk_perimeterMagRight.set(mymower.perimeterMagRight)
                 
                 f=open(cwd + "/plot/PlotPeri.txt",'a+')
-                f.write("{};{};{}\n".format(int((int(mymower.millis)-firstplotPerx)/100),float(mymower.perimeterMag) , float(mymower.perimeterMagRight)))
+                f.write("{};{};{}\n".format((int(mymower.millis)-firstplotPerx)/1000,float(mymower.perimeterMag) , float(mymower.perimeterMagRight)))
                 f.close()
 
             if message.sentence_type =='IMU': #to refresh the plot page of Imu
@@ -885,7 +883,7 @@ def decode_message(message):  #decode the nmea message
                 
                 
                 f=open(cwd + "/plot/PlotImu.txt",'a+')
-                f.write("{};{};{}\n".format(int((int(mymower.millis)-firstplotPerx)/100),mymower.gyroYaw , mymower.compassYaw))
+                f.write("{};{};{}\n".format((int(mymower.millis)-firstplotPerx)/1000,mymower.gyroYaw , mymower.compassYaw))
                 f.close()
                 
          
@@ -2166,13 +2164,13 @@ try:
     if DueConnectedOnPi :
         if myOS == "Linux":
             if os.path.exists('/dev/ttyACM0') == True:
-                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=10,write_timeout = 10)
+                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=0,write_timeout = 0)
                 Due_Serial.flushInput()
                 Due_Serial.flushOutput()  # clear the output buffer
                 print("Find Serial on ttyACM0")
 
             if os.path.exists('/dev/ttyACM1') == True:
-                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=10,write_timeout = 10)
+                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=0,write_timeout = 0)
                 Due_Serial.flushInput()
                 Due_Serial.flushOutput()  # clear the output buffer
                 print("Find Serial on ttyACM1")
@@ -2403,9 +2401,9 @@ ButtonBackHome.place(x=680, y=280, height=120, width=120)
 ChkBtnmotorMowForceOff=tk.Checkbutton(tabMowMotor, text="SAFETY Force Mowing OFF ",relief=tk.SOLID,variable=MowVar1,anchor='nw')
 ChkBtnmotorMowForceOff.place(x=10,y=300,width=250, height=20)
 
-slidermotorMowSpeedMaxPwm = tk.Scale(tabMowMotor, from_=100, to=255, label='Max PWM Speed',relief=tk.SOLID,orient='horizontal')
+slidermotorMowSpeedMaxPwm = tk.Scale(tabMowMotor, from_=0, to=255, label='Max PWM Speed',relief=tk.SOLID,orient='horizontal')
 slidermotorMowSpeedMaxPwm.place(x=10,y=10,width=250, height=50)
-slidermotorMowSpeedMinPwm = tk.Scale(tabMowMotor, from_=100, to=255, label='Min PWM Speed',relief=tk.SOLID,orient='horizontal')
+slidermotorMowSpeedMinPwm = tk.Scale(tabMowMotor, from_=0, to=4500, label='Max RPM Speed ',relief=tk.SOLID,orient='horizontal')
 slidermotorMowSpeedMinPwm.place(x=10,y=60,width=250, height=50)
 slidermotorMowPID_Kp = tk.Scale(tabMowMotor, from_=0, to=1, label='Mow RPM Regulation Pid P',relief=tk.SOLID,orient='horizontal')
 slidermotorMowPID_Kp.place(x=10,y=110,width=250, height=50)
@@ -3225,7 +3223,7 @@ InfoPage = tk.Frame(fen1)
 InfoPage.place(x=0, y=0, height=400, width=800)
 Infoline1=tk.StringVar()
 LabInfoline = tk.Label(InfoPage, textvariable=Infoline1)
-LabInfoline.place(x=10,y=10, height=25, width=450)
+LabInfoline.place(x=10,y=10, height=25, width=300)
 Infoline2=tk.IntVar()
 LabInfoline = tk.Label(InfoPage, textvariable=Infoline2)
 LabInfoline.place(x=10,y=40, height=25, width=300)
@@ -3309,7 +3307,7 @@ ScrolltxtGpsRecu.pack(side=tk.RIGHT, fill=tk.Y)
 txtGpsRecu.pack(side=tk.LEFT, fill=tk.Y)
 ScrolltxtGpsRecu.config(command=txtGpsRecu.yview)
 txtGpsRecu.config(yscrollcommand=ScrolltxtGpsRecu.set)
-txtGpsRecu.place(x=5,y=35,anchor='nw',width=600, height=300)
+txtGpsRecu.place(x=5,y=335,anchor='nw',width=600, height=50)
 
 
 
@@ -3995,8 +3993,7 @@ read_time_setting()
 
 BtnGpsRecordStop_click()
 
-if (streamVideoOnPower):
-    BtnStreamVideoStart_click()
+
 
 fen1.mainloop()
 

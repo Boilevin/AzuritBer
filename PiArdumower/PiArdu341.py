@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-PiVersion="342"
+PiVersion="341"
 import traceback
 import sys
 import serial
@@ -30,7 +30,6 @@ from config import Mqtt_Broker_IP
 from config import Mqtt_Port
 from config import Mqtt_IdleFreqency
 from config import Mqtt_MowerName
-from config import streamVideoOnPower
 
 from config import Sender2AdressIP
 from config import Sender3AdressIP
@@ -2166,13 +2165,13 @@ try:
     if DueConnectedOnPi :
         if myOS == "Linux":
             if os.path.exists('/dev/ttyACM0') == True:
-                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=10,write_timeout = 10)
+                Due_Serial = serial.Serial('/dev/ttyACM0',115200,timeout=0,write_timeout = 0)
                 Due_Serial.flushInput()
                 Due_Serial.flushOutput()  # clear the output buffer
                 print("Find Serial on ttyACM0")
 
             if os.path.exists('/dev/ttyACM1') == True:
-                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=10,write_timeout = 10)
+                Due_Serial = serial.Serial('/dev/ttyACM1',115200,timeout=0,write_timeout = 0)
                 Due_Serial.flushInput()
                 Due_Serial.flushOutput()  # clear the output buffer
                 print("Find Serial on ttyACM1")
@@ -3995,8 +3994,7 @@ read_time_setting()
 
 BtnGpsRecordStop_click()
 
-if (streamVideoOnPower):
-    BtnStreamVideoStart_click()
+
 
 fen1.mainloop()
 

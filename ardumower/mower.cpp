@@ -92,11 +92,11 @@ Mower::Mower() {
   odoLeftRightCorrection     = true;       // left-right correction for straight lines used in manual mode
 
   // ------ mower motor -------------------------------
-  motorMowAccel       = 2000;  // motor mower acceleration (warning: do not set too low) 2000 seems to fit best considerating start time and power consumption
+  motorMowAccel       = 1000;  // motor mower acceleration (warning: do not set too low) 2000 seems to fit best considerating start time and power consumption
   motorMowSpeedMaxPwm   = 200;    // motor mower max PWM
+  motorMowSpeedMinPwm = 100;   // motor mower minimum PWM (only for cutter modulation)
   motorMowPowerMax = 18.0;     // motor mower max power (Watt)
-  motorMowModulate  = 0;      // motor mower cutter modulation?
-  motorMowRPMSet        = 3300;   // motor mower RPM (only for cutter modulation)
+  
   motorMowSenseScale = 1.536; // motor mower sense scale (mA=(ADC-zero)/scale)
   motorMowPID.Kp = 0.005;    // motor mower RPM PID controller
   motorMowPID.Ki = 0.01;
