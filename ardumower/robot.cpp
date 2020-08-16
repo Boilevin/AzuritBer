@@ -5873,6 +5873,8 @@ void Robot::loop()  {
 
     case STATE_PERI_OUT_LANE_ROLL1:
       motorControlOdo();
+      checkCurrent();
+      checkBumpers();
 
       if (rollDir == RIGHT) {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
@@ -5903,6 +5905,8 @@ void Robot::loop()  {
 
     case STATE_NEXT_LANE_FORW:
       motorControlOdo();
+      checkCurrent();
+      checkBumpers();
 
       //bber14
       //if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
@@ -5929,6 +5933,9 @@ void Robot::loop()  {
 
     case STATE_PERI_OUT_LANE_ROLL2:
       motorControlOdo();
+      checkCurrent();
+      checkBumpers();
+      
       if (rollDir == RIGHT) {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
         {
@@ -6060,7 +6067,7 @@ void Robot::loop()  {
 
     case STATE_STATION_FORW:
       // forward (charge station)
-      //disabble the sonar during 30 seconds
+      //disabble the sonar during 10 seconds
 
       nextTimeCheckSonar = millis() + 10000;  //Do not check the sonar during 30 second  to avoid detect the station
 
