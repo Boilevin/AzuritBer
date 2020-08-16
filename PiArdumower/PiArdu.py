@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-PiVersion="342"
+PiVersion="343"
 import traceback
 import sys
 import serial
@@ -1418,7 +1418,12 @@ def ButtonSetMainApply_click():
     ButtonSendSettingToDue_click()
 
 
-def BtnMowPlotStartRec_click():    
+def BtnMowPlotStartRec_click():
+    """create an empty txt file to have correct auto legend into the graph """
+    f=open(cwd + "/plot/PlotMow.txt",'w')
+    f.write("{};{};{}\n".format("Time","motorMowPower","motorMowPWMCurr"))
+    f.write("{};{};{}\n".format("0","0","0"))
+    f.close()
     mowPlotterKst.start('/home/pi/Documents/PiArdumower/plotMow.kst')
     send_req_message('MOW',''+str(SldMainMowRefresh.get())+'','1','10000','0','0','0',) #arduino start sending data
     
@@ -1435,18 +1440,22 @@ def BtnMowPlotStopRec_click():
         messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
         print("Error when rename file ")
+        consoleInsertText("Error when rename file PlotMow.txt" + '\n')
         pass
-    
-    
 
-    """recreate an empty txt file to have correct auto legend into the graph """
+    """recreate an empty txt file to have correct auto legend into the graph 
     f=open(cwd + "/plot/PlotMow.txt",'w')
     f.write("{};{};{}\n".format("Time","motorMowPower","motorMowPWMCurr"))
     f.write("{};{};{}\n".format("0","0","0"))
     f.close()
-    
+    """
 
 def BtnPeriPlotStartRec_click():
+    """create an empty txt file to have correct auto legend into the graph """
+    f=open(cwd + "/plot/PlotPeri.txt",'w')
+    f.write("{};{};{}\n".format("Time","perimeterMag","perimeterMagRight"))
+    f.write("{};{};{}\n".format("0","0","0"))
+    f.close()
     periPlotterKst.start('/home/pi/Documents/PiArdumower/plotPeri.kst')
     send_req_message('PERI',''+str(SldMainPeriRefresh.get())+'','1','10000','0','0','0',)
     
@@ -1462,18 +1471,19 @@ def BtnPeriPlotStopRec_click():
         os.rename(cwd + "/plot/PlotPeri.txt",filename) #keep a copy of the plot and clear the last kst file
         messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
-        
+        print("Error when rename file /plot/PlotPeri.txt")
+        consoleInsertText("Error when rename file /plot/PlotPeri.txt" + '\n')
         pass
-    """recreate an empty txt file to have correct auto legend into the graph """
-    f=open(cwd + "/plot/PlotPeri.txt",'w')
-    f.write("{};{};{}\n".format("Time","perimeterMag","perimeterMagRight"))
-    f.write("{};{};{}\n".format("0","0","0"))
-    f.close()
+    
     
 def BtnBatPlotStartRec_click():
-    #//bber17
-    if(mymower.autoRecordBatChargeOn!=True):#it's not the auto record so need to start KST
-        batPlotterKst.start('/home/pi/Documents/PiArdumower/plotBat.kst')
+    #create an empty txt file to have correct auto legend into the graph """
+    f=open(cwd + "/plot/PlotBat.txt",'w')
+    f.write("{};{};{};{}\n".format("Time","chgVoltage","chgSense","batVoltage"))
+    f.write("{};{};{};{}\n".format("0","0","0","0"))
+    f.close()
+    #if(mymower.autoRecordBatChargeOn!=True):#it's not the auto record so need to start KST
+    batPlotterKst.start('/home/pi/Documents/PiArdumower/plotBat.kst')
     send_req_message('BAT',''+str(SldMainBatRefresh.get())+'','1','10000','0','0','0',)    
 
 def BtnBatPlotStopRec_click():
@@ -1487,17 +1497,20 @@ def BtnBatPlotStopRec_click():
     try:
         os.rename(cwd + "/plot/PlotBat.txt",filename) #keep a copy of the plot and clear the last kst file
         #//bber17
-        if(mymower.autoRecordBatChargeOn==False): #it's not the auto record so send a message
-            messagebox.showinfo('Info',"File " + filename + " created in plot directory")
+        #if(mymower.autoRecordBatChargeOn==False): #it's not the auto record so send a message
+        messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
+        print("Error when rename file /plot/PlotBat.txt")
+        consoleInsertText("Error when rename file /plot/PlotBat.txt" + '\n')
         pass
-    """recreate an empty txt file to have correct auto legend into the graph """
-    f=open(cwd + "/plot/PlotBat.txt",'w')
-    f.write("{};{};{};{}\n".format("Time","chgVoltage","chgSense","batVoltage"))
-    f.write("{};{};{};{}\n".format("0","0","0","0"))
-    f.close()
-
+    
+    
 def BtnImuPlotStartRec_click():
+    """create an empty txt file to have correct auto legend into the graph """
+    f=open(cwd + "/plot/PlotImu.txt",'w')
+    f.write("{};{};{}\n".format("Time","GyroYaw","CompassYaw"))
+    f.write("{};{};{}\n".format("0","0","0"))
+    f.close()
     ImuPlotterKst.start('/home/pi/Documents/PiArdumower/plotImu.kst')
     send_req_message('IMU',''+str(SldMainBatRefresh.get())+'','1','10000','0','0','0',)    
 
@@ -1513,12 +1526,10 @@ def BtnImuPlotStopRec_click():
         os.rename(cwd + "/plot/PlotImu.txt",filename) #keep a copy of the plot and clear the last kst file
         messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
+        print("Error when rename file /plot/PlotImu.txt")
+        consoleInsertText("Error when rename file /plot/PlotImu.txt" + '\n')
         pass
-    """recreate an empty txt file to have correct auto legend into the graph """
-    f=open(cwd + "/plot/PlotImu.txt",'w')
-    f.write("{};{};{}\n".format("Time","GyroYaw","CompassYaw"))
-    f.write("{};{};{}\n".format("0","0","0"))
-    f.close()
+    
  
 
    
@@ -1529,6 +1540,11 @@ def BtnBylaneStopRec_click():
     send_req_message('BYL','1','0','0','0','0','0',)
     
 def BtnMotPlotStartRec_click():
+    """create an empty txt file to have correct auto legend into the graph """
+    f=open(cwd + "/plot/PlotMot.txt",'w')
+    f.write("{};{};{};{};{}\n".format("Time","motorLeftPower","motorRightPower","motorLeftPWMCurr","motorRightPWMCurr"))
+    f.write("{};{};{};{};{}\n".format("0","0","0","0","0"))
+    f.close()
     motPlotterKst.start('/home/pi/Documents/PiArdumower/plotMot.kst')
     send_req_message('MOT',''+str(SldMainWheelRefresh.get())+'','1','10000','0','0','0',)
     
@@ -1542,18 +1558,17 @@ def BtnMotPlotStopRec_click():
         os.rename(cwd + "/plot/PlotMot.txt",filename) #keep a copy of the plot and clear the last kst file
         messagebox.showinfo('Info',"File " + filename + " created in plot directory")
     except OSError:
+        print("Error when rename file /plot/PlotMot.txt")
+        consoleInsertText("Error when rename file /plot/PlotMot.txt" + '\n')
         pass
-    """recreate an empty txt file to have correct auto legend into the graph """
-    f=open(cwd + "/plot/PlotMot.txt",'w')
-    f.write("{};{};{};{};{}\n".format("Time","motorLeftPower","motorRightPower","motorLeftPWMCurr","motorRightPWMCurr"))
-    f.write("{};{};{};{};{}\n".format("0","0","0","0","0"))
-    f.close()
+    
 
 def BtnMotPlotStopAll_click():
     BtnMotPlotStopRec_click()
     BtnBatPlotStopRec_click()
     BtnPeriPlotStopRec_click()
     BtnMowPlotStopRec_click()
+    BtnImuPlotStopRec_click()
     
 
 def refreshOdometrySettingPage():
@@ -3205,7 +3220,7 @@ BtnImuPlotStartRec= tk.Button(Frame16,command = BtnImuPlotStartRec_click,text="S
 BtnImuPlotStartRec.place(x=0,y=0, height=25, width=60)
 BtnImuPlotStopRec= tk.Button(Frame16,command = BtnImuPlotStopRec_click,text="Stop")
 BtnImuPlotStopRec.place(x=0,y=25, height=25, width=60)
-SldMainImuRefresh = tk.Scale(Frame16, from_=1, to=100, label='Refresh Rate per seconde',relief=tk.SOLID,orient='horizontal')
+SldMainImuRefresh = tk.Scale(Frame16, from_=1, to=10, label='Refresh Rate per seconde',relief=tk.SOLID,orient='horizontal')
 SldMainImuRefresh.place(x=70,y=0,width=250, height=50)
 
 tk.Label(Frame16, text='Gyro',fg='green').place(x=50,y=75)
