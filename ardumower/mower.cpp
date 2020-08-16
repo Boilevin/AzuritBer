@@ -238,7 +238,7 @@ Mower::Mower() {
 
   // ----- other -----------------------------------------
   buttonUse         = 1;       // has digital ON/OFF button?
-  RaspberryPIUse = true; // a raspberryPi is connected to USBNative port
+  RaspberryPIUse = false; // a raspberryPi is connected to USBNative port
   mowPatternDurationMax = 120; //in minutes
 
   // ----- user-defined switch ---------------------------
