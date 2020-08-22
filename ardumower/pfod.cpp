@@ -1277,7 +1277,7 @@ void RemoteControl::sendCommandMenu(boolean update) {
 void RemoteControl::processCommandMenu(String pfodCmd) {
   if (pfodCmd == "ro") {
     // cmd: off
-    robot->nextTimeTimer = millis() + 30000; //reset this if the mower is in station from the home command and want to start again.
+    robot->nextTimeTimer = millis() + 10000; //reset this if the mower is in station from the home command and want to start again.
     robot->setNextState(STATE_OFF, 0);
     sendCommandMenu(true);
   } else if (pfodCmd == "rh") {
