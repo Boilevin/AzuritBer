@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.35-Azuritber"
+#define VER "1.37-Azuritber"
 
 
 // sensors

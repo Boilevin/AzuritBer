@@ -1429,12 +1429,12 @@ void Robot::motorControlOdo() {
       imuDirPID.y_max = motorSpeedMaxPwm / 2;
       imuDirPID.max_output = motorSpeedMaxPwm / 2;
       imuDirPID.compute();
-
+/*
       if ((millis() - stateStartTime) < 1000) { // acceleration and more influence of PID vs speed
         rightSpeed =  rightSpeed - (66 - (millis() - stateStartTime) / 30);
         leftSpeed =  leftSpeed - (66 - (millis() - stateStartTime) / 30);
       }
-
+*/
       rightSpeed =  rightSpeed + imuDirPID.y / 2;
       leftSpeed =  leftSpeed - imuDirPID.y / 2;
 
@@ -2343,7 +2343,7 @@ void Robot::readSerial() {
       case '1':
         // press '1' for Automode
         //motorMowEnable = true;
-        
+
         setNextState(STATE_ACCEL_FRWRD, 0);
         break;
       case 'd':
@@ -3219,7 +3219,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_ROTATE_RIGHT_360:
       spiraleNbTurn = 0;
       halfLaneNb = 0;
-      highGrassDetect = false; 
+      highGrassDetect = false;
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -3326,14 +3326,12 @@ void Robot::setNextState(byte stateNew, byte dir) {
         UseAccelLeft = 1;
         UseBrakeLeft = 1;
         UseAccelRight = 1;
-        if (mowPatternCurr == MOW_LANES)   UseBrakeRight = 1;
-        else UseBrakeRight = 0;
+        UseBrakeRight = 0;
       }
       else
       {
         UseAccelLeft = 1;
-        if (mowPatternCurr == MOW_LANES)  UseBrakeLeft = 1;
-        else UseBrakeLeft = 0;
+        UseBrakeLeft = 0;
         UseAccelRight = 1;
         UseBrakeRight = 1;
       }
@@ -3493,16 +3491,21 @@ void Robot::setNextState(byte stateNew, byte dir) {
       PrevStateOdoDepassRight = odometryRight - stateEndOdometryRight;
       AngleRotate = 135;
       Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
-      UseAccelLeft = 1;
-      UseBrakeLeft = 1;
-      UseAccelRight = 1;
-      UseBrakeRight = 1;
+
       if (dir == RIGHT) {
+        UseAccelLeft = 1;
+        UseBrakeLeft = 0;
+        UseAccelRight = 0;
+        UseBrakeRight = 1;
         motorLeftSpeedRpmSet = motorSpeedMaxRpm;
         motorRightSpeedRpmSet = -motorSpeedMaxRpm;
         stateEndOdometryRight =  odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight ;
         stateEndOdometryLeft =  odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft ;
       } else {
+        UseAccelLeft = 0;
+        UseBrakeLeft = 1;
+        UseAccelRight = 1;
+        UseBrakeRight = 0;
         motorLeftSpeedRpmSet = -motorSpeedMaxRpm;
         motorRightSpeedRpmSet = motorSpeedMaxRpm;
         stateEndOdometryRight = odometryRight + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight;
@@ -3514,10 +3517,20 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_NEXT_LANE_FORW:  //small move to reach the next  parallel lane
       PrevStateOdoDepassLeft = odometryLeft - stateEndOdometryLeft;
       PrevStateOdoDepassRight = odometryRight - stateEndOdometryRight;
-      UseAccelLeft = 1;
-      UseAccelRight = 1;
-      UseAccelLeft = 1;
-      UseAccelRight = 1;
+      if (dir == RIGHT) {
+        UseAccelLeft = 0;
+        UseBrakeLeft = 0;
+        UseAccelRight = 1;
+        UseBrakeRight = 0;
+      }
+      else {
+        UseAccelLeft = 1;
+        UseBrakeLeft = 0;
+        UseAccelRight = 0;
+        UseBrakeRight = 0;
+
+      }
+
       motorLeftSpeedRpmSet = motorRightSpeedRpmSet = motorSpeedMaxRpm;
 
       //************************************same as spirale in by lane mowing*******************************
@@ -3542,18 +3555,23 @@ void Robot::setNextState(byte stateNew, byte dir) {
       PrevStateOdoDepassRight = odometryRight - stateEndOdometryRight;
       AngleRotate = 45;
       Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
-      UseAccelLeft = 1;
-      UseBrakeLeft = 1;
-      UseAccelRight = 1;
-      UseBrakeRight = 1;
+
 
       if (dir == RIGHT) {
+        UseAccelLeft = 0;
+        UseBrakeLeft = 0;
+        UseAccelRight = 1;
+        UseBrakeRight = 1;
         motorLeftSpeedRpmSet = motorSpeedMaxRpm;
-        motorRightSpeedRpmSet = -motorSpeedMaxRpm;
+        motorRightSpeedRpmSet = 0;
         stateEndOdometryRight =  odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight ;
         stateEndOdometryLeft =  odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft ;
       } else {
-        motorLeftSpeedRpmSet = -motorSpeedMaxRpm;
+        UseAccelLeft = 1;
+        UseBrakeLeft = 1;
+        UseAccelRight = 0;
+        UseBrakeRight = 0;
+        motorLeftSpeedRpmSet = 0;
         motorRightSpeedRpmSet = motorSpeedMaxRpm;
         stateEndOdometryRight = odometryRight + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassRight;
         stateEndOdometryLeft = odometryLeft - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) - PrevStateOdoDepassLeft;
@@ -5732,13 +5750,13 @@ void Robot::loop()  {
       if (mowPatternCurr == MOW_LANES) {  //  *************************LANE***************************************
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) ) {
           if (rollDir == RIGHT) {
-            if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) { //wait until the 2 motor completly stop because need precision
+            if (motorLeftPWMCurr == 0) {
               setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
             }
           }
           else
           {
-            if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) {
+            if (motorRightPWMCurr == 0) {
               setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
             }
           }
@@ -5879,7 +5897,7 @@ void Robot::loop()  {
       if (rollDir == RIGHT) {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
         {
-          if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the left motor completly stop because rotation is inverted
+          if (motorRightPWMCurr == 0 ) {
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_NEXT_LANE_FORW, rollDir);
           }
@@ -5889,7 +5907,7 @@ void Robot::loop()  {
       {
         if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft))
         {
-          if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the left motor completly stop because rotation is inverted
+          if (motorLeftPWMCurr == 0 )  {
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_NEXT_LANE_FORW, rollDir);
           }
@@ -5916,16 +5934,20 @@ void Robot::loop()  {
       }
 
       if ((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft) ) {
-        if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) {
-          setNextState(STATE_PERI_OUT_LANE_ROLL2, rollDir);
+        if (rollDir == RIGHT) rollDir = LEFT;//invert the next rotate
+        else rollDir = RIGHT;
+        setNextState(STATE_FORWARD_ODO, rollDir);
 
-        }
+
+
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         if (developerActive) {
           Console.println ("Warning can t reach next lane in time ");
         }
-        setNextState(STATE_PERI_OUT_LANE_ROLL2, rollDir);//if the motor can't reach the odocible in slope for example
+        if (rollDir == RIGHT) rollDir = LEFT;//invert the next rotate
+        else rollDir = RIGHT;
+        setNextState(STATE_FORWARD_ODO, rollDir);//if the motor can't reach the odocible in slope for example
 
       }
 
@@ -5935,11 +5957,11 @@ void Robot::loop()  {
       motorControlOdo();
       checkCurrent();
       checkBumpers();
-      
+
       if (rollDir == RIGHT) {
-        if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
+        if (odometryLeft >= stateEndOdometryLeft)
         {
-          if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
+          if (motorRightPWMCurr == 0 ) {
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_FORWARD_ODO, rollDir);// forward odo to straight line
             rollDir = LEFT;//invert the next rotate
@@ -5949,9 +5971,9 @@ void Robot::loop()  {
 
       else
       {
-        if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft))
+        if (odometryRight >= stateEndOdometryRight)
         {
-          if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
+          if (motorLeftPWMCurr == 0 ) {
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_FORWARD_ODO, rollDir);
             rollDir = RIGHT;// invert the next rotate
