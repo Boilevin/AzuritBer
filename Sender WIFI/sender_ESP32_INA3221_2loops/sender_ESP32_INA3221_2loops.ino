@@ -4,8 +4,8 @@
   On your browser send :
   http://10.0.0.150/0   *********** to stop the sender
   http://10.0.0.150/1   *********** to start the sender on wire connected on output A
-  http://10.0.0.150/1   *********** to start the sender on wire connected on output B
-  
+  http://10.0.0.150/2   *********** to start the sender on wire connected on output B
+
   http://10.0.0.150/sigCode/2 ******* to change the sigcode in use possible value are 0,1,2,3,4 ,see sigcode list
   http://10.0.0.150/?   *********** to see the state of the sender
   http://10.0.0.150/sigDuration/104    *********** to change the speed sender to 104 microsecondes
@@ -21,12 +21,12 @@
 #include <WiFi.h>
 
 //********************* user setting **********************************
-const char* ssid     = "your ssid";   // put here your acces point ssid
-const char* password = "your passwork";  // put here the password
+const char* ssid     = "ASUS_38_2G";   // put here your acces point ssid
+const char* password = "basicsheep714";  // put here the password
 //********************* setting for current sensor **********************************
 float DcDcOutVoltage = 9.0;  //Use to have a correct value on perricurrent (Need to change the value each time you adjust the DC DC )
 
-IPAddress staticIP(10, 0, 0, 150); // put here the static IP
+IPAddress staticIP(10, 0, 0, 153); // put here the static IP
 IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
@@ -34,7 +34,7 @@ IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
 #define USE_STATION     1 // a station is connected and is used to charge the mower
 #define USE_PERI_CURRENT      1     // use Feedback for perimeter current measurements? (set to '0' if not connected!)
 #define USE_BUTTON      1     // use button to start mowing or send mower to station not finish to dev
-#define USE_RAINFLOW    0     // check the amount of rain not finish to dev
+#define USE_RAINFLOW    0     // check the amount of rain not finish to dev on 31/08/2020
 #define WORKING_TIMEOUT_MINS 300  // timeout for perimeter switch-off if robot not in station (minutes)
 #define PERI_CURRENT_MIN    100    // minimum milliAmpere for cutting wire detection
 
@@ -546,16 +546,18 @@ void loop()
     }
     oled.setTextXY(2, 0);
     oled.putString("Sender OFF");
-    if (enableSenderA) {
+    if ((enableSenderA) || (enableSenderB)) {
       oled.setTextXY(2, 0);
-      oled.putString("Sender A ON ");
+      oled.putString("Sender ON :     ");
+      if (enableSenderA) {
+        oled.setTextXY(2, 13);
+        oled.putString("A");
+      }
+      if (enableSenderB) {
+        oled.setTextXY(2, 15);
+        oled.putString("B");
+      }
     }
-    if (enableSenderB) {
-      oled.setTextXY(2, 0);
-      oled.putString("Sender B ON ");
-    }
-
-
   }
 
   if (millis() >= nextTimeInfo) {
@@ -573,25 +575,35 @@ void loop()
     Serial.println("------------------------ - ");
     //client.flush();
     // Match the request
-    if (req.indexOf("GET /0") != -1) {
+    if (req.indexOf("GET /A0") != -1) {
       // WiffiRequestOn = false;
       enableSenderA = false;
-      enableSenderB = false;
       workTimeMins = 0;
       digitalWrite(pinEnableA, LOW);
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, LOW);
-      digitalWrite(pinEnableB, LOW);
-      digitalWrite(pinIN3, LOW);
-      digitalWrite(pinIN4, LOW);
       String sResponse;
-      sResponse = "SENDER IS OFF";
+      sResponse = "SENDER A IS OFF";
       // Send the response to the client
       Serial.println(sResponse);
       client.print(sResponse);
       client.flush();
     }
-    if (req.indexOf("GET /1") != -1) {
+    if (req.indexOf("GET /B0") != -1) {
+      // WiffiRequestOn = false;
+      enableSenderB = false;
+      workTimeMins = 0;
+      digitalWrite(pinEnableB, LOW);
+      digitalWrite(pinIN3, LOW);
+      digitalWrite(pinIN4, LOW);
+      String sResponse;
+      sResponse = "SENDER B IS OFF";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+    }
+    if (req.indexOf("GET /A1") != -1) {
       //WiffiRequestOn = 1;
       workTimeMins = 0;
       enableSenderA = true;
@@ -606,10 +618,10 @@ void loop()
       client.print(sResponse);
       client.flush();
     }
-    if (req.indexOf("GET /2") != -1) {
+    if (req.indexOf("GET /B1") != -1) {
       //WiffiRequestOn = 1;
       workTimeMins = 0;
-      enableSenderA = true;
+      enableSenderB = true;
       digitalWrite(pinEnableB, HIGH);
       digitalWrite(pinIN3, LOW);
       digitalWrite(pinIN4, LOW);
@@ -634,6 +646,12 @@ void loop()
       sResponse += sigDuration ;
       sResponse += " sigCodeInUse= ";
       sResponse += sigCodeInUse ;
+      sResponse += " sender A : ";
+      sResponse += enableSenderA ;
+      sResponse += " sender B : ";
+      sResponse += enableSenderB ;
+      
+      
       Serial.println(sResponse);
       client.print(sResponse);
       client.flush();
