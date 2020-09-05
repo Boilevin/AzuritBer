@@ -19,9 +19,9 @@
 #include <WiFi.h>
 
 //********************* user setting **********************************
-const char* ssid     = "your ssid";   // put here your acces point ssid
-const char* password = "your passwork";  // put here the password
-IPAddress staticIP(10, 0, 0, 150); // put here the static IP
+const char* ssid     = "ASUS_38_2G";   // put here your acces point ssid
+const char* password = "basicsheep714";  // put here the password
+IPAddress staticIP(10, 0, 0, 153); // put here the static IP
 IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)

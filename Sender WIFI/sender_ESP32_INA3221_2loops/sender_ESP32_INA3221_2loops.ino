@@ -2,9 +2,10 @@
   WIFI Communicating sender with 2 possible loop
   Adjust IP according to your ESP32 value 10.0.0.150 in this example
   On your browser send :
-  http://10.0.0.150/0   *********** to stop the sender
-  http://10.0.0.150/1   *********** to start the sender on wire connected on output A
-  http://10.0.0.150/2   *********** to start the sender on wire connected on output B
+  http://10.0.0.150/A0   *********** to stop the sender on wire connected on output A
+  http://10.0.0.150/A1   *********** to start the sender on wire connected on output A
+  http://10.0.0.150/B0   *********** to stop the sender on wire connected on output B
+  http://10.0.0.150/B1   *********** to start the sender on wire connected on output B
 
   http://10.0.0.150/sigCode/2 ******* to change the sigcode in use possible value are 0,1,2,3,4 ,see sigcode list
   http://10.0.0.150/?   *********** to see the state of the sender
@@ -21,17 +22,17 @@
 #include <WiFi.h>
 
 //********************* user setting **********************************
-const char* ssid     = "ASUS_38_2G";   // put here your acces point ssid
-const char* password = "basicsheep714";  // put here the password
+const char* ssid     = "your acces point ssid";   // put here your acces point ssid
+const char* password = "password";  // put here the password
 //********************* setting for current sensor **********************************
 float DcDcOutVoltage = 9.0;  //Use to have a correct value on perricurrent (Need to change the value each time you adjust the DC DC )
 
-IPAddress staticIP(10, 0, 0, 153); // put here the static IP
+IPAddress staticIP(10, 0, 0, 154); // put here the static IP
 IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
 
-#define USE_STATION     1 // a station is connected and is used to charge the mower
+#define USE_STATION     0 // a station is connected and is used to charge the mower
 #define USE_PERI_CURRENT      1     // use Feedback for perimeter current measurements? (set to '0' if not connected!)
 #define USE_BUTTON      1     // use button to start mowing or send mower to station not finish to dev
 #define USE_RAINFLOW    0     // check the amount of rain not finish to dev on 31/08/2020
@@ -92,9 +93,8 @@ int Button_pressed = 0;
 
 float PeriCurrent = 0;
 float ChargeCurrent = 0;
-float shuntvoltage1 = 0;
 float busvoltage1 = 0;
-float loadvoltage1 = 0;
+
 float shuntvoltage2 = 0;
 float busvoltage2 = 0;
 float loadvoltage2 = 0;
@@ -147,7 +147,7 @@ void IRAM_ATTR onTimer()
       digitalWrite(pinIN4, LOW);
 
     } else {
-      Serial.println("errreur");
+      Serial.println("erreur");
       //digitalWrite(pinEnableA, LOW);
     }
     step ++;
@@ -223,8 +223,8 @@ void changeArea(byte areaInMowing) {  // not finish to dev
   Serial.println();
   Serial.print("New sigcode size  : ");
   Serial.println(sigcode_size);
-  enableSenderA = true;
-  enableSenderB = true;
+  //enableSenderA = true;
+  //enableSenderB = true;
 }
 
 void setup()
@@ -277,9 +277,9 @@ void setup()
   oled.setTextXY(1, 0);             // Set cursor position, start of line 1
   oled.putString("BB SENDER");
   oled.setTextXY(2, 0);             // Set cursor position, start of line 2
-  oled.putString("V3.1");
+  oled.putString("V3.2");
   oled.setTextXY(3, 0);           // Set cursor position, line 2 10th character
-  oled.putString("USE INA3221");
+  oled.putString("2 LOOPS");
   //------------------------  current sensor parts  ----------------------------------------
   Serial.println("Measuring voltage and current using ina3221 ...");
   ina3221.begin();
@@ -349,7 +349,7 @@ static void ScanNetwork()
   if (USE_PERI_CURRENT) {
     busvoltage1 = ina3221.getBusVoltage_V(PERI_CURRENT_CHANNEL);
     PeriCurrent = ina3221.getCurrent_mA(PERI_CURRENT_CHANNEL);
-    PeriCurrent = PeriCurrent - 300.0; //the DC/DC,ESP32,LN298N can drain up to 300 ma when scanning network
+    PeriCurrent = PeriCurrent - 100.0; //the DC/DC,ESP32,LN298N can drain up to 300 ma when scanning network
     if (PeriCurrent <= 5) PeriCurrent = 0; //
     PeriCurrent = PeriCurrent * busvoltage1 / DcDcOutVoltage; // it's 3.2666 = 29.4/9.0 the power is read before the DC/DC converter so the current change according : 29.4V is the Power supply 9.0V is the DC/DC output voltage (Change according your setting)
     oled.setTextXY(5, 0);
@@ -437,12 +437,11 @@ void loop()
     oled.putFloat(workTimeMins, 0);
     if (USE_PERI_CURRENT) {
       busvoltage1 = ina3221.getBusVoltage_V(PERI_CURRENT_CHANNEL);
-      shuntvoltage1 = ina3221.getShuntVoltage_mV(PERI_CURRENT_CHANNEL);
       PeriCurrent = ina3221.getCurrent_mA(PERI_CURRENT_CHANNEL);
-      PeriCurrent = PeriCurrent - 60.0; //the DC/DC,ESP32,LN298N drain 60 ma when nothing is ON and a wifi access point is found (To confirm ????)
+      PeriCurrent = PeriCurrent - 100.0; //the DC/DC,ESP32,LN298N drain 100 ma when nothing is ON and a wifi access point is found (To confirm ????)
       if (PeriCurrent <= 5) PeriCurrent = 0; //
       PeriCurrent = PeriCurrent * busvoltage1 / DcDcOutVoltage; // it's 3.2666 = 29.4/9.0 the power is read before the DC/DC converter so the current change according : 29.4V is the Power supply 9.0V is the DC/DC output voltage (Change according your setting)
-      loadvoltage1 = busvoltage1 + (shuntvoltage1 / 1000);
+     
 
       if ((enableSenderA) && (PeriCurrent < PERI_CURRENT_MIN)) {
         oled.setTextXY(5, 0);
@@ -544,8 +543,7 @@ void loop()
       if (workTimeMins < 1440) workTimeMins++;
       timeSeconds = 0;
     }
-    oled.setTextXY(2, 0);
-    oled.putString("Sender OFF");
+
     if ((enableSenderA) || (enableSenderB)) {
       oled.setTextXY(2, 0);
       oled.putString("Sender ON :     ");
@@ -558,6 +556,12 @@ void loop()
         oled.putString("B");
       }
     }
+    else
+    {
+      oled.setTextXY(2, 0);
+      oled.putString("Sender OFF      ");
+    }
+
   }
 
   if (millis() >= nextTimeInfo) {
@@ -650,8 +654,8 @@ void loop()
       sResponse += enableSenderA ;
       sResponse += " sender B : ";
       sResponse += enableSenderB ;
-      
-      
+
+
       Serial.println(sResponse);
       client.print(sResponse);
       client.flush();

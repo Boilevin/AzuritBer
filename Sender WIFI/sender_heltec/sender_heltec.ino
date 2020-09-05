@@ -3,8 +3,8 @@
 #include <WiFi.h>
 
 
-const char* ssid     = "your ssid";   // put here your phone acces point ssid
-const char* password = "your password";  // put here the password
+const char* ssid     = "your acces point ssid";   // put here your acces point ssid
+const char* password = "password";  // put here the password
 IPAddress staticIP(10, 0, 0, 151); // put here the static IP
 IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
 IPAddress subnet(255, 255, 255, 0);
@@ -411,7 +411,7 @@ void loop()
 
     // Match the request
 
-    if (req.indexOf("GET /0") != -1) {
+    if (req.indexOf("GET /A0") != -1) {
       // WiffiRequestOn = false;
       enableSender = false;
       workTimeMins = 0;
@@ -426,7 +426,7 @@ void loop()
       client.flush();
 
     }
-    if (req.indexOf("GET /1") != -1) {
+    if (req.indexOf("GET /A1") != -1) {
       //WiffiRequestOn = 1;
       workTimeMins = 0;
       enableSender = true;
