@@ -23,8 +23,9 @@ if (os.name=='posix'):
     useDebugConsole=True
     
     #On multiple area it's the sender IP, Use to start and stop them over HTTP
+    Sender1AdressIP="10.0.0.150"
     Sender2AdressIP="10.0.0.151"
-    Sender3AdressIP="10.0.0.152"
+    Sender3AdressIP="10.0.0.154"
     
     #if camera is rotate in the chassis
     myCamAngle = 0 # Possible value = 0, 90, 180, 270
