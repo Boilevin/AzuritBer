@@ -634,7 +634,10 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
 void RemoteControl::processPerimeterMenu(String pfodCmd) {
   if (pfodCmd == "e00") robot->perimeterUse = !robot->perimeterUse;
   else if (pfodCmd.startsWith("e04")) processSlider(pfodCmd, robot->perimeterTriggerMinSmag, 1);
-  else if (pfodCmd.startsWith("e18")) processSlider(pfodCmd, robot->MaxSpeedperiPwm, 1);
+  else if (pfodCmd.startsWith("e18")) {
+    processSlider(pfodCmd, robot->MaxSpeedperiPwm, 1);
+    robot->ActualSpeedPeriPWM=robot->MaxSpeedperiPwm;
+  }
   else if (pfodCmd.startsWith("e20")) processSlider(pfodCmd, robot->DistPeriObstacleAvoid, 1);
   else if (pfodCmd.startsWith("e21")) processSlider(pfodCmd, robot->perimeterMagMaxValue, 1);
   else if (pfodCmd.startsWith("e07")) processPIDSlider(pfodCmd, "e07", robot->perimeterPID, 0.1, 100);
@@ -1327,8 +1330,15 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
 
   } else if (pfodCmd == "rk") {
     // cmd: track perimeter
-    robot->setNextState(STATE_PERI_TRACK, 0);
+    robot->periFindDriveHeading = scalePI(robot->imu.ypr.yaw);
+    robot->statusCurr = TRACK_TO_START;
+    robot->setNextState(STATE_PERI_FIND, 0);
     sendCommandMenu(true);
+
+
+
+
+    
   } else if (pfodCmd == "ra") {
     robot->mowPatternDuration = 0;
     robot->motorMowEnable = true;
