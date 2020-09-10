@@ -3340,7 +3340,6 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_OUT_REV: //in normal mowing reverse after the wire trigger
-      readDHT22(); // here the mower is stop so can spend 250ms  for reading
       setBeeper(0, 0, 0, 0, 0);
       perimeter.lastInsideTime[0] = millis(); //use to avoid perimetertimeout when mower outside perimeter
 
@@ -5772,7 +5771,7 @@ void Robot::loop()  {
 
     case STATE_PERI_OUT_REV:
       motorControlOdo();
-
+      readDHT22(); // here the mower is stop in the first time of this loop so can spend 250ms  for reading
       if (mowPatternCurr == MOW_LANES) {  //  *************************LANE***************************************
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) )
         {
