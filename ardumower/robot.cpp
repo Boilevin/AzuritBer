@@ -5148,7 +5148,7 @@ void Robot::loop()  {
           smoothPeriMag = perimeter.getSmoothMagnitude(0);
           Console.print("SmoothMagnitude =  ");
           Console.println(smoothPeriMag);
-          if ((perimeterInside) && (smoothPeriMag > 350)) //check if signal here and inside need a big value to be sure it is not only noise
+          if ((perimeterInside) && (smoothPeriMag > 250)) //check if signal here and inside need a big value to be sure it is not only noise
           {
             if (areaToGo == 1) {
               statusCurr = BACK_TO_STATION; //if we are in the area1 it is to go to station
