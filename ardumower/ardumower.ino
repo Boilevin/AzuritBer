@@ -1,7 +1,7 @@
 /*      
  *      DUE and ODOMETRY MANDATORY VERSION 
  *      PCB1.3 
- *      IMU GY-88 MANDATORY 
+ *      IMU GY-87 MANDATORY 
  *      
  *      Connect DUE programming port to PC for programming and PC console
  *      Connect DUE Native USB port to Raspberry Pi 
