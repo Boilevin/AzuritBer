@@ -5276,7 +5276,8 @@ void Robot::loop()  {
       //it's not ok
       if ((actualRollDirToCalibrate == RIGHT) && ((odometryRight <= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft))) finish_4rev = true;
       if ((actualRollDirToCalibrate == LEFT) && ((odometryRight >= stateEndOdometryRight) || (odometryLeft <= stateEndOdometryLeft))) finish_4rev = true;
-      if (millis() > (stateStartTime + MaxOdoStateDuration + 6000)) finish_4rev = true; if (finish_4rev == true) {
+      if (millis() > (stateStartTime + MaxOdoStateDuration + 6000)) finish_4rev = true;
+      if (finish_4rev == true) {
         if (developerActive) {
           Console.println ("Warning can t roll to find yaw The Compass is certainly not calibrate correctly ");
           Console.println ("Continue to mow in random mode without compass ");
@@ -5603,7 +5604,7 @@ void Robot::loop()  {
           }
           Console.println("Drift is OK");
           setBeeper(0, 0, 0, 0, 0); //stop sound immediatly
-          
+
           if (stopMotorDuringCalib) motorMowEnable = true;//restart the mow motor
           if (perimeterInside) {
             setNextState(STATE_ACCEL_FRWRD, rollDir); //if not outside continue in forward
