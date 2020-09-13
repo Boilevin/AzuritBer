@@ -4830,14 +4830,11 @@ void Robot::loop()  {
       }
 
       //-----------here need to start to mow in spirale or half lane lenght-----------
-      if (highGrassDetect) {
-
+      if (highGrassDetect && motorMowEnable) {
         if ((mowPatternCurr == MOW_LANES)) {
-
           //if (halfLaneNb == 0) setNextState(STATE_ESCAPE_LANE, rollDir); //don't work need to check
           //if (halfLaneNb == 0) setNextState(STATE_STOP_BEFORE_SPIRALE, rollDir);
           setNextState(STATE_STOP_BEFORE_SPIRALE, rollDir);
-
         }
         else
         {
@@ -4845,15 +4842,11 @@ void Robot::loop()  {
         }
         return;
       }
-
-
       checkRain();
       checkCurrent();
       checkBumpers();
       checkDrop();                                                                                                                            // Dropsensor - Absturzsensor
       checkSonar();
-
-      //checkLawn();
       checkTimeout();
       checkBattery();
 
@@ -5504,10 +5497,14 @@ void Robot::loop()  {
           if (laneUseNr == 1) yawToFind = yawSet1 ;
           if (laneUseNr == 2) yawToFind = yawSet2 ;
           if (laneUseNr == 3) yawToFind = yawSet3 ;
-          setNextState(STATE_ROLL_TO_FIND_YAW, rollDir);
-
-
-
+          if (CompassUse) {
+            setNextState(STATE_ROLL_TO_FIND_YAW, rollDir);
+          }
+          else
+          {
+            findedYaw = (imu.ypr.yaw / PI * 180);
+            setNextState(STATE_STOP_CALIBRATE, rollDir);
+          }
         }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         if (developerActive) {
@@ -5516,10 +5513,14 @@ void Robot::loop()  {
         if (laneUseNr == 1) yawToFind = yawSet1 ;
         if (laneUseNr == 2) yawToFind = yawSet2 ;
         if (laneUseNr == 3) yawToFind = yawSet3 ;
-        setNextState(STATE_ROLL_TO_FIND_YAW, rollDir);//if the motor can't rech the odocible in slope
-
-
-
+        if (CompassUse) {
+          setNextState(STATE_ROLL_TO_FIND_YAW, rollDir);//if the motor can't rech the odocible in slope
+        }
+        else
+        {
+          findedYaw = (imu.ypr.yaw / PI * 180);
+          setNextState(STATE_STOP_CALIBRATE, rollDir);
+        }
       }
       break;
 
