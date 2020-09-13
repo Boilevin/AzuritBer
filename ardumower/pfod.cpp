@@ -822,9 +822,9 @@ void RemoteControl::sendImuMenu(boolean update) {
   sendSlider("g06", F("Calibration Max Duration in Sec"), robot->maxDurationDmpAutocalib, "Sec", 1, 100, 10);
   sendSlider("g07", F("Delay between 2 Calib in Sec"), robot->delayBetweenTwoDmpAutocalib, "Sec", 1, 600, 60);
   sendSlider("g08", F("Drift Maxi in Deg Per Second "), robot->maxDriftPerSecond, "Deg", 0.01, 0.3, 0);
-  sendSlider("g10", F("Speed to find ComYaw % of motorSpeedMaxRpm "), robot->compassRollSpeedCoeff, "Deg", 1, 80, 30);
   serialPort->print(F("|g18~Accel Gyro Initial Calibration more than 30sec duration"));
   if (robot->CompassUse){
+    sendSlider("g10", F("Speed to find ComYaw % of motorSpeedMaxRpm "), robot->compassRollSpeedCoeff, "Deg", 1, 80, 30);
     serialPort->print(F("|g19~Compass calibration click to start and again to stop"));
     serialPort->print(F("|g20~Delete Compass calibration"));
   }
