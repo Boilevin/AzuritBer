@@ -3663,13 +3663,14 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      Console.print(" imu.comYaw ");
-      Console.print(abs(100 * imu.comYaw));
-      Console.print(" imu.ypr.yaw ");
-      Console.print(abs(100 * imu.ypr.yaw));
-      Console.print(" distancePI(imu.comYaw, imu.ypr.yaw) ");
-      Console.println(distancePI(imu.comYaw, imu.ypr.yaw));
-
+      /*
+        Console.print(" imu.comYaw ");
+        Console.print(abs(100 * imu.comYaw));
+        Console.print(" imu.ypr.yaw ");
+        Console.print(abs(100 * imu.ypr.yaw));
+        Console.print(" distancePI(imu.comYaw, imu.ypr.yaw) ");
+        Console.println(distancePI(imu.comYaw, imu.ypr.yaw));
+      */
 
 
       if (distancePI(imu.comYaw, yawCiblePos * PI / 180) > 0) { //rotate in the nearest direction
@@ -5498,16 +5499,19 @@ void Robot::loop()  {
 
     case STATE_STOP_TO_FIND_YAW:
       motorControlOdo();
-
       if (((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft)))
         if (motorLeftPWMCurr == 0 && motorRightPWMCurr == 0)  { //wait until the 2 motors completly stop because rotation is inverted
           if (laneUseNr == 1) yawToFind = yawSet1 ;
           if (laneUseNr == 2) yawToFind = yawSet2 ;
           if (laneUseNr == 3) yawToFind = yawSet3 ;
-          setNextState(STATE_ROLL_TO_FIND_YAW, rollDir);
-
-
-
+          if (CompassUse) {
+            setNextState(STATE_ROLL_TO_FIND_YAW, rollDir);
+          }
+          else
+          {
+            findedYaw = (imu.ypr.yaw / PI * 180);
+            setNextState(STATE_STOP_CALIBRATE, rollDir);
+          }
         }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         if (developerActive) {
@@ -5516,10 +5520,14 @@ void Robot::loop()  {
         if (laneUseNr == 1) yawToFind = yawSet1 ;
         if (laneUseNr == 2) yawToFind = yawSet2 ;
         if (laneUseNr == 3) yawToFind = yawSet3 ;
-        setNextState(STATE_ROLL_TO_FIND_YAW, rollDir);//if the motor can't rech the odocible in slope
-
-
-
+        if (CompassUse) {
+          setNextState(STATE_ROLL_TO_FIND_YAW, rollDir);//if the motor can't rech the odocible in slope
+        }
+        else
+        {
+          findedYaw = (imu.ypr.yaw / PI * 180);
+          setNextState(STATE_STOP_CALIBRATE, rollDir);
+        }
       }
       break;
 
