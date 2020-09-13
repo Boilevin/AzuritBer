@@ -267,7 +267,6 @@ class Robot
     int odometryTicksPerRevolution ;   // encoder ticks per one full resolution
     float odometryTicksPerCm ;  // encoder ticks per cm
     float odometryWheelBaseCm ;    // wheel-to-wheel distance (cm)
-    boolean odometryRightSwapDir;       // inverse right encoder direction?
     int odometryLeft ;   // left wheel counter
     int odometryRight ;  // right wheel counter
     boolean odometryLeftLastState;
@@ -319,7 +318,6 @@ class Robot
     //bb
     int motorLeftChange;
     int motorRightChange;
-
     int motorAccel  ;  // motor wheel acceleration (warning: do not set too high)
     int motorSpeedMaxRpm   ;   // motor wheel max RPM
     int motorSpeedMaxPwm  ;  // motor wheel max Pwm  (8-bit PWM=255, 10-bit PWM=1023)
@@ -479,6 +477,7 @@ class Robot
     // ------- IMU state --------------------------------
     IMUClass imu;
     boolean imuUse            ;       // use IMU?
+    boolean CompassUse;       // Deactivate the compass and use only gyro accel from IMU
     boolean stopMotorDuringCalib     ;       // Stop mow motor during auto calibration
     PID imuDirPID  ;    // direction PID controller
     PID imuRollPID ;    // roll PID controller

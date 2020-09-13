@@ -164,6 +164,7 @@ Mower::Mower() {
   lawnSensorUse     = 0;       // use capacitive Sensor
   // ------  IMU (compass/accel/gyro) ----------------------
   imuUse            = 0;       // use IMU?
+  CompassUse = 1;       // activate compass?
   stopMotorDuringCalib     = 0;       // correct direction by compass?
   imuDirPID.Kp      = 4.4;     // direction PID controller
   imuDirPID.Ki      = 3.3;
@@ -228,7 +229,7 @@ Mower::Mower() {
   odometryTicksPerRevolution = 1010;   // encoder ticks per one full resolution
   odometryTicksPerCm = 12.9;  // encoder ticks per cm
   odometryWheelBaseCm = 43;    // wheel-to-wheel distance (cm)
-  odometryRightSwapDir = 0;       // inverse right encoder direction?
+  
 
 
   // ----- GPS -------------------------------------------

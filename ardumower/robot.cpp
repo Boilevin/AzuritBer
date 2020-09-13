@@ -420,7 +420,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, odometryTicksPerCm);
   eereadwrite(readflag, addr, odometryWheelBaseCm);
   eereadwrite(readflag, addr, autoResetActive);
-  eereadwrite(readflag, addr, odometryRightSwapDir);     // boolean adress free for something else
+  eereadwrite(readflag, addr, CompassUse);     
   eereadwrite(readflag, addr, twoWayOdometrySensorUse);   // char YES NO adress free for something else
   eereadwrite(readflag, addr, buttonUse);
   eereadwrite(readflag, addr, userSwitch1);
@@ -710,6 +710,8 @@ void Robot::printSettingSerial() {
   Console.println(F("---------- IMU (compass/accel/gyro) --------------------------"));
   Console.print  (F("imuUse                                     : "));
   Console.println( imuUse, 1);
+  Console.print  (F("CompassUse                                 : "));
+  Console.println(CompassUse);
   Console.print  (F("stopMotorDuringCalib                       : "));
   Console.println(stopMotorDuringCalib, 1);
   Console.print  (F("imuDirPID.Kp                               : "));
@@ -798,8 +800,7 @@ void Robot::printSettingSerial() {
   Console.println( odometryTicksPerCm);
   Console.print  (F("odometryWheelBaseCm                        : "));
   Console.println( odometryWheelBaseCm);
-  Console.print  (F("odometryRightSwapDir                       : "));
-  Console.println(odometryRightSwapDir);
+ 
 
 
   watchdogReset();
