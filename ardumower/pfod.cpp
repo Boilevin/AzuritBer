@@ -798,8 +798,10 @@ void RemoteControl::processByLaneMenu(String pfodCmd) {
 
 void RemoteControl::sendImuMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.IMU`1000"));
-  serialPort->println(F("|g00~ Use :(Need Restart) "));
+  serialPort->println(F("|g00~ IMU Use :(Need Restart) "));
   sendYesNo(robot->imuUse);
+  serialPort->println(F("|g11~ Compass Use : "));
+  sendYesNo(robot->CompassUse);
   serialPort->println(F("|g01~Gyro Yaw/Compass Yaw"));
   serialPort->print(robot->imu.ypr.yaw / PI * 180);
   serialPort->print(F(" / "));
@@ -820,11 +822,12 @@ void RemoteControl::sendImuMenu(boolean update) {
   sendSlider("g06", F("Calibration Max Duration in Sec"), robot->maxDurationDmpAutocalib, "Sec", 1, 100, 10);
   sendSlider("g07", F("Delay between 2 Calib in Sec"), robot->delayBetweenTwoDmpAutocalib, "Sec", 1, 600, 60);
   sendSlider("g08", F("Drift Maxi in Deg Per Second "), robot->maxDriftPerSecond, "Deg", 0.01, 0.3, 0);
-  sendSlider("g10", F("Speed to find ComYaw % of motorSpeedMaxRpm "), robot->compassRollSpeedCoeff, "Deg", 1, 80, 30);
   serialPort->print(F("|g18~Accel Gyro Initial Calibration more than 30sec duration"));
-  serialPort->print(F("|g19~Compass calibration click to start and again to stop"));
-  //bber18
-  serialPort->print(F("|g20~Delete Compass calibration"));
+  sendSlider("g10", F("RollSpeed to find Yaw % of motorSpeedMaxRpm "), robot->compassRollSpeedCoeff, "Deg", 1, 80, 30);
+  if (robot->CompassUse){ 
+    serialPort->print(F("|g19~Compass calibration click to start and again to stop"));
+    serialPort->print(F("|g20~Delete Compass calibration"));
+  }
   serialPort->println("}");
 }
 
@@ -833,6 +836,7 @@ void RemoteControl::processImuMenu(String pfodCmd) {
     robot->nextTimeImuLoop = millis() + 120000; //don't read the Imu immediatly need time to save the setting and reset
     robot->imuUse = !robot->imuUse;
   }
+  else if (pfodCmd == "g11" ) robot->CompassUse = !robot->CompassUse;
   else if (pfodCmd == "g04" ) robot->stopMotorDuringCalib = !robot->stopMotorDuringCalib;
   else if (pfodCmd.startsWith("g05")) processPIDSlider(pfodCmd, "g05", robot->imuDirPID, 0.1, 20);
   else if (pfodCmd.startsWith("g06")) processSlider(pfodCmd, robot->maxDurationDmpAutocalib, 1);

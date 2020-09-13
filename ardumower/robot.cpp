@@ -420,7 +420,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, odometryTicksPerCm);
   eereadwrite(readflag, addr, odometryWheelBaseCm);
   eereadwrite(readflag, addr, autoResetActive);
-  eereadwrite(readflag, addr, CompassUse);     
+  eereadwrite(readflag, addr, CompassUse);
   eereadwrite(readflag, addr, twoWayOdometrySensorUse);   // char YES NO adress free for something else
   eereadwrite(readflag, addr, buttonUse);
   eereadwrite(readflag, addr, userSwitch1);
@@ -800,7 +800,7 @@ void Robot::printSettingSerial() {
   Console.println( odometryTicksPerCm);
   Console.print  (F("odometryWheelBaseCm                        : "));
   Console.println( odometryWheelBaseCm);
- 
+
 
 
   watchdogReset();
@@ -2344,7 +2344,7 @@ void Robot::readSerial() {
       case '1':
         // press '1' for Automode
         //motorMowEnable = true;
-        
+
         setNextState(STATE_ACCEL_FRWRD, 0);
         break;
       case 'd':
@@ -3220,7 +3220,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_ROTATE_RIGHT_360:
       spiraleNbTurn = 0;
       halfLaneNb = 0;
-      highGrassDetect = false; 
+      highGrassDetect = false;
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -5256,11 +5256,23 @@ void Robot::loop()  {
       motorControlOdo();
       imu.run();
       //it's ok
-      if ((yawToFind - 2 < (imu.comYaw / PI * 180)) && (yawToFind + 2 > (imu.comYaw / PI * 180)))  { //at +-2 degres
-        findedYaw = (imu.comYaw / PI * 180);
-        setNextState(STATE_STOP_CALIBRATE, rollDir);
-        return;
+      if (CompassUse) {
+        if ((yawToFind - 2 < (imu.comYaw / PI * 180)) && (yawToFind + 2 > (imu.comYaw / PI * 180)))  { //at +-2 degres
+          findedYaw = (imu.comYaw / PI * 180);
+          setNextState(STATE_STOP_CALIBRATE, rollDir);
+          return;
+        }
       }
+      else //without compass
+      {
+        if ((yawToFind - 2 < (imu.ypr.yaw / PI * 180)) && (yawToFind + 2 > (imu.ypr.yaw / PI * 180)))  { //at +-2 degres
+          findedYaw = (imu.ypr.yaw / PI * 180);
+          setNextState(STATE_STOP_CALIBRATE, rollDir);
+          return;
+        }
+      }
+
+
       //it's not ok
       if ((actualRollDirToCalibrate == RIGHT) && ((odometryRight <= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft))) finish_4rev = true;
       if ((actualRollDirToCalibrate == LEFT) && ((odometryRight >= stateEndOdometryRight) || (odometryLeft <= stateEndOdometryLeft))) finish_4rev = true;
@@ -5277,7 +5289,7 @@ void Robot::loop()  {
         accelGyroYawMedian.clear();
         mowPatternCurr = MOW_RANDOM;
         findedYaw = yawToFind;
-        nextTimeToDmpAutoCalibration = millis() + 7200 * 1000; //do not try to calibration for the next 2 hours
+        nextTimeToDmpAutoCalibration = millis() + 21600 * 1000; //do not try to calibration for the next 6 hours
         setBeeper(0, 0, 0, 0, 0);
         if (perimeterInside) setNextState(STATE_ACCEL_FRWRD, rollDir);
         else setNextState(STATE_PERI_OUT_REV, rollDir);
@@ -5583,7 +5595,13 @@ void Robot::loop()  {
       if (accelGyroYawMedian.getCount() > 56) { //we have the value of 4 secondes try to verify if the drift is less than x deg/sec
         Console.println("4 sec of read value, verify if the drift is stop");
         if  (abs(accelGyroYawMedian.getHighest() - accelGyroYawMedian.getLowest()) < 4 * maxDriftPerSecond * PI / 180) { //drift is OK restart mowing
-          imu.CompassGyroOffset = distancePI( scalePI(accelGyroYawMedian.getMedian() -  imu.CompassGyroOffset), compassYawMedian.getMedian()); //change the Gyro offset according to Compass Yaw
+          if (CompassUse) {
+            imu.CompassGyroOffset = distancePI( scalePI(accelGyroYawMedian.getMedian() -  imu.CompassGyroOffset), compassYawMedian.getMedian()); //change the Gyro offset according to Compass Yaw
+          }
+          else
+          {
+            imu.CompassGyroOffset = 0;
+          }
           Console.println("Drift is OK");
           setBeeper(0, 0, 0, 0, 0); //stop sound immediatly
           //bber60
@@ -5936,7 +5954,7 @@ void Robot::loop()  {
       motorControlOdo();
       checkCurrent();
       checkBumpers();
-      
+
       if (rollDir == RIGHT) {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
         {
