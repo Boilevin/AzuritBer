@@ -104,6 +104,7 @@ class robot:
         self.imuDirPID_Kd=0
         self.delayBetweenTwoDmpAutocalib=0
         self.maxDurationDmpAutocalib=0
+        self.CompassUse=0
         
         #remote
         self.remoteUse=0
@@ -125,7 +126,6 @@ class robot:
         self.odometryTicksPerRevolution=0
         self.odometryTicksPerCm=0
         self.odometryWheelBaseCm=0
-        self.odometryRightSwapDir=0
         self.twoWayOdometrySensorUse=0
         
         #button
