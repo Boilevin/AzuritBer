@@ -1,6 +1,6 @@
 /*      
  *       
- *       ROBOMOW RL1000 VERSION
+ *      ROBOMOW RL1000 VERSION
  *       
  *       
  *      DUE and ODOMETRY MANDATORY VERSION 

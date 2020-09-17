@@ -643,6 +643,7 @@ class Robot
     byte areaToGo;// use to know the area where to start by timer
     //-------- DHT22 Temperature humidity ------------------
     bool DHT22Use;//for the DHT22
+    bool MowerOverHeat;
     unsigned long  nextTimeReadDHT22;
     float humidityDht;
     float temperatureDht;
