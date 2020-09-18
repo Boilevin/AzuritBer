@@ -91,7 +91,7 @@ void IMUClass::begin() {
   Console.print(imu.pitch*180/PI) ;
   Console.print(" Roll : ");
   Console.println(imu.roll*180/PI);
-  Console.println("The 3 values Need to be near 0 if calibration is OK :");
+  Console.println("Yaw Pitch and Roll need to be near 0.00 if calibration is OK :");
   
 
   
