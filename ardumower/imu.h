@@ -53,7 +53,6 @@ typedef struct ypr_t ypr_t;
 
 class IMUClass {
   public:
-  float fusionPI(float w, float a, float b);
   float distance180(float x, float w);
   float rotate360(float x);
   float scale180(float v);
@@ -109,6 +108,7 @@ float nextTimeAdjustYaw;
   void calibComUpdate();    
   bool newMinMaxFound();
   void calibGyro();
+ 
   // ---------------------- 
  
 

@@ -4431,7 +4431,7 @@ void Robot::checkSonar() {
 void Robot::checkTilt() {
   if (!imuUse) return;
   if (millis() < nextTimeCheckTilt) return;
-  nextTimeCheckTilt = millis() + 50; // 5Hz same as nextTimeImu
+  nextTimeCheckTilt = millis() + 50; 
   int pitchAngle = (imu.ypr.pitch / PI * 180.0);
   int rollAngle  = (imu.ypr.roll / PI * 180.0);
   //bber4
