@@ -51,7 +51,6 @@
 MPU9250_DMP imu;
 
 
-
 #define ADDR 600
 #define MAGIC 6
 //#define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
@@ -82,12 +81,22 @@ void IMUClass::begin() {
   // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
 
   nextTimeAdjustYaw = millis();
-  Console.println(F("Wait 10 secondes for GYRO calibration"));
+  Console.println("Wait 10 secondes for GYRO calibration");
   delay(10000); 
   // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
+  run();
+  Console.print("Initial GYRO/ACCELL Yaw :");
+  Console.print(imu.yaw*180/PI) ;
+  Console.print(" Pitch : ");
+  Console.print(imu.pitch*180/PI) ;
+  Console.print(" Roll : ");
+  Console.println(imu.roll*180/PI);
+  Console.println("The 3 values Need to be near 0 if calibration is OK :");
+  
 
-
-
+  
+  
+  
   if (robot.CompassUse) {
     Console.print(F("  Compass Yaw: "));
     Console.print(comYaw);
@@ -164,40 +173,37 @@ void IMUClass::run() {
   //bber4
   //filter to avoid bad reading
   /*
-    if ((abs(imu.pitch* PI/180;) - abs(ypr.pitch)) > 0.3490)
+    if ((abs(imu.pitch) - abs(ypr.pitch)) > 0.3490)
     {
       Console.print("Last pitch : ");
-      Console.print(ypr.pitch / PI * 180);
+      Console.print(ypr.pitch);
       Console.print(" Actual pitch : ");
       Console.println(imu.pitch);
       Console.println("pitch change 20 deg in less than 50 ms ????????? value is skip");
     }
     else
     {
-      ypr.pitch = imu.pitch* PI/180;;
+      ypr.pitch = imu.pitch ;
     }
 
-    if ((abs(imu.roll* PI/180;) - abs(ypr.roll)) > 0.3490)
+    if ((abs(imu.roll) - abs(ypr.roll)) > 0.3490)
     {
       Console.print("Last roll : ");
-      Console.print(ypr.roll / PI * 180);
+      Console.print(ypr.roll);
       Console.print(" Actual roll : ");
       Console.println(imu.roll);
       Console.println("roll change 20 deg in less than 50 ms ????????? value is skip");
     }
     else
     {
-      ypr.roll = imu.roll* PI/180;;
+      ypr.roll = imu.roll;
     }
   */
   ypr.pitch = imu.pitch ;
-  ypr.roll = imu.roll;
+  ypr.roll = imu.roll ;
   gyroAccYaw = imu.yaw;  // the Gyro Yaw very accurate but drift
   
-  //ypr.pitch = imu.pitch * PI/180;
-  //ypr.roll = imu.roll* PI/180;
-  //gyroAccYaw = imu.yaw* PI/180;  // the Gyro Yaw very accurate but drift
-
+  
   if (robot.CompassUse) {
     // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
     //readHMC5883L();
