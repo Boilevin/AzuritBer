@@ -75,28 +75,35 @@ void IMUClass::begin() {
 
   imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
                DMP_FEATURE_GYRO_CAL, // Use gyro calibration
-               10); // Set DMP FIFO rate to 10 Hz
-  // DMP_FEATURE_LP_QUAT can also be used. It uses the
-  // accelerometer in low-power mode to estimate quat's.
-  // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
+               20);
+  // Set DMP FIFO rate to 20 Hz because imu is read each 50 ms
+  // DMP_FEATURE_6X_LP_QUAT is used to not read the compass
+  // DMP_FEATURE_GYRO_CAL is used to automaticly calibrate the gyro when no move for 8 secondes
 
   nextTimeAdjustYaw = millis();
-  Console.println("Wait 10 secondes for GYRO calibration");
-  delay(10000); 
+  Console.println("Wait 9 secondes for GYRO calibration");
+  delay(9000);
   // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
-  run();
-  Console.print("Initial GYRO/ACCELL Yaw :");
-  Console.print(imu.yaw*180/PI) ;
-  Console.print(" Pitch : ");
-  Console.print(imu.pitch*180/PI) ;
-  Console.print(" Roll : ");
-  Console.println(imu.roll*180/PI);
-  Console.println("Yaw Pitch and Roll need to be near 0.00 if calibration is OK :");
-  
+  int uu=0;
+  for (uu = 0; uu < 11; uu++) {
+    run();
+    Console.print("Initial GYRO/ACCELL Yaw :");
+    Console.print(imu.yaw * 180 / PI) ;
+    Console.print(" Pitch : ");
+    Console.print(imu.pitch * 180 / PI) ;
+    Console.print(" Roll : ");
+    Console.println(imu.roll * 180 / PI);
+    delay(100);
+  }
 
-  
-  
-  
+
+
+  Console.println("Yaw Pitch and Roll need to be near 0.00 if calibration is OK :");
+
+
+
+
+
   if (robot.CompassUse) {
     Console.print(F("  Compass Yaw: "));
     Console.print(comYaw);
@@ -202,12 +209,12 @@ void IMUClass::run() {
   ypr.pitch = imu.pitch ;
   ypr.roll = imu.roll ;
   gyroAccYaw = imu.yaw;  // the Gyro Yaw very accurate but drift
-  
-  
+
+
   if (robot.CompassUse) {
     // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
     //readHMC5883L();
-    
+
     comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
     comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
     comTilt.z = -com.x  * cos(ypr.roll)         * sin(ypr.pitch) + com.y * sin(ypr.roll) + com.z * cos(ypr.roll) * cos(ypr.pitch);
