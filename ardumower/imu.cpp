@@ -73,10 +73,11 @@ void IMUClass::begin() {
     Console.println("Connected with MPU-9250");
   }
 
-  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
-               DMP_FEATURE_GYRO_CAL, // Use gyro calibration
-               20);
-  // Set DMP FIFO rate to 20 Hz because imu is read each 50 ms
+  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10);
+ // imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT , 10);
+  
+  // fail at 20 Hz very low response , Ok at 10Hz but can read only each 100ms to avoid duplicate value ??????????????????
+  // Set DMP FIFO rate to 10 Hz 
   // DMP_FEATURE_6X_LP_QUAT is used to not read the compass
   // DMP_FEATURE_GYRO_CAL is used to automaticly calibrate the gyro when no move for 8 secondes
 
@@ -158,10 +159,6 @@ float IMUClass::rotate360(float x)
 void IMUClass::run() {
   if (!robot.imuUse)  return;
 
-  if (state == IMU_CAL_COM) { //don't read the MPU9250 if compass calibration
-    calibComUpdate();
-    return;
-  }
   //-------------------read the mpu9250 DMP  --------------------------------
   // Check for new data in the FIFO
   if ( imu.fifoAvailable() )
@@ -227,7 +224,7 @@ void IMUClass::run() {
 
   // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
   ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
-
+Console.println(ypr.yaw * 180 / PI);
 }
 
 
