@@ -48,6 +48,12 @@
 //#include "flashmem.h"
 
 
+float pitchOffset = 0;
+float rollOffset = 0;
+float yawOffset = 0;
+
+
+
 MPU9250_DMP imu;
 
 
@@ -73,33 +79,45 @@ void IMUClass::begin() {
     Console.println("Connected with MPU-9250");
   }
 
-  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10);
- // imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT , 10);
-  
-  // fail at 20 Hz very low response , Ok at 10Hz but can read only each 100ms to avoid duplicate value ??????????????????
-  // Set DMP FIFO rate to 10 Hz 
+  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 25);
+
+  // if the IMU not move for small duration it reduce the refresh rate  ?????????????????????????
+  // Ok at 25Hz to be sure the fifo is update each 50 ms and avoid duplicate value not perfect for pid motor management 
   // DMP_FEATURE_6X_LP_QUAT is used to not read the compass
-  // DMP_FEATURE_GYRO_CAL is used to automaticly calibrate the gyro when no move for 8 secondes
+  // DMP_FEATURE_GYRO_CAL is used to automaticly calibrate the gyro when no move for 8 secondes but certainly not perfect for me
 
   nextTimeAdjustYaw = millis();
-  Console.println("Wait 9 secondes for GYRO calibration");
-  delay(9000);
+  Console.println("Wait for GYRO calibration maxi 30 secondes");
+  watchdogReset();
+  delay(15000);
+  watchdogReset();
   // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
-  int uu=0;
+  int uu = 0;
+  //read again 20 values to wait stabilize the drift
   for (uu = 0; uu < 11; uu++) {
     run();
-    Console.print("Initial GYRO/ACCELL Yaw :");
-    Console.print(imu.yaw * 180 / PI) ;
-    Console.print(" Pitch : ");
-    Console.print(imu.pitch * 180 / PI) ;
-    Console.print(" Roll : ");
-    Console.println(imu.roll * 180 / PI);
+    Console.print(".");
     delay(100);
   }
+  Console.println("");
+  Console.print("Initial GYRO/ACCELL Yaw :");
+  Console.print(imu.yaw * 180 / PI) ;
+  Console.print(" Pitch : ");
+  Console.print(imu.pitch * 180 / PI) ;
+  Console.print(" Roll : ");
+  Console.println(imu.roll * 180 / PI);
+  //and use last reading to compute offset
+  pitchOffset = 0 - imu.pitch ;
+  rollOffset = 0 - imu.roll ;
+  yawOffset = 0 - imu.yaw ;
 
-
-
-  Console.println("Yaw Pitch and Roll need to be near 0.00 if calibration is OK :");
+  Console.print("With Offset GYRO/ACCELL Yaw :");
+  Console.print((imu.yaw + yawOffset) * 180 / PI) ;
+  Console.print(" Pitch : ");
+  Console.print((imu.pitch + pitchOffset) * 180 / PI) ;
+  Console.print(" Roll : ");
+  Console.println((imu.roll + rollOffset) * 180 / PI);
+  Console.println("All values need to be near 0.00 if calibration is OK :");
 
 
 
@@ -161,6 +179,7 @@ void IMUClass::run() {
 
   //-------------------read the mpu9250 DMP  --------------------------------
   // Check for new data in the FIFO
+ 
   if ( imu.fifoAvailable() )
   {
 
@@ -170,8 +189,18 @@ void IMUClass::run() {
       // computeEulerAngles can be used -- after updating the
       // quaternion values -- to estimate roll, pitch, and yaw
       imu.computeEulerAngles();
-
+      /*
+      imu.computeCompassHeading();
+      Console.print("Compass : ");
+      Console.println(imu.heading);
+*/
     }
+    else{
+      Console.println("IMU FIFO not update in time ???????????");
+    }
+  }
+  else{
+    Console.println("IMU FIFO not available ???????????");
   }
 
   //bber4
@@ -203,10 +232,11 @@ void IMUClass::run() {
       ypr.roll = imu.roll;
     }
   */
-  ypr.pitch = imu.pitch ;
-  ypr.roll = imu.roll ;
-  gyroAccYaw = imu.yaw;  // the Gyro Yaw very accurate but drift
+  ypr.pitch = imu.pitch + pitchOffset ;
+  ypr.roll = imu.roll + rollOffset;
+  gyroAccYaw = scalePI(imu.yaw + yawOffset);  // the Gyro Yaw very accurate but drift
 
+  
 
   if (robot.CompassUse) {
     // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
@@ -224,7 +254,7 @@ void IMUClass::run() {
 
   // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
   ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
-Console.println(ypr.yaw * 180 / PI);
+  Console.println(ypr.yaw * 180 / PI);
 }
 
 
