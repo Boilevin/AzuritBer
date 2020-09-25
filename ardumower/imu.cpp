@@ -82,7 +82,6 @@ void IMUClass::begin() {
     Console.println("Connected with MPU-9250");
   }
 
-<<<<<<< HEAD
   imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 25);
 
   // if the IMU not move for small duration it reduce the refresh rate  ?????????????????????????
@@ -122,32 +121,11 @@ void IMUClass::begin() {
   Console.print(" Roll : ");
   Console.println((imu.roll + rollOffset) * 180 / PI);
   Console.println("All values need to be near 0.00 if calibration is OK :");
-=======
-  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
-               DMP_FEATURE_GYRO_CAL, // Use gyro calibration
-               10); // Set DMP FIFO rate to 10 Hz
-  // DMP_FEATURE_LP_QUAT can also be used. It uses the
-  // accelerometer in low-power mode to estimate quat's.
-  // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
 
-  nextTimeAdjustYaw = millis();
-  Console.println("Wait 10 secondes for GYRO calibration");
-  delay(10000); 
-  // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
-  run();
-  Console.print("Initial GYRO/ACCELL Yaw :");
-  Console.print(imu.yaw*180/PI) ;
-  Console.print(" Pitch : ");
-  Console.print(imu.pitch*180/PI) ;
-  Console.print(" Roll : ");
-  Console.println(imu.roll*180/PI);
-  Console.println("Yaw Pitch and Roll need to be near 0.00 if calibration is OK :");
-  
->>>>>>> parent of 7122ba7... Update imu.cpp
 
-  
-  
-  
+
+
+
   if (robot.CompassUse) {
     Console.print(F("  Compass Yaw: "));
     Console.print(comYaw);
@@ -257,7 +235,6 @@ void IMUClass::run() {
       ypr.roll = imu.roll;
     }
   */
-<<<<<<< HEAD
   ypr.pitch = imu.pitch + pitchOffset ;
   ypr.roll = imu.roll + rollOffset;
   gyroAccYaw = scalePI(imu.yaw + yawOffset);  // the Gyro Yaw very accurate but drift
@@ -305,17 +282,10 @@ Console.println(z);
 
   
 
-=======
-  ypr.pitch = imu.pitch ;
-  ypr.roll = imu.roll ;
-  gyroAccYaw = imu.yaw;  // the Gyro Yaw very accurate but drift
-  
-  
->>>>>>> parent of 7122ba7... Update imu.cpp
   if (robot.CompassUse) {
     // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
     //readHMC5883L();
-    
+
     comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
     comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
     comTilt.z = -com.x  * cos(ypr.roll)         * sin(ypr.pitch) + com.y * sin(ypr.roll) + com.z * cos(ypr.roll) * cos(ypr.pitch);
