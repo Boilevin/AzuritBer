@@ -2989,7 +2989,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_PERI_STOP_TOROLL:
-      //imu.run(); //31/08/19 In peritrack the imu is stop so try to add this to start it now and avoid imu tilt error (occur once per week or less) ??????
+      imu.run(); //31/08/19 In peritrack the imu is stop so try to add this to start it now and avoid imu tilt error (occur once per week or less) ??????
       if (statusCurr == TRACK_TO_START) {
         startByTimer = false; // cancel because we have reach the start point and avoid repeat search entry
         justChangeLaneDir = false; //the first lane need to be distance control
@@ -4674,7 +4674,7 @@ void Robot::loop()  {
   if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
     if ((imuUse) && (millis() >= nextTimeImuLoop)) {
       imu.run();
-      nextTimeImuLoop = millis() + 50; //with mpu-9250 the fifo fail at 20Hz but Ok at 10Hz
+      nextTimeImuLoop = millis() + 50;
       /* Console.print(" Yaw ");
         Console.print(imu.ypr.yaw);
         Console.print(" Pitch ");
