@@ -42,7 +42,7 @@
 #include "imu.h"
 #include "SparkFunMPU9250-DMP.h"
 #include "mower.h"
-#include "i2c.h"
+//#include "i2c.h"
 #include "robot.h"
 
 //#include "flashmem.h"
@@ -60,9 +60,6 @@ MPU9250_DMP imu;
 #define ADDR 600
 #define MAGIC 6
 //#define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
-#define AK8963_ADDRESS (0x0C)
-#define AK8963_RA_HXL (0x03)
- 
 
 void IMUClass::begin() {
   if (!robot.imuUse) return;
@@ -239,47 +236,6 @@ void IMUClass::run() {
   ypr.roll = imu.roll + rollOffset;
   gyroAccYaw = scalePI(imu.yaw + yawOffset);  // the Gyro Yaw very accurate but drift
 
-
-
-
-
-
-
-
-
-
-
- uint8_t buf[6];
- I2CreadFrom(AK8963_ADDRESS, 0x03, 7, (uint8_t*)buf); 
-
-
- 
-  float x = (int16_t) (((uint16_t)buf[0]) << 8 | buf[1]);
-  float y = (int16_t) (((uint16_t)buf[4]) << 8 | buf[5]);
-  float z = (int16_t) (((uint16_t)buf[2]) << 8 | buf[3]);
-  
-    com.x = x;
-    com.y = y;
-    com.z = z;
-
-Console.print(x);
-Console.print(" / ");
-Console.print(y);
-Console.print(" / ");
-Console.println(z);
-
-
-
-
-
-
-
-
-
-
-
-
-
   
 
   if (robot.CompassUse) {
@@ -298,7 +254,7 @@ Console.println(z);
 
   // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
   ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
-  //Console.println(ypr.yaw * 180 / PI);
+  Console.println(ypr.yaw * 180 / PI);
 }
 
 
