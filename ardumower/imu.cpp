@@ -42,9 +42,6 @@
 #include "imu.h"
 #include "SparkFunMPU9250-DMP.h"
 #include "mower.h"
-//#include "i2c.h"
-#include "robot.h"
-
 #include "flashmem.h"
 
 
@@ -59,10 +56,6 @@ MPU9250_DMP imu;
 
 #define ADDR 600
 #define MAGIC 6
-
-
-//#define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
-
 
 
 void IMUClass::begin() {
@@ -148,7 +141,7 @@ void IMUClass::begin() {
 
 
   if (robot.CompassUse) {
-    //imu.compassBegin();
+    run();
     Console.print(F("  Compass Yaw: "));
     Console.print(comYaw);
     CompassGyroOffset = distancePI(ypr.yaw, comYaw);
@@ -162,10 +155,6 @@ void IMUClass::begin() {
     Console.println("Compass is not used");
     CompassGyroOffset = 0;
   }
-
-
-
-
   Console.println(F("--------------------------------- IMU READY ------------------------------"));
 }
 
@@ -201,7 +190,7 @@ float IMUClass::rotate360(float x)
 
 void IMUClass::run() {
   if (!robot.imuUse)  return;
-  if (state == IMU_CAL_COM) { //don't read the MPU6050 if compass calibration
+  if (state == IMU_CAL_COM) { // compass calibration
     calibComUpdate();
     return;
   }

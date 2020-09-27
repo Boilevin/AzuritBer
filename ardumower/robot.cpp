@@ -956,6 +956,7 @@ void Robot::autoReboot() {
   if (RaspberryPIUse) {
     Console.println(F("Due reset after 1 secondes, send a command to Pi for restart also"));
     MyRpi.sendCommandToPi("RestartPi");
+    Console.end();
   }
   else
   {
