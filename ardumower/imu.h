@@ -149,13 +149,16 @@ float nextTimeAdjustYaw;
    void printPt(point_float_t p);
    void loadSaveCalib(bool readflag);   
    void initSensors();
-  
-   void readCompass();
- 
+   //void readCompassMPU9150();   
+   void readCompassHMC5883();
+  // void readAccelerationADXL345B();
+   //void readCompassBNO055();
+   //void readCompassCMPS11();
    
    void printCalib();
-   
-   
+   //void initAccelerationADXL345B();
+   void initCompassHMC5833L();
+   void readHMC5883L();   
 };
 
 

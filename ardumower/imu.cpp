@@ -42,13 +42,15 @@
 #include "imu.h"
 #include "SparkFunMPU9250-DMP.h"
 #include "mower.h"
+//#include "i2c.h"
+#include "robot.h"
+<<<<<<< HEAD
+=======
+
 #include "flashmem.h"
+>>>>>>> parent of 188c02e... compass calib
 
-
-float pitchOffset = 0;
-float rollOffset = 0;
-float yawOffset = 0;
-int ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
+//#include "flashmem.h"
 
 
 MPU9250_DMP imu;
@@ -56,6 +58,10 @@ MPU9250_DMP imu;
 
 #define ADDR 600
 #define MAGIC 6
+//#define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
+
+//#define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
+
 
 
 void IMUClass::begin() {
@@ -73,75 +79,38 @@ void IMUClass::begin() {
     }
   }
   else {
-    Console.println("Connected with MPU-9250/MPU-9255");
+    Console.println("Connected with MPU-9250");
   }
 
-  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10); //15 is ok ??
-  // imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT , 10);
-
-  // if the IMU not move for small duration it reduce the refresh rate  ?????????????????????????
-  // Not Ok at more than 15 Hz ?????? very low response
-  // DMP_FEATURE_6X_LP_QUAT is used to not read the compass
-  // DMP_FEATURE_GYRO_CAL is used to automaticly calibrate the gyro when no move for 8 secondes but certainly not perfect for me
+  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
+               DMP_FEATURE_GYRO_CAL, // Use gyro calibration
+               10); // Set DMP FIFO rate to 10 Hz
+  // DMP_FEATURE_LP_QUAT can also be used. It uses the
+  // accelerometer in low-power mode to estimate quat's.
+  // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
 
   nextTimeAdjustYaw = millis();
-  Console.println("Wait for GYRO calibration maxi 30 secondes");
-  watchdogReset();
-  delay(10000);
-  watchdogReset();
+  Console.println("Wait 10 secondes for GYRO calibration");
+  delay(10000); 
   // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
-  int uu = 0;
-  //read again 20 values to wait stabilize the drift
-  for (uu = 0; uu < 11; uu++) {
-    run();
-    Console.print(uu);
-    Console.print(" GYRO/ACCELL Yaw :");
-    Console.print(imu.yaw * 180 / PI) ;
-    Console.print(" Pitch : ");
-    Console.print(imu.pitch * 180 / PI) ;
-    Console.print(" Roll : ");
-    Console.println(imu.roll * 180 / PI);
-    delay(200);
-  }
-  Console.println("");
+  run();
   Console.print("Initial GYRO/ACCELL Yaw :");
-  Console.print(imu.yaw * 180 / PI) ;
+  Console.print(imu.yaw*180/PI) ;
   Console.print(" Pitch : ");
-  Console.print(imu.pitch * 180 / PI) ;
+  Console.print(imu.pitch*180/PI) ;
   Console.print(" Roll : ");
-  Console.println(imu.roll * 180 / PI);
-  //and use last reading to compute offset
-  pitchOffset = 0 - imu.pitch ;
-  rollOffset = 0 - imu.roll ;
-  yawOffset = 0 - imu.yaw ;
-  if (pitchOffset > 20) {
-    Console.println("Please start on flat location or check the IMU PCB orientation");
-    Console.print("Ptich Offset is too high : ");
-    Console.println(pitchOffset);
-  }
-  if (rollOffset > 20) {
-    Console.println("Please start on flat location or check the IMU PCB orientation");
-    Console.print("Roll Offset is too high : ");
-    Console.println(rollOffset);
-  }
-  Console.print("With Offset GYRO/ACCELL Yaw :");
-  Console.print((imu.yaw + yawOffset) * 180 / PI) ;
-  Console.print(" Pitch : ");
-  Console.print((imu.pitch + pitchOffset) * 180 / PI) ;
-  Console.print(" Roll : ");
-  Console.println((imu.roll + rollOffset) * 180 / PI);
-  Console.println("All values need to be 0.00 if calibration is OK :");
+  Console.println(imu.roll*180/PI);
+  Console.println("Yaw Pitch and Roll need to be near 0.00 if calibration is OK :");
+  
 
-
-  comOfs.x = comOfs.y = comOfs.z = 0;
-  comScale.x = comScale.y = comScale.z = 2;
-  loadCalib();
-  printCalib();
-  useComCalibration = true;
-
-
+  
+  
+  
   if (robot.CompassUse) {
-    run();
+<<<<<<< HEAD
+=======
+    //imu.compassBegin();
+>>>>>>> parent of 188c02e... compass calib
     Console.print(F("  Compass Yaw: "));
     Console.print(comYaw);
     CompassGyroOffset = distancePI(ypr.yaw, comYaw);
@@ -155,6 +124,10 @@ void IMUClass::begin() {
     Console.println("Compass is not used");
     CompassGyroOffset = 0;
   }
+
+
+
+
   Console.println(F("--------------------------------- IMU READY ------------------------------"));
 }
 
@@ -190,39 +163,32 @@ float IMUClass::rotate360(float x)
 
 void IMUClass::run() {
   if (!robot.imuUse)  return;
-  if (state == IMU_CAL_COM) { // compass calibration
+<<<<<<< HEAD
+
+  if (state == IMU_CAL_COM) { //don't read the MPU9250 if compass calibration
+=======
+  if (state == IMU_CAL_COM) { //don't read the MPU6050 if compass calibration
+>>>>>>> parent of 188c02e... compass calib
     calibComUpdate();
     return;
   }
-
   //-------------------read the mpu9250 DMP  --------------------------------
   // Check for new data in the FIFO
-
-  if (imu.fifoAvailable() )
+  if ( imu.fifoAvailable() )
   {
+
     // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
     if (imu.dmpUpdateFifo() == INV_SUCCESS)
     {
       // computeEulerAngles can be used -- after updating the
       // quaternion values -- to estimate roll, pitch, and yaw
-      imu.computeEulerAngles(false);//false is use to use radian
+      imu.computeEulerAngles();
 
     }
-    else
-    {
-      //fail ??????????????????????
-      //Console.println("IMU FIFO not update in time ???????????");
-    }
-  }
-  else
-  {
-    //fail ???????????????
-    //Console.println("IMU FIFO not available ???????????");
   }
 
   //bber4
   //filter to avoid bad reading
-  //see this issue with GY87 GY88 and MPU9250 sometime the DMP return only one bad value so i don't use a low filter
   /*
     if ((abs(imu.pitch) - abs(ypr.pitch)) > 0.3490)
     {
@@ -230,7 +196,7 @@ void IMUClass::run() {
       Console.print(ypr.pitch);
       Console.print(" Actual pitch : ");
       Console.println(imu.pitch);
-      Console.println("pitch change more than 20 degres in less than 50 ms ????????? value is skip");
+      Console.println("pitch change 20 deg in less than 50 ms ????????? value is skip");
     }
     else
     {
@@ -243,24 +209,22 @@ void IMUClass::run() {
       Console.print(ypr.roll);
       Console.print(" Actual roll : ");
       Console.println(imu.roll);
-      Console.println("roll change more than 20 degres in less than 50 ms ????????? value is skip");
+      Console.println("roll change 20 deg in less than 50 ms ????????? value is skip");
     }
     else
     {
       ypr.roll = imu.roll;
     }
   */
-  ypr.pitch = imu.pitch + pitchOffset ;
-  ypr.roll = imu.roll + rollOffset;
-  gyroAccYaw = scalePI(imu.yaw + yawOffset);  // the Gyro Yaw very accurate but drift
-
-
-
-
-
+  ypr.pitch = imu.pitch ;
+  ypr.roll = imu.roll ;
+  gyroAccYaw = imu.yaw;  // the Gyro Yaw very accurate but drift
+  
+  
   if (robot.CompassUse) {
-    // ------------------put the Compass value into comYaw-------------------------------------
-    readCompass();
+    // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
+    //readHMC5883L();
+    
     comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
     comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
     comTilt.z = -com.x  * cos(ypr.roll)         * sin(ypr.pitch) + com.y * sin(ypr.roll) + com.z * cos(ypr.roll) * cos(ypr.pitch);
@@ -271,57 +235,35 @@ void IMUClass::run() {
     CompassGyroOffset = 0;
   }
 
-  //CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
+  // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
   ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
 
 }
 
-void IMUClass::readCompass() {
 
-  imu.updateCompass();
-  float x = imu.mx;
-  float y = imu.my;
-  float z = imu.mz;
-  if (useComCalibration) {
-    x -= comOfs.x;
-    y -= comOfs.y;
-    z -= comOfs.z;
-    x /= comScale.x * 0.5;
-    y /= comScale.y * 0.5;
-    z /= comScale.z * 0.5;
-    com.x = x;
-    com.y = y;
-    com.z = z;
-  } else {
-    com.x = x;
-    com.y = y;
-    com.z = z;
-  }
- 
-}
 
 void IMUClass::loadSaveCalib(boolean readflag) {
-
-  int addr = ADDR;
-  short magic = MAGIC;
-  if (readflag) Console.println(F("Load Calibration"));
-  else Console.println(F("Save Calibration"));
-  eereadwrite(readflag, addr, magic); // magic
-  //accelgyro offset
-  eereadwrite(readflag, addr, ax_offset);
-  eereadwrite(readflag, addr, ay_offset);
-  eereadwrite(readflag, addr, az_offset);
-  eereadwrite(readflag, addr, gx_offset);
-  eereadwrite(readflag, addr, gy_offset);
-  eereadwrite(readflag, addr, gz_offset);
-  //compass offset
-  eereadwrite(readflag, addr, comOfs);
-  eereadwrite(readflag, addr, comScale);
-  Console.print(F("Calibration address Start = "));
-  Console.println(ADDR);
-  Console.print(F("Calibration address Stop = "));
-  Console.println(addr);
-
+  /*
+    int addr = ADDR;
+    short magic = MAGIC;
+    if (readflag) Console.println(F("Load Calibration"));
+    else Console.println(F("Save Calibration"));
+    eereadwrite(readflag, addr, magic); // magic
+    //accelgyro offset
+    eereadwrite(readflag, addr, ax_offset);
+    eereadwrite(readflag, addr, ay_offset);
+    eereadwrite(readflag, addr, az_offset);
+    eereadwrite(readflag, addr, gx_offset);
+    eereadwrite(readflag, addr, gy_offset);
+    eereadwrite(readflag, addr, gz_offset);
+    //compass offset
+    eereadwrite(readflag, addr, comOfs);
+    eereadwrite(readflag, addr, comScale);
+    Console.print(F("Calibration address Start = "));
+    Console.println(ADDR);
+    Console.print(F("Calibration address Stop = "));
+    Console.println(addr);
+  */
 }
 
 
@@ -333,9 +275,8 @@ void IMUClass::printPt(point_float_t p) {
   Console.println(p.z);
 }
 void IMUClass::printCalib() {
-
-  Console.println(F("-------- IMU CALIBRATION  --------"));
   /*
+    Console.println(F("-------- IMU CALIBRATION  --------"));
     Console.print("ACCEL GYRO MPU6050 OFFSET ax: ");
     Console.print(ax_offset);
     Console.print(" ay: ");
@@ -348,41 +289,38 @@ void IMUClass::printCalib() {
     Console.print(gy_offset);
     Console.print(" gz: ");
     Console.println(gz_offset);
+    Console.print("COMPASS OFFSET X.Y.Z AND SCALE X.Y.Z   --> ");
+    Console.print(F("comOfs="));
+    printPt(comOfs);
+    Console.print(F("comScale="));
+    printPt(comScale);
+    Console.println(F("."));
   */
-  Console.print("COMPASS OFFSET X.Y.Z AND SCALE X.Y.Z   --> ");
-  Console.print(F("comOfs="));
-  printPt(comOfs);
-  Console.print(F("comScale="));
-  printPt(comScale);
-  Console.println(F("."));
-
 }
 
 void IMUClass::loadCalib() {
-
-  short magic = 0;
-  int addr = ADDR;
-  eeread(addr, magic);
-  if (magic != MAGIC) {
+  /*
+    short magic = 0;
+    int addr = ADDR;
+    eeread(addr, magic);
+    if (magic != MAGIC) {
     Console.println(F("IMU error: no calib data"));
-    /*
-      ax_offset = 376;
-      ay_offset = -1768;
-      az_offset = 1512;
-      gx_offset = 91;
-      gy_offset = 12;
-      gz_offset = -2;
-    */
+    ax_offset = 376;
+    ay_offset = -1768;
+    az_offset = 1512;
+    gx_offset = 91;
+    gy_offset = 12;
+    gz_offset = -2;
     comOfs.x = comOfs.y = comOfs.z = 0;
     comScale.x = comScale.y = comScale.z = 2;
     useComCalibration = false;
     return;
-  }
-  calibrationAvail = true;
-  useComCalibration = true;
-  Console.println(F("IMU: found calib data"));
-  loadSaveCalib(true);
-
+    }
+    calibrationAvail = true;
+    useComCalibration = true;
+    Console.println(F("IMU: found calib data"));
+    loadSaveCalib(true);
+  */
 }
 
 void IMUClass::saveCalib() {
@@ -391,22 +329,24 @@ void IMUClass::saveCalib() {
 
 
 void IMUClass::deleteCompassCalib() {
-
-  int addr = ADDR;
-  eewrite(addr, (short)0); // magic
-  comOfs.x = comOfs.y = comOfs.z = 0;
-  comScale.x = comScale.y = comScale.z = 2;
-  Console.println("Compass calibration deleted");
-
+  /*
+    int addr = ADDR;
+    eewrite(addr, (short)0); // magic
+    comOfs.x = comOfs.y = comOfs.z = 0;
+    comScale.x = comScale.y = comScale.z = 2;
+    Console.println("Compass calibration deleted");
+  */
 }
 void IMUClass::deleteAccelGyroCalib() {
+  /*
+    int addr = ADDR;
+    eewrite(addr, (short)0); // magic
+    ax_offset = ay_offset = az_offset = 0;
+    gx_offset = gy_offset = gz_offset = 0;
 
-  int addr = ADDR;
-  eewrite(addr, (short)0); // magic
-  ax_offset = ay_offset = az_offset = 0;
-  gx_offset = gy_offset = gz_offset = 0;
-  Console.println("AccelGyro calibration deleted ");
 
+    Console.println("AccelGyro calibration deleted ");
+  */
 }
 
 
@@ -471,9 +411,9 @@ void IMUClass::calibGyro() {
 
 
 void IMUClass::calibComStartStop() {
-
-  while ((!robot.RaspberryPIUse) && (Console.available())) Console.read(); //use to stop the calib
-  if (state == IMU_CAL_COM) {
+  /*
+    while ((!robot.RaspberryPIUse) && (Console.available())) Console.read(); //use to stop the calib
+    if (state == IMU_CAL_COM) {
     // stop
     Console.println(F("com calib completed"));
     calibrationAvail = true;
@@ -498,7 +438,7 @@ void IMUClass::calibComStartStop() {
     state = IMU_RUN;
 
 
-  } else {
+    } else {
     // start
     Console.println(F("com calib..."));
     Console.println(F("rotate sensor 360 degree around all three axis until NO new data are coming"));
@@ -508,17 +448,17 @@ void IMUClass::calibComStartStop() {
     state = IMU_CAL_COM;
     comMin.x = comMin.y = comMin.z = 9999;
     comMax.x = comMax.y = comMax.z = -9999;
-  }
-
+    }
+  */
 }
 void IMUClass::calibComUpdate() {
-
-  comLast = com;
-  delay(20);
-  readCompass();
-  watchdogReset();
-  boolean newfound = false;
-  if ( (abs(com.x - comLast.x) < 10) &&  (abs(com.y - comLast.y) < 10) &&  (abs(com.z - comLast.z) < 10) ) {
+  /*
+    comLast = com;
+    delay(20);
+    readHMC5883L();
+    watchdogReset();
+    boolean newfound = false;
+    if ( (abs(com.x - comLast.x) < 10) &&  (abs(com.y - comLast.y) < 10) &&  (abs(com.z - comLast.z) < 10) ) {
     if (com.x < comMin.x) {
       comMin.x = com.x;
       newfound = true;
@@ -560,6 +500,6 @@ void IMUClass::calibComUpdate() {
       Console.print(comMax.z);
       Console.println("\t");
     }
-  }
-
+    }
+  */
 }

@@ -6,7 +6,7 @@ void Robot::setDefaultTime() {
   datetime.date.dayOfWeek = 0;
   datetime.date.day = 1;
   datetime.date.month = 1;
-  datetime.date.year = 2020;
+  datetime.date.year = 2013;
   timer[0].active = false;
   timer[0].daysOfWeek = B01111110;
   timer[0].startTime.hour = 9;
