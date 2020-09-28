@@ -42,18 +42,16 @@
 #include "imu.h"
 #include "SparkFunMPU9250-DMP.h"
 #include "mower.h"
-//#include "i2c.h"
+#include "i2c.h"
 #include "robot.h"
-<<<<<<< HEAD
-=======
 
-<<<<<<< HEAD
-#include "flashmem.h"
->>>>>>> parent of 188c02e... compass calib
-
-=======
->>>>>>> parent of b9c0f9e... test2
 //#include "flashmem.h"
+
+
+float pitchOffset = 0;
+float rollOffset = 0;
+float yawOffset = 0;
+
 
 
 MPU9250_DMP imu;
@@ -61,7 +59,7 @@ MPU9250_DMP imu;
 
 #define ADDR 600
 #define MAGIC 6
-//#define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
+
 
 //#define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
 
@@ -82,72 +80,65 @@ void IMUClass::begin() {
     }
   }
   else {
-    Console.println("Connected with MPU-9250");
+    Console.println("Connected with MPU-9250/MPU-9255");
   }
 
-<<<<<<< HEAD
-  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
-               DMP_FEATURE_GYRO_CAL, // Use gyro calibration
-               10); // Set DMP FIFO rate to 10 Hz
-  // DMP_FEATURE_LP_QUAT can also be used. It uses the
-  // accelerometer in low-power mode to estimate quat's.
-  // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
+  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10); //15 is ok ??
+  // imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT , 10);
 
-  nextTimeAdjustYaw = millis();
-  Console.println("Wait 10 secondes for GYRO calibration");
-  delay(10000); 
-  // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
-  run();
-  Console.print("Initial GYRO/ACCELL Yaw :");
-  Console.print(imu.yaw*180/PI) ;
-  Console.print(" Pitch : ");
-  Console.print(imu.pitch*180/PI) ;
-  Console.print(" Roll : ");
-  Console.println(imu.roll*180/PI);
-  Console.println("The 3 values Need to be near 0 if calibration is OK :");
-  
-=======
-  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10);
- // imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT , 10);
-  
-  // fail at 20 Hz very low response , Ok at 10Hz but can read only each 100ms to avoid duplicate value ??????????????????
-  // Set DMP FIFO rate to 10 Hz 
+  // if the IMU not move for small duration it reduce the refresh rate  ?????????????????????????
+  // Not Ok at more than 15 Hz ?????? very low response
   // DMP_FEATURE_6X_LP_QUAT is used to not read the compass
-  // DMP_FEATURE_GYRO_CAL is used to automaticly calibrate the gyro when no move for 8 secondes
+  // DMP_FEATURE_GYRO_CAL is used to automaticly calibrate the gyro when no move for 8 secondes but certainly not perfect for me
 
   nextTimeAdjustYaw = millis();
-  Console.println("Wait 9 secondes for GYRO calibration");
-  delay(9000);
+  Console.println("Wait for GYRO calibration maxi 30 secondes");
+  watchdogReset();
+  delay(8000);
+  watchdogReset();
   // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
-  int uu=0;
+  int uu = 0;
+  //read again 20 values to wait stabilize the drift
   for (uu = 0; uu < 11; uu++) {
     run();
-    Console.print("Initial GYRO/ACCELL Yaw :");
-    Console.print(imu.yaw * 180 / PI) ;
-    Console.print(" Pitch : ");
-    Console.print(imu.pitch * 180 / PI) ;
-    Console.print(" Roll : ");
-    Console.println(imu.roll * 180 / PI);
+    Console.print(".");
     delay(100);
   }
+  Console.println("");
+  Console.print("Initial GYRO/ACCELL Yaw :");
+  Console.print(imu.yaw * 180 / PI) ;
+  Console.print(" Pitch : ");
+  Console.print(imu.pitch * 180 / PI) ;
+  Console.print(" Roll : ");
+  Console.println(imu.roll * 180 / PI);
+  //and use last reading to compute offset
+  pitchOffset = 0 - imu.pitch ;
+  rollOffset = 0 - imu.roll ;
+  yawOffset = 0 - imu.yaw ;
+  if (pitchOffset > 20) {
+    Console.println("Please start on flat location or check the IMU PCB orientation");
+    Console.print("Ptich Offset is too high : ");
+    Console.println(pitchOffset);
+  }
+  if (rollOffset > 20) {
+    Console.println("Please start on flat location or check the IMU PCB orientation");
+    Console.print("Roll Offset is too high : ");
+    Console.println(rollOffset);
+  }
+  Console.print("With Offset GYRO/ACCELL Yaw :");
+  Console.print((imu.yaw + yawOffset) * 180 / PI) ;
+  Console.print(" Pitch : ");
+  Console.print((imu.pitch + pitchOffset) * 180 / PI) ;
+  Console.print(" Roll : ");
+  Console.println((imu.roll + rollOffset) * 180 / PI);
+  Console.println("All values need to be 0.00 if calibration is OK :");
 
 
 
-  Console.println("Yaw Pitch and Roll need to be near 0.00 if calibration is OK :");
 
 
-
-
->>>>>>> parent of b9c0f9e... test2
-
-  
-  
-  
   if (robot.CompassUse) {
-<<<<<<< HEAD
-=======
-    //imu.compassBegin();
->>>>>>> parent of 188c02e... compass calib
+
     Console.print(F("  Compass Yaw: "));
     Console.print(comYaw);
     CompassGyroOffset = distancePI(ypr.yaw, comYaw);
@@ -200,32 +191,35 @@ float IMUClass::rotate360(float x)
 
 void IMUClass::run() {
   if (!robot.imuUse)  return;
-<<<<<<< HEAD
 
-  if (state == IMU_CAL_COM) { //don't read the MPU9250 if compass calibration
-=======
-  if (state == IMU_CAL_COM) { //don't read the MPU6050 if compass calibration
->>>>>>> parent of 188c02e... compass calib
-    calibComUpdate();
-    return;
-  }
   //-------------------read the mpu9250 DMP  --------------------------------
   // Check for new data in the FIFO
-  if ( imu.fifoAvailable() )
-  {
 
+  if (imu.fifoAvailable() )
+  {
     // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
     if (imu.dmpUpdateFifo() == INV_SUCCESS)
     {
       // computeEulerAngles can be used -- after updating the
       // quaternion values -- to estimate roll, pitch, and yaw
-      imu.computeEulerAngles();
+      imu.computeEulerAngles(false);//false is use to use radian
 
     }
+    else 
+    {
+       //fail ??????????????????????
+      //Console.println("IMU FIFO not update in time ???????????");
+    }
+  }
+  else
+  {
+    //fail ???????????????
+    //Console.println("IMU FIFO not available ???????????");
   }
 
   //bber4
   //filter to avoid bad reading
+  //see this issue with GY87 GY88 and MPU9250 sometime the DMP return only one bad value so i don't use a low filter
   /*
     if ((abs(imu.pitch) - abs(ypr.pitch)) > 0.3490)
     {
@@ -233,7 +227,7 @@ void IMUClass::run() {
       Console.print(ypr.pitch);
       Console.print(" Actual pitch : ");
       Console.println(imu.pitch);
-      Console.println("pitch change 20 deg in less than 50 ms ????????? value is skip");
+      Console.println("pitch change more than 20 degres in less than 50 ms ????????? value is skip");
     }
     else
     {
@@ -246,27 +240,25 @@ void IMUClass::run() {
       Console.print(ypr.roll);
       Console.print(" Actual roll : ");
       Console.println(imu.roll);
-      Console.println("roll change 20 deg in less than 50 ms ????????? value is skip");
+      Console.println("roll change more than 20 degres in less than 50 ms ????????? value is skip");
     }
     else
     {
       ypr.roll = imu.roll;
     }
   */
-  ypr.pitch = imu.pitch ;
-  ypr.roll = imu.roll ;
-  gyroAccYaw = imu.yaw;  // the Gyro Yaw very accurate but drift
-<<<<<<< HEAD
-  
-  
-=======
+  ypr.pitch = imu.pitch; + pitchOffset ;
+  ypr.roll = imu.roll; + rollOffset;
+  gyroAccYaw = scalePI(imu.yaw + yawOffset);  // the Gyro Yaw very accurate but drift
 
 
->>>>>>> parent of b9c0f9e... test2
+
+
+
   if (robot.CompassUse) {
     // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
     //readHMC5883L();
-    
+
     comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
     comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
     comTilt.z = -com.x  * cos(ypr.roll)         * sin(ypr.pitch) + com.y * sin(ypr.roll) + com.z * cos(ypr.roll) * cos(ypr.pitch);
@@ -274,19 +266,58 @@ void IMUClass::run() {
   }
   else
   {
+
     CompassGyroOffset = 0;
   }
 
+ 
+
   // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
   ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
-<<<<<<< HEAD
 
-=======
-Console.println(ypr.yaw * 180 / PI);
->>>>>>> parent of b9c0f9e... test2
+
+  //comYaw = imu.computeCompassHeading();
+ // Console.print(comYaw*180/PI);
+ // Console.print(" / ");
+ Console.print(ypr.yaw * 180 / PI);
+ Console.print(" / ");
+Console.print(ypr.pitch * 180 / PI);
+ Console.print(" / ");
+ Console.print(ypr.roll * 180 / PI);
+ Console.println("");
+
+
+
 }
 
+void IMUClass::readCompass() {
+  
+  imu.updateCompass();
+  com.x = imu.mx;
+  com.y = imu.my;
+  com.z = imu.mz;
 
+  float x = imu.mx;
+  float y = imu.my;
+  float z = imu.mz;
+  if (useComCalibration) {
+
+    x -= comOfs.x;
+    y -= comOfs.y;
+    z -= comOfs.z;
+    x /= comScale.x * 0.5;
+    y /= comScale.y * 0.5;
+    z /= comScale.z * 0.5;
+    com.x = x;
+    com.y = y;
+    com.z = z;
+  } else {
+    com.x = x;
+    com.y = y;
+    com.z = z;
+  }
+
+}
 
 void IMUClass::loadSaveCalib(boolean readflag) {
   /*

@@ -2989,7 +2989,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_PERI_STOP_TOROLL:
-      imu.run(); //31/08/19 In peritrack the imu is stop so try to add this to start it now and avoid imu tilt error (occur once per week or less) ??????
+      //imu.run(); //31/08/19 In peritrack the imu is stop so try to add this to start it now and avoid imu tilt error (occur once per week or less) ??????
       if (statusCurr == TRACK_TO_START) {
         startByTimer = false; // cancel because we have reach the start point and avoid repeat search entry
         justChangeLaneDir = false; //the first lane need to be distance control
@@ -3671,7 +3671,6 @@ void Robot::setNextState(byte stateNew, byte dir) {
         Console.print(" distancePI(imu.comYaw, imu.ypr.yaw) ");
         Console.println(distancePI(imu.comYaw, imu.ypr.yaw));
       */
-
 
       if (distancePI(imu.comYaw, yawCiblePos * PI / 180) > 0) { //rotate in the nearest direction
         actualRollDirToCalibrate = RIGHT;
@@ -4431,7 +4430,7 @@ void Robot::checkSonar() {
 void Robot::checkTilt() {
   if (!imuUse) return;
   if (millis() < nextTimeCheckTilt) return;
-  nextTimeCheckTilt = millis() + 50; 
+  nextTimeCheckTilt = millis() + 50;
   int pitchAngle = (imu.ypr.pitch / PI * 180.0);
   int rollAngle  = (imu.ypr.roll / PI * 180.0);
   //bber4
@@ -4675,14 +4674,6 @@ void Robot::loop()  {
     if ((imuUse) && (millis() >= nextTimeImuLoop)) {
       imu.run();
       nextTimeImuLoop = millis() + 50;
-      /* Console.print(" Yaw ");
-        Console.print(imu.ypr.yaw);
-        Console.print(" Pitch ");
-        Console.print(imu.ypr.pitch);
-        Console.print(" Roll ");
-        Console.println(imu.ypr.roll);
-      */
-
     }
 
   }

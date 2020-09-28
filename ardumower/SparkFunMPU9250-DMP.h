@@ -362,7 +362,7 @@ public:
 	// computeEulerAngles -- Compute euler angles based on most recently read qw, qx, qy, and qz
 	// Input: boolean indicating whether angle results are presented in degrees or radians
 	// Output: class variables roll, pitch, and yaw will be updated on exit.	
-	void computeEulerAngles(bool degrees = false);
+	void computeEulerAngles(bool degrees = true);
 	
 	// computeCompassHeading -- Compute heading based on most recently read mx, my, and mz values
 	// Output: class variable heading will be updated on exit

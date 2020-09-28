@@ -163,8 +163,8 @@ Mower::Mower() {
   // ------ lawn sensor --------------------------------
   lawnSensorUse     = 0;       // use capacitive Sensor
   // ------  IMU (compass/accel/gyro) ----------------------
-  imuUse            = 0;       // use IMU?
-  CompassUse = 1;       // activate compass?
+  imuUse            = 1;       // use IMU?
+  CompassUse = 0;       // activate compass?
   stopMotorDuringCalib     = 0;       // correct direction by compass?
   imuDirPID.Kp      = 4.4;     // direction PID controller
   imuDirPID.Ki      = 3.3;

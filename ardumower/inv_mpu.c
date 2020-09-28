@@ -23,6 +23,7 @@
 #include <string.h>
 #include <math.h>
 #include "inv_mpu.h"
+//#include "config.h"
 
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
@@ -433,7 +434,7 @@ const struct gyro_reg_s reg = {
 #endif
 };
 const struct hw_s hw = {
-    .addr           = 0x68,
+    .addr           = 0x69,   
     .max_fifo       = 1024,
     .num_reg        = 118,
     .temp_sens      = 340,
@@ -513,7 +514,7 @@ const struct gyro_reg_s reg = {
 #endif
 };
 const struct hw_s hw = {
-    .addr           = 0x69,// AD0 is shunt for PCB1.3
+    .addr           = 0x69,
     .max_fifo       = 1024,
     .num_reg        = 128,
     .temp_sens      = 321,
@@ -2864,7 +2865,6 @@ int mpu_get_dmp_state(unsigned char *enabled)
 static int setup_compass(void)
 {
     unsigned char data[4], akm_addr;
-
     mpu_set_bypass(1);
 
     /* Find compass. Possible addresses range from 0x0C to 0x0F. */
