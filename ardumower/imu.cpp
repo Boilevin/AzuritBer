@@ -47,9 +47,12 @@
 <<<<<<< HEAD
 =======
 
+<<<<<<< HEAD
 #include "flashmem.h"
 >>>>>>> parent of 188c02e... compass calib
 
+=======
+>>>>>>> parent of b9c0f9e... test2
 //#include "flashmem.h"
 
 
@@ -82,6 +85,7 @@ void IMUClass::begin() {
     Console.println("Connected with MPU-9250");
   }
 
+<<<<<<< HEAD
   imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
                DMP_FEATURE_GYRO_CAL, // Use gyro calibration
                10); // Set DMP FIFO rate to 10 Hz
@@ -102,6 +106,39 @@ void IMUClass::begin() {
   Console.println(imu.roll*180/PI);
   Console.println("The 3 values Need to be near 0 if calibration is OK :");
   
+=======
+  imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10);
+ // imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT , 10);
+  
+  // fail at 20 Hz very low response , Ok at 10Hz but can read only each 100ms to avoid duplicate value ??????????????????
+  // Set DMP FIFO rate to 10 Hz 
+  // DMP_FEATURE_6X_LP_QUAT is used to not read the compass
+  // DMP_FEATURE_GYRO_CAL is used to automaticly calibrate the gyro when no move for 8 secondes
+
+  nextTimeAdjustYaw = millis();
+  Console.println("Wait 9 secondes for GYRO calibration");
+  delay(9000);
+  // read the AccelGyro and the CompassHMC5883 to find the initial CompassYaw
+  int uu=0;
+  for (uu = 0; uu < 11; uu++) {
+    run();
+    Console.print("Initial GYRO/ACCELL Yaw :");
+    Console.print(imu.yaw * 180 / PI) ;
+    Console.print(" Pitch : ");
+    Console.print(imu.pitch * 180 / PI) ;
+    Console.print(" Roll : ");
+    Console.println(imu.roll * 180 / PI);
+    delay(100);
+  }
+
+
+
+  Console.println("Yaw Pitch and Roll need to be near 0.00 if calibration is OK :");
+
+
+
+
+>>>>>>> parent of b9c0f9e... test2
 
   
   
@@ -219,8 +256,13 @@ void IMUClass::run() {
   ypr.pitch = imu.pitch ;
   ypr.roll = imu.roll ;
   gyroAccYaw = imu.yaw;  // the Gyro Yaw very accurate but drift
+<<<<<<< HEAD
   
   
+=======
+
+
+>>>>>>> parent of b9c0f9e... test2
   if (robot.CompassUse) {
     // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
     //readHMC5883L();
@@ -237,7 +279,11 @@ void IMUClass::run() {
 
   // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
   ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
+<<<<<<< HEAD
 
+=======
+Console.println(ypr.yaw * 180 / PI);
+>>>>>>> parent of b9c0f9e... test2
 }
 
 
