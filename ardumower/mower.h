@@ -126,11 +126,11 @@
 // we use 'SerialUSB' for 'Console' so the Raspberry PI receise all data
 // we use 'Serial' for 'Console' so the PC receise all data
  
-#define Console Serial
-#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
+//#define Console Serial
+//#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
 
-//#define Console SerialUSB
-//#define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
+#define Console SerialUSB
+#define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
 
 #define Enable_DueWatchdog true
 //#define Enable_DueWatchdog false
