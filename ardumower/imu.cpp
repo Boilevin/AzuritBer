@@ -52,7 +52,13 @@ float pitchOffset = 0;
 float rollOffset = 0;
 int ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
 
+float   Mag_x_dampened,       Mag_y_dampened,       Mag_z_dampened;
+float   Mag_x_hor, Mag_y_hor;
+float   Mag_pitch, Mag_roll;
 
+float   Gyro_pitch, Gyro_roll, Gyro_yaw;
+float   Gyro_pitch_output, Gyro_roll_output;
+float resultheading;
 
 MPU9250_DMP imu;
 
@@ -134,6 +140,7 @@ void IMUClass::begin() {
 
 
   if (robot.CompassUse) {
+    
     run();
     Console.print(F("  Compass Yaw: "));
     Console.print(comYaw);
@@ -189,6 +196,7 @@ void IMUClass::run() {
   if (!robot.imuUse)  return;
   if (state == IMU_CAL_COM) {
     calibComUpdate();
+    return;
   }
   //-------------------read the mpu9250 DMP  --------------------------------
   // Check for new data in the FIFO
@@ -255,36 +263,61 @@ void IMUClass::run() {
 
   if (robot.CompassUse) {
     // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
-    //readHMC5883L();
-
+    readCompass();
     comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
     comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
     comTilt.z = -com.x  * cos(ypr.roll)         * sin(ypr.pitch) + com.y * sin(ypr.roll) + com.z * cos(ypr.roll) * cos(ypr.pitch);
     comYaw = scalePI( atan2(comTilt.y, comTilt.x)  ); // the compass yaw not accurate but reliable
+
+
+  Mag_pitch = -ypr.roll;
+  Mag_roll = ypr.pitch;
+
+  // ----- Apply the standard tilt formulas
+  Mag_x_hor = com.x * cos(Mag_pitch) + com.y * sin(Mag_roll) * sin(Mag_pitch) - com.z * cos(Mag_roll) * sin(Mag_pitch);
+  Mag_y_hor = com.y * cos(Mag_roll) + com.z * sin(Mag_roll);
+
+  Mag_x_dampened = Mag_x_dampened * 0.9 + Mag_x_hor * 0.1;
+  Mag_y_dampened = Mag_y_dampened * 0.9 + Mag_y_hor * 0.1;
+
+  resultheading = atan2(Mag_x_dampened, Mag_y_dampened) ;  // Magnetic North
+
+
+
+
+
+
+
+
+
+
+    
   }
   else
   {
-
+    comYaw = 0;
     CompassGyroOffset = 0;
   }
 
 
 
   // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
-  ypr.yaw = -1 * scalePI(gyroAccYaw + CompassGyroOffset) ;
+  ypr.yaw = scalePI(-1*gyroAccYaw + CompassGyroOffset) ;
 
 
-  //comYaw = imu.computeCompassHeading();
-  // Console.print(comYaw*180/PI);
-  // Console.print(" / ");
-  /*
+  
+    //imu.computeCompassHeading();
+    Console.print(resultheading * 180 / PI);
+    Console.print("  ,  ");
+    Console.print(comYaw * 180 / PI);
+    Console.print("  ,  ");
     Console.print(ypr.yaw * 180 / PI);
-    Console.print(",");
+    Console.print("  ,  ");
     Console.print(ypr.pitch * 180 / PI);
     Console.print(",");
     Console.print(ypr.roll * 180 / PI);
     Console.println("");
-  */
+  
 
 
 }
@@ -532,6 +565,7 @@ void IMUClass::calibComUpdate() {
   comLast = com;
   delay(20);
   readCompass();
+  Console.println(com.x);
   watchdogReset();
   boolean newfound = false;
   if ( (abs(com.x - comLast.x) < 10) &&  (abs(com.y - comLast.y) < 10) &&  (abs(com.z - comLast.z) < 10) ) {

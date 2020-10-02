@@ -2209,10 +2209,10 @@ void Robot::menu() {
           printMenu();
           break;
         case '6':
-          //imu.calibComStartStop();
+          imu.calibComStartStop();
           break;
         case '7':
-          // imu.deleteCalib();
+          //imu.deleteCalib();
           //printMenu();
           break;
         case '8':
