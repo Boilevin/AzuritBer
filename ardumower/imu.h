@@ -92,7 +92,7 @@ class IMUClass {
    float gyroAccYaw;
 float ecartYprCompass;
 float nextTimeAdjustYaw;
- bool calibrationAvail;
+// bool calibrationAvail;
   // --------- compass state --------------------------  
   
   point_float_t comLast;
