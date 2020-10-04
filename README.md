@@ -6,7 +6,7 @@ Master branch is MPU-9250 or 9255 version
 See other branch for GY-87 or GY-88 version
 
 
-OPTIONAL RFID/RASPBERRY
+OPTIONAL RFID/RASPBERRY:
 	Use for multiple area mowing, Fast start Entry point,Fast return to station,soft docking ,etc....
 	Need PN5180 AS RFID READER
 	Need ESP32 dev kit to manage SPI communication with PN5180 
