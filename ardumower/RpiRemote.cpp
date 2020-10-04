@@ -14,7 +14,7 @@ void RpiRemote::init() {
 }
 void RpiRemote::run() {
   readPi();
-  if (millis() >= nextTimeRaspberryPISendStat) {
+  if ((millis() >= nextTimeRaspberryPISendStat) && (millis() >= 30000)) { // start to send the stat only after 30sec on power up to wait pi start
     nextTimeRaspberryPISendStat = millis() + 500;  //better to put 200
     RaspberryPISendStat();
   }
@@ -47,6 +47,11 @@ void RpiRemote::run() {
     maxRepetByLaneToPi = maxRepetByLaneToPi - 1;
     nextTimeRaspberryPISendByLane = millis() + delayByLaneToPi;
     RaspberryPISendByLane();
+  }
+  if ((millis() >= nextTimeRaspberryPISendImu) && (maxRepetImuToPi > 0)) {
+    maxRepetImuToPi = maxRepetImuToPi - 1;
+    nextTimeRaspberryPISendImu = millis() + delayImuToPi;
+    RaspberryPISendImu();
   }
 }
 
@@ -274,7 +279,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->motorMowPowerMax;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->motorMowRPMSet;
+    lineToSend = lineToSend + robot->motorMowSpeedMinPwm;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->motorMowSenseScale;
     lineToSend = lineToSend + ",";
@@ -313,7 +318,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->sonarCenterUse;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->sonarLeftUse;  //9
+    lineToSend = lineToSend + robot->sonarLeftUse;  //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
     //page 4
@@ -330,7 +335,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->perimeter.timedOutIfBelowSmag;  //4
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterTriggerTimeout;
+    lineToSend = lineToSend + robot->perimeterTriggerMinSmag;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->trackingErrorTimeOut;
     lineToSend = lineToSend + ",";
@@ -340,7 +345,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->perimeterTrackRollTime;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterTrackRevTime; //0
+    lineToSend = lineToSend + robot->perimeterTrackRevTime; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -369,7 +374,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->imuUse;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->stopMotorDuringCalib; //0
+    lineToSend = lineToSend + robot->stopMotorDuringCalib; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -397,7 +402,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->batGoHomeIfBelow;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->batSwitchOffIfBelow; //0
+    lineToSend = lineToSend + robot->batSwitchOffIfBelow; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -425,7 +430,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->stationRollAngle;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->stationForwDist; //0
+    lineToSend = lineToSend + robot->stationForwDist; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -446,15 +451,15 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->odometryWheelBaseCm;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->odometryLeftSwapDir;
+    lineToSend = lineToSend + robot->autoResetActive;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->odometryRightSwapDir;
+    lineToSend = lineToSend + robot->CompassUse;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->twoWayOdometrySensorUse;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->buttonUse;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->userSwitch1; //0
+    lineToSend = lineToSend + robot->userSwitch1; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -476,13 +481,13 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->stuckIfGpsSpeedBelow;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->gpsSpeedIgnoreTime;
+    lineToSend = lineToSend + robot->gpsBaudrate;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->dropUse;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->statsOverride;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->bluetoothUse; //0
+    lineToSend = lineToSend + robot->bluetoothUse; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -511,7 +516,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->circleTimeForObstacle;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->DistPeriOutRev; //0
+    lineToSend = lineToSend + robot->DistPeriOutRev; //10
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -587,11 +592,11 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->RaspberryPIUse;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->sonarToFrontDist;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->UseBumperDock;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->dockingSpeed; //8
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + "0";
     lineToSend = lineToSend + ",";
@@ -607,7 +612,7 @@ void RpiRemote::RaspberryPISendMow () {
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + millis();
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->motorMowSense;
+  lineToSend = lineToSend + robot->motorMowPower;
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->motorMowPWMCurr;
   lineToSend = lineToSend + ",";
@@ -621,9 +626,9 @@ void RpiRemote::RaspberryPISendMot () {
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + millis();
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->motorLeftSenseCurrent;
+  lineToSend = lineToSend + robot->motorLeftPower;
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->motorRightSenseCurrent;
+  lineToSend = lineToSend + robot->motorRightPower;
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->motorLeftPWMCurr;
   lineToSend = lineToSend + ",";
@@ -675,6 +680,19 @@ void RpiRemote::RaspberryPISendByLane () {
   lineToSend = lineToSend + robot->imu.ypr.yaw;
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->imuDriveHeading;
+  lineToSend = lineToSend + ",";
+  writePi(lineToSend);
+}
+
+void RpiRemote::RaspberryPISendImu () {
+  String lineToSend;
+  lineToSend = "RMIMU";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + millis();
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + robot->imu.ypr.yaw * 180 / PI;
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + robot->imu.comYaw * 180 / PI;
   lineToSend = lineToSend + ",";
   writePi(lineToSend);
 }
@@ -805,10 +823,8 @@ void RpiRemote::RaspberryPISendStat () {
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->loopsPerSec;
   lineToSend = lineToSend + ",";
-
   writePi(lineToSend);
 }
-
 
 void RpiRemote::setRobot(Robot *aRobot) {
   this->robot = aRobot;
@@ -830,7 +846,6 @@ void RpiRemote::writePi(String stringLine) {
   //Console.println(lineToSend);
 }
 
-
 void RpiRemote::readPi() {
   if (!RaspberryPIPort.available())
     return;
@@ -848,13 +863,11 @@ RpiRemote::Tokeniser::Tokeniser(char* _str, char _token)
   token = _token;
 }
 
-
-bool RpiRemote::Tokeniser::next(char* out, int len)
+boolean RpiRemote::Tokeniser::next(char* out, int len)
 {
   uint8_t count = 0;
   if (str[0] == 0)
     return false;
-
   while (true)
   {
     if (str[count] == '\0')
@@ -863,7 +876,6 @@ bool RpiRemote::Tokeniser::next(char* out, int len)
       str = &str[count];
       return true;
     }
-
     if (str[count] == token)
     {
       out[count] = '\0';
@@ -871,7 +883,6 @@ bool RpiRemote::Tokeniser::next(char* out, int len)
       str = &str[count];
       return true;
     }
-
     if (count < len)
       out[count] = str[count];
     count++;
@@ -879,21 +890,19 @@ bool RpiRemote::Tokeniser::next(char* out, int len)
   return false;
 }
 
-bool RpiRemote::encode(char c)
+boolean RpiRemote::encode(char c)
 {
   buf[pos] = c;
   pos++;
-
   if (c == '\n') //linefeed
   {
     //Console.println("..........FIND THE END LINE................");
     //Console.println(buf);
-    bool ret = process_buf();
+    boolean ret = process_buf();
     memset(buf, '\0', 120);
     pos = 0;
     return ret;
   }
-
   if (pos >= 120) //avoid a buffer overrun
   {
     Console.print (buf);
@@ -904,8 +913,7 @@ bool RpiRemote::encode(char c)
   return false;
 }
 
-
-bool RpiRemote::process_buf()
+boolean RpiRemote::process_buf()
 {
   if (!check_checksum()) //if checksum is bad
   {
@@ -922,13 +930,6 @@ bool RpiRemote::process_buf()
     if (strncmp(buf, "$RMVAR", 6) == 0) readWrite_var();
     if (strncmp(buf, "$RMCMD", 6) == 0) receive_command();
     if (strncmp(buf, "$RMREQ", 6) == 0) receive_request();
-
-
-
-    //here add the reading case of all type of command
-
-
-
 
     return true;
   }
@@ -951,7 +952,7 @@ uint8_t RpiRemote::create_checksum(String lineOfString)
 
 
 
-bool RpiRemote::check_checksum()
+boolean RpiRemote::check_checksum()
 {
 
   if (buf[strlen(buf) - 5] == '*')
@@ -1046,7 +1047,11 @@ void RpiRemote::receive_request() {
     maxRepetByLaneToPi = max_repetition;
     nextTimeRaspberryPISendByLane = millis() + delayByLaneToPi;
   }
-
+  if (messageType == "IMU") {
+    delayImuToPi = 1000 / frequency;
+    maxRepetImuToPi = max_repetition;
+    nextTimeRaspberryPISendImu = millis() + delayImuToPi;
+  }
 }
 
 void RpiRemote::receive_command() {
@@ -1121,12 +1126,9 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       case 8:
         strcpy(variable_name[3], token);
         break;
-
       case 9:
         strcpy(received_value[3] , token);
         break;
-
-
     }
     counter++;
   }
@@ -1136,41 +1138,41 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
     for (int i = 0; i <= 3; i++) {  // read the 4 values and check to adjust
       //here need to add all the variable that can send the raspberry and what to do
       if (strncmp(variable_name[i], "mowPatternCurr", 20) == 0)  robot->mowPatternCurr = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "laneUseNr", 20) == 0)  robot->laneUseNr = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "rollDir", 20) == 0)  robot->rollDir = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "whereToStart", 20) == 0)  robot->whereToStart = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "actualLenghtByLane", 20) == 0) robot->actualLenghtByLane = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorLeftSpeedRpmSet", 20) == 0)  robot->motorLeftSpeedRpmSet = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle1", 20) == 0) robot->newtagRotAngle1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagRotAngle2", 20) == 0) robot->newtagRotAngle2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "motorSpeedMaxPwm", 20) == 0)  robot->motorSpeedMaxPwm = atoi(received_value[i]);
-//bber50     
+      //bber50
       if (strncmp(variable_name[i], "ActualSpeedPeriPWM", 20) == 0) {
         robot->ActualSpeedPeriPWM = atoi(received_value[i]);
         Console.print("Set New perimeter tracking speed  ");
         Console.println(robot->ActualSpeedPeriPWM);
-        
+
       }
 
-      
-      if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)  robot->newtagDistance1 = atoi(received_value[i]);
+
+      //if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)  robot->newtagDistance1 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "newtagDistance2", 20) == 0)  robot->newtagDistance2 = atoi(received_value[i]);
       if (strncmp(variable_name[i], "areaToGo", 20) == 0)  robot->areaToGo = atoi(received_value[i]);
       if (strncmp(variable_name[i], "stateCurr", 20) == 0)  robot->stateCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "statusCurr", 20) == 0)  robot->statusCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "nextTimeTimer", 20) == 0)  robot->nextTimeTimer = atoi(received_value[i]);
 
-//bber50
+      //bber50
       if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)
       {
         robot->newtagDistance1 = atoi(received_value[i]);
         robot->whereToResetSpeed =  robot->totalDistDrive + robot->newtagDistance1; // when a speed tag is read it's where the speed is back to maxpwm value
         Console.print("Change speed for ");
         Console.print(robot->newtagDistance1);
-        Console.print(" centimeter   actual/Cible  ");
-        Console.print(robot->totalDistDrive);
-        Console.print(" / ");
-        Console.println(robot->whereToResetSpeed);
-        
-        
-        
+        Console.println(" centimeters");
+
+
       }
 
 
@@ -1188,8 +1190,19 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
         else robot->motorRightSwapDir = true;
       }
       if (strncmp(variable_name[i], "gpsUse", 20) == 0) {
-        if (strncmp(received_value[i], "0", 1) == 0) robot->gpsUse = false;
-        else robot->gpsUse = true;
+        if (strncmp(received_value[i], "0", 1) == 0)
+        {
+          robot->gpsUse = false;
+          robot->gpsReady=false;
+          GpsPort.flush();
+          GpsPort.end();
+        }
+        else
+        {
+          robot->gpsUse = true;
+          robot->gps.init();
+          
+        }
       }
     }
   }
@@ -1342,7 +1355,7 @@ void RpiRemote::readWrite_setting()
         robot->motorForwTimeMax = val[1];
         robot->motorMowSpeedMaxPwm = val[2];
         robot->motorMowPowerMax = val[3];
-        robot->motorMowRPMSet = val[4];
+        robot->motorMowSpeedMinPwm = val[4];
         robot->motorMowSenseScale = val[5];
         robot->motorLeftPID.Kp = val[6];
         robot->motorLeftPID.Ki = val[7];
@@ -1366,7 +1379,7 @@ void RpiRemote::readWrite_setting()
         robot->sonarTriggerBelow = val[1];
         robot->perimeterUse = val[2];
         robot->perimeter.timedOutIfBelowSmag = val[3];
-        robot->perimeterTriggerTimeout = val[4];
+        robot->perimeterTriggerMinSmag = val[4];
         robot->trackingErrorTimeOut = val[5];
         robot->motorTickPerSecond = val[6];
         robot->perimeterOutRevTime = val[7];
@@ -1415,8 +1428,8 @@ void RpiRemote::readWrite_setting()
         robot->odometryTicksPerRevolution = val[2];
         robot->odometryTicksPerCm = val[3];
         robot->odometryWheelBaseCm = val[4];
-        robot->odometryLeftSwapDir = val[5];
-        robot->odometryRightSwapDir = val[6];
+        robot->autoResetActive = val[5];
+        robot->CompassUse = val[6];
         robot->twoWayOdometrySensorUse = val[7];
         robot->buttonUse = val[8];
         robot->userSwitch1 = val[9];
@@ -1428,7 +1441,7 @@ void RpiRemote::readWrite_setting()
         robot->rainUse = val[3];
         robot->gpsUse = val[4];
         robot->stuckIfGpsSpeedBelow = val[5];
-        robot->gpsSpeedIgnoreTime = val[6];
+        robot->gpsBaudrate = val[6];
         robot->dropUse = val[7];
         robot->statsOverride = val[8];
         robot->bluetoothUse = val[9];
@@ -1475,16 +1488,16 @@ void RpiRemote::readWrite_setting()
         robot->DistPeriOutStop = val[2];
         robot->DHT22Use = val[3];
         robot->RaspberryPIUse = val[4];
+        robot->sonarToFrontDist = val[5];
+        robot->UseBumperDock = val[6];
+        robot->dockingSpeed = val[7];
       }
-
     }
   }
   if (readOrWrite == 'r') {
     receivePiReqSetting (Setting_page, nr_page);
   }
-
 }
-
 
 
 

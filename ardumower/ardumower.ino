@@ -1,15 +1,17 @@
 /*      
  *      DUE and ODOMETRY MANDATORY VERSION 
  *      PCB1.3 
- *      FOR BY LANE USE, IMU GY-88 MANDATORY 
+ *      IMU GY-88 MANDATORY 
  *      
  *      Connect DUE programming port to PC for programming and PC console
  *      Connect DUE Native USB port to Raspberry Pi 
  *      
- *      --------------------------------- GPS ----------------------------------------------------
- *      GPS You need to change speed according to your module and connected to P44
- *      #define GPS_BAUDRATE  38400  // set to 9600 for marotronic module M6n ,19200 or 38400 for BN880,M8Nother module
+ *      During all test and dev set Enable_DueWatchdog to false
+ *      or increase the delay in robot.cpp line : watchdogEnable(2000);// Watchdog trigger after  2 sec if not reseted.
  *      
+ *      --------------------------------- GPS ----------------------------------------------------
+ *      GPS You need to change speed into pfod setting according to your module and connected to P44
+ *     
  *      ------------------------------ RASPBERRY -------------------------------------------------
  *      If Raspberry PI is not connected you need to change into mower.h
  *          #define Console Serial

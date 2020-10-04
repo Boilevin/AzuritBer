@@ -81,7 +81,7 @@ Mower::Mower() {
   motorRightOffsetFwd = 0;  //percent offset in PWM use for the 2 wheels motor have the same speed a the same PWM
   motorRightOffsetRev = 0;  //use the 1 ml ODO test to find good value the 2 wheels need to stop at the same time
   motorTickPerSecond = 200; // use to compute the maxodostate duration and computed on the calibration motor
-  
+
   UseAccelLeft = 1;
   UseBrakeLeft = 1;
   UseAccelRight = 1;
@@ -92,11 +92,11 @@ Mower::Mower() {
   odoLeftRightCorrection     = true;       // left-right correction for straight lines used in manual mode
 
   // ------ mower motor -------------------------------
-  motorMowAccel       = 2000;  // motor mower acceleration (warning: do not set too low) 2000 seems to fit best considerating start time and power consumption
+  motorMowAccel       = 1000;  // motor mower acceleration (warning: do not set too low) 2000 seems to fit best considerating start time and power consumption
   motorMowSpeedMaxPwm   = 200;    // motor mower max PWM
+  motorMowSpeedMinPwm = 100;   // motor mower minimum PWM (only for cutter modulation)
   motorMowPowerMax = 18.0;     // motor mower max power (Watt)
-  motorMowModulate  = 0;      // motor mower cutter modulation?
-  motorMowRPMSet        = 3300;   // motor mower RPM (only for cutter modulation)
+  
   motorMowSenseScale = 1.536; // motor mower sense scale (mA=(ADC-zero)/scale)
   motorMowPID.Kp = 0.005;    // motor mower RPM PID controller
   motorMowPID.Ki = 0.01;
@@ -111,28 +111,28 @@ Mower::Mower() {
 
   // ------ DHT22Use ------------------------------------
   DHT22Use          = 0;      // use DHT22 sensor?
-  maxTemperature    =55;      // max temp before switch off
-//bber35
+  maxTemperature    = 55;     // max temp before switch off
+  //bber35
   // ------ RFID ------------------------------------
   rfidUse          = 0;      // use rfid
-  newtagRotAngle1=-90;
-  newtagRotAngle2=0;
-  newtagDistance1=10;
-  newtagDistance2=0;
-    
+  newtagRotAngle1 = -90;
+  newtagRotAngle2 = 0;
+  newtagDistance1 = 10;
+  newtagDistance2 = 0;
+
   // ------ sonar ------------------------------------
   sonarUse                   = 0;          // use ultra sonic sensor? (WARNING: robot will slow down, if enabled but not connected!)
   sonarLeftUse               = 1;
   sonarRightUse              = 1;
   sonarCenterUse             = 0;
   sonarTriggerBelow          = 87;       // ultrasonic sensor trigger distance in cm (0=off)
-  sonarToFrontDist           = 30;        // ultrasonic sensor distance to front mower in cm 
-  
- 
+  sonarToFrontDist           = 30;        // ultrasonic sensor distance to front mower in cm
+
+
 
   // ------ perimeter ---------------------------------
   perimeterUse       = 0;      // use perimeter?
-  perimeterTriggerTimeout = 0;      // perimeter trigger timeout when escaping from inside (ms)
+  perimeterTriggerMinSmag = 200;      // perimeter minimum smag to use on big area
   //perimeterOutRollTimeMax  = 2000;   // free
   //perimeterOutRollTimeMin = 750;    // free
   perimeterOutRevTime   = 2200;   // free
@@ -159,11 +159,12 @@ Mower::Mower() {
   perimeterMagMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
   perimeter.read2Coil = false;
   areaToGo = 1;//initialise the areatogo to the station area
-  
+
   // ------ lawn sensor --------------------------------
   lawnSensorUse     = 0;       // use capacitive Sensor
   // ------  IMU (compass/accel/gyro) ----------------------
   imuUse            = 0;       // use IMU?
+  CompassUse = 1;       // activate compass?
   stopMotorDuringCalib     = 0;       // correct direction by compass?
   imuDirPID.Kp      = 4.4;     // direction PID controller
   imuDirPID.Ki      = 3.3;
@@ -188,9 +189,12 @@ Mower::Mower() {
   yawCiblePos = 90;
   yawCibleNeg = -90;
   DistBetweenLane = 38;
-  maxLenghtByLane = 9;
+  maxLenghtByLane = 9;  // distance to run in bylane before simulate a wire detection
   justChangeLaneDir = true;
   mowPatternCurr = MOW_LANES;
+  compassRollSpeedCoeff = 40; //speed used when the mower search the compass yaw it's percent of motorSpeedMaxRpm ,Avoid to roll to fast for a correct detection
+
+
   // ------ model R/C ------------------------------------
   remoteUse         = 0;       // use model remote control (R/C)?
   // ------ battery -------------------------------------
@@ -212,25 +216,26 @@ Mower::Mower() {
   chgNull         = 2;          // Nullduchgang abziehen (1 oder 2)
   // ------  charging station ---------------------------
   stationRevDist     = 50;    // charge station reverse 50 cm
-  stationRollAngle    = 45;    // charge station roll after reverse 
+  stationRollAngle    = 45;    // charge station roll after reverse
   stationForwDist    = 30;    // charge station accel distance cm
   stationCheckDist   = 2;    // charge station  check distance to be sure voltage is OK cm
-  //bber20
-  UseBumperDock=true;  //bumper is pressed when docking or not
-  dockingSpeed   =  60;   //speed docking is (percent of maxspeed) 
-  
+  UseBumperDock = true; //bumper is pressed when docking or not
+  dockingSpeed   =  60;   //speed docking is (percent of maxspeed)
+  autoResetActive  = 0;       // after charging reboot or not
+
+
   // ------ odometry ------------------------------------
   odometryUse       = 1;       // use odometry?
   odometryTicksPerRevolution = 1010;   // encoder ticks per one full resolution
   odometryTicksPerCm = 12.9;  // encoder ticks per cm
   odometryWheelBaseCm = 43;    // wheel-to-wheel distance (cm)
-  odometryRightSwapDir = 0;       // inverse right encoder direction?
-  odometryLeftSwapDir  = 0;       // inverse left encoder direction?
   
+
+
   // ----- GPS -------------------------------------------
   gpsUse            = 0;       // use GPS?
   stuckIfGpsSpeedBelow = 0.2; // if Gps speed is below given value the mower is stuck
-  gpsSpeedIgnoreTime = 5000; // how long gpsSpeed is ignored when robot switches into a new STATE (in ms)
+  gpsBaudrate = 9600; // Gps baud rate setting (use 9600 for m6n and 38400 for m8n)
 
   // ----- other -----------------------------------------
   buttonUse         = 1;       // has digital ON/OFF button?
@@ -369,14 +374,14 @@ void Mower::setup() {
 
   // bumpers
   //pinMode(pinBumperLeft, INPUT);
-  pinMode(pinBumperLeft, INPUT_PULLUP); //it's contact 
+  pinMode(pinBumperLeft, INPUT_PULLUP); //it's contact
   //pinMode(pinBumperRight, INPUT);
   pinMode(pinBumperRight, INPUT_PULLUP);
 
   // drops
- // pinMode(pinDropLeft, INPUT);                                                                                                         // Dropsensor - Absturzsensor - Deklariert als Eingang
+  // pinMode(pinDropLeft, INPUT);                                                                                                         // Dropsensor - Absturzsensor - Deklariert als Eingang
   pinMode(pinDropLeft, INPUT_PULLUP);                                                                                                  // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (AuslÃ¶sung erfolgt gegen GND)
- // pinMode(pinDropRight, INPUT);                                                                                                        // Dropsensor - Absturzsensor - Deklariert als Eingang
+  // pinMode(pinDropRight, INPUT);                                                                                                        // Dropsensor - Absturzsensor - Deklariert als Eingang
   pinMode(pinDropRight, INPUT_PULLUP);                                                                                                 // Dropsensor - Absturzsensor - Intern Pullab Widerstand aktiviert (AuslÃ¶sung erfolgt gegen GND)
 
   // rain
@@ -427,7 +432,7 @@ void Mower::setup() {
 
   //imu.init();
 
-  gps.init();
+  //gps.init();
   // Console.print(millis());
   // Console.println(" --> ******************************************* Start of Robot Setup from mower.cpp *********************************");
   Robot::setup();
@@ -467,26 +472,29 @@ void Mower::setup() {
 }
 
 void checkMotorFault() {
-  //bb to test without motor board uncheck return
+  //bb to test without motor board uncomment return
   //return;
-  if (robot.stateCurr == STATE_OFF) return;  //do not generate error if the state if OFF to avoid Buzzer when PI power the DUE via the USB native port
+  if ((robot.stateCurr == STATE_OFF) || (robot.stateCurr == STATE_ERROR)  ) return;  //do not generate error if the state if OFF to avoid Buzzer when PI power the DUE via the USB native port
   if (digitalRead(pinMotorLeftFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_LEFT);
     Console.println(F("Error: motor left fault"));
     robot.setNextState(STATE_ERROR, 0);
-    
+    return;
+
   }
   if  (digitalRead(pinMotorRightFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_RIGHT);
     Console.println(F("Error: motor right fault"));
     robot.setNextState(STATE_ERROR, 0);
-    
+    return;
+
   }
   if (digitalRead(pinMotorMowFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_MOW);
     Console.println(F("Error: motor mow fault"));
     robot.setNextState(STATE_ERROR, 0);
-    
+    return;
+
   }
 }
 
@@ -540,7 +548,7 @@ int Mower::readSensor(char type) {
     // rtc--------------------------------------------------------------------------------------------------------
     case SEN_RTC:
       if (!readDS1307(datetime)) {
-        //Console.println("RTC data error!");
+        Console.println("RTC data error!");
         addErrorCounter(ERR_RTC_DATA);
         setNextState(STATE_ERROR, 0);
       }
@@ -576,7 +584,7 @@ void Mower::setActuator(char type, int value) {
     case ACT_USER_SW3: digitalWrite(pinUserSwitch3, value); break;
     case ACT_RTC:
       if (!setDS1307(datetime)) {
-        //Console.println("RTC comm error!");
+        Console.println("RTC comm error!");
         addErrorCounter(ERR_RTC_COMM);
         setNextState(STATE_ERROR, 0);
       }

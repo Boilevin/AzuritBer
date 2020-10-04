@@ -57,7 +57,7 @@ class RemoteControl
     RemoteControl();
     void setRobot(Robot *aRobot);
     void initSerial(HardwareSerial* serialPort, uint32_t baudrate);
-    bool readSerial();
+    boolean readSerial();
     //bb10
     void processPI(String RpiCmd, float v1, float v2, float v3) ;
     void run();
@@ -77,7 +77,7 @@ class RemoteControl
     int8_t perimeterCapture[RAW_SIGNAL_SAMPLE_SIZE];
     int perimeterCaptureIdx;
     float stringToFloat(String &s);
-
+    
     // generic
     void sendYesNo(int value);
     void sendOnOff(int value);

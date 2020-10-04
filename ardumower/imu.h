@@ -88,10 +88,10 @@ class IMUClass {
    float accXmin;
    float accXmax;
    float gyroZlowpass;
-   bool enabled;
-	 bool isRotating;
-   bool verboseOutput;
-   bool useGyro;
+   boolean enabled;
+	 boolean isRotating;
+   boolean verboseOutput;
+   boolean useGyro;
    float gyroBiasDpsMax;
    //bb5
    
@@ -127,7 +127,7 @@ float nextTimeAdjustYaw;
   void calibGyro();
   // ---------------------- 
  /*  // ---- compass ------
-   bool calibFound;
+   boolean calibFound;
    //adafruit_bno055_offsets_t calibData; // BNO055 calibration
    point_float_t comR; // raw compass (uncalibrated)
    point_float_t comAcc; // compass acceleration sensor
@@ -148,7 +148,7 @@ float nextTimeAdjustYaw;
    float comCalB[3];   // compass calibration B
    point_float_t comAccOfs; // compass acceleration sensor ofs
    point_float_t comAccScale;  // compass acceleration sensor scale
-      bool useComAccCalibration;
+      boolean useComAccCalibration;
    int calibComAccAxisCounter ;   
    float yawAtGyroCalibrationTime;
    unsigned long timeAtGyroCalibrationTime;
@@ -165,8 +165,8 @@ float nextTimeAdjustYaw;
    void begin();
    void run();   
    float getYaw();
-   bool needGyroCal();
-   bool needCompassCal();      
+   boolean needGyroCal();
+   boolean needCompassCal();      
    void startGyroCalibration();  
    void calibrateAcceleration();
    void startCompassCalibration();
@@ -177,7 +177,7 @@ float nextTimeAdjustYaw;
    void deleteAccelGyroCalib(); 
 
    void calibrateAccel();
-   void runSelfTest(bool accelSelfTest = true);
+   void runSelfTest(boolean accelSelfTest = true);
    void setNextMode();
   protected:
    int calibrationTime;
@@ -192,7 +192,7 @@ float nextTimeAdjustYaw;
    unsigned long comMinMaxTimeout;   
   
    boolean foundNewMinMax;
-   bool calibrateGyro();   
+   boolean calibrateGyro();   
   
    void printPt(point_float_t p);
    void loadSaveCalib(boolean readflag);   

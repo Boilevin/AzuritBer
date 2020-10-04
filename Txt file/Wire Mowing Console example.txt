@@ -1,0 +1,63 @@
+13:06:09 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 270
+13:06:09 WAIT / OFF  Dir 0 State changed at 875935 From state STAT
+13:06:09 Robot Stats address Stop = 826
+13:06:09 Robot Stats address Start = 800
+13:06:08 Save Robot Stats
+13:06:08 We are in station but ChargeVoltage is lost ??? 
+13:03:48 STATION / STAT Dir 0 State changed at 735557 From state STCHK
+13:03:48 Charge Voltage detected 
+13:03:48 Bad reading perimeter In/Out
+13:03:48 Bad reading perimeter In/Out
+13:03:47 WIREMOWING / STCHK Dir 0 State changed at 734058 From state PTRK
+13:03:47 Total duration 539 secondes 
+13:03:47 Total distance drive 142 meters 
+13:03:47 Detect a voltage on charging contact check if it's the station
+13:03:45 Set New perimeter tracking speed  80
+13:03:45 Change speed for 100 centimeter   actual/Cible  14213 / 14313
+13:03:45 Set new speed and distance : 80
+13:03:45 RFID detect reduce speed Tag :
+13:03:45 RFID Tag find ToDO is: SPEED
+13:03:45 Find a tag : 4082DA95
+13:03:44 Sonar reduce speed on tracking for 2 meters
+13:03:40 Sonar reduce speed on tracking for 2 meters
+13:02:34   Are not present in the database 
+13:02:34   Status : WIRE_MOWING
+13:02:34   RFID Tag : 91B3DB95
+13:02:34 Find a tag : 91B3DB95
+13:00:58   Are not present in the database 
+13:00:58   Status : WIRE_MOWING
+13:00:58   RFID Tag : 72B8DB95
+13:00:58 Find a tag : 72B8DB95
+12:59:36 Distance OK, time to reset the initial Speed : 120
+12:59:24 Sonar reduce speed on tracking for 2 meters
+12:59:19   Are not present in the database 
+12:59:19   Status : WIRE_MOWING
+12:59:19   RFID Tag : B0CEDB95
+12:59:19 Find a tag : B0CEDB95
+12:56:54   Are not present in the database 
+12:56:54   Status : WIRE_MOWING
+12:56:54   RFID Tag : FBBADB95
+12:56:54 Find a tag : FBBADB95
+12:56:45   Are not present in the database 
+12:56:45   Status : WIRE_MOWING
+12:56:45   RFID Tag : 1AD8DB95
+12:56:45 Find a tag : 1AD8DB95
+12:54:57   Are not present in the database 
+12:54:57   Status : WIRE_MOWING
+12:54:57   RFID Tag : 8EB3DB95
+12:54:57 Find a tag : 8EB3DB95
+12:54:47 WIREMOWING / PTRK Dir 0 State changed at 194439 From state ROLLSTOPTOTRACK
+12:54:47 WIREMOWING / ROLLSTOPTOTRACK Dir 0 State changed at 193941 From state ROLLTOTRACK
+12:54:45 WIREMOWING / ROLLTOTRACK Dir 1 State changed at 192546 From state STOPTOTRACK
+12:54:44 WIREMOWING / STOPTOTRACK Dir 1 State changed at 191532 From state POBSCIRC
+12:54:44 TRACKTOSTART / POBSCIRC Dir 1 State changed at 190907 From state STFOR
+12:54:42 TRACKTOSTART / STFOR Dir 1 State changed at 189162 From state STROL
+12:54:40 TRACKTOSTART / STROL Dir 1 State changed at 187681 From state STREV
+12:54:37   Are not present in the database 
+12:54:37   Status : TRACK_TO_START
+12:54:37   RFID Tag : 4082DA95
+12:54:37 Find a tag : 4082DA95
+12:54:34 Bad reading perimeter In/Out
+12:54:34 TRACKTOSTART / STREV Dir 0 State changed at 181511 From state STAT
+12:54:34 MANUAL START FROM STATION
+

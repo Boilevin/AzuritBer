@@ -32,7 +32,7 @@ void DHT::begin(void) {
 }
 
 //boolean S == Scale.  True == Fahrenheit; False == Celcius
-float DHT::readTemperature(bool S, bool force) {
+float DHT::readTemperature(boolean S, boolean force) {
   float f = NAN;
 
   if (read(force)) {
@@ -69,7 +69,7 @@ float DHT::convertFtoC(float f) {
   return (f - 32) * 0.55555;
 }
 
-float DHT::readHumidity(bool force) {
+float DHT::readHumidity(boolean force) {
   float f = NAN;
   if (read()) {
     switch (_type) {
@@ -89,7 +89,7 @@ float DHT::readHumidity(bool force) {
 }
 
 //boolean isFahrenheit: True == Fahrenheit; False == Celcius
-float DHT::computeHeatIndex(float temperature, float percentHumidity, bool isFahrenheit) {
+float DHT::computeHeatIndex(float temperature, float percentHumidity, boolean isFahrenheit) {
   // Using both Rothfusz and Steadman's equations
   // http://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml
   float hi;
@@ -120,7 +120,7 @@ float DHT::computeHeatIndex(float temperature, float percentHumidity, bool isFah
   return isFahrenheit ? hi : convertFtoC(hi);
 }
 
-boolean DHT::read(bool force) {
+boolean DHT::read(boolean force) {
   // Check if sensor was read less than two seconds ago and return early
   // to use last reading.
   uint32_t currenttime = millis();
@@ -234,7 +234,7 @@ boolean DHT::read(bool force) {
 // This is adapted from Arduino's pulseInLong function (which is only available
 // in the very latest IDE versions):
 //   https://github.com/arduino/Arduino/blob/master/hardware/arduino/avr/cores/arduino/wiring_pulse.c
-uint32_t DHT::expectPulse(bool level) {
+uint32_t DHT::expectPulse(boolean level) {
   uint32_t count = 0;
   // On AVR platforms use direct GPIO port access as it's much faster and better
   // for catching pulses that are 10's of microseconds in length:

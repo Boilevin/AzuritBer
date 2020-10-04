@@ -39,12 +39,12 @@ class DHT {
   public:
    DHT(uint8_t pin, uint8_t type, uint8_t count=6);
    void begin(void);
-   float readTemperature(bool S=false, bool force=false);
+   float readTemperature(boolean S=false, boolean force=false);
    float convertCtoF(float);
    float convertFtoC(float);
-   float computeHeatIndex(float temperature, float percentHumidity, bool isFahrenheit=true);
-   float readHumidity(bool force=false);
-   boolean read(bool force=false);
+   float computeHeatIndex(float temperature, float percentHumidity, boolean isFahrenheit=true);
+   float readHumidity(boolean force=false);
+   boolean read(boolean force=false);
 
  private:
   uint8_t data[5];
@@ -55,9 +55,9 @@ class DHT {
     uint8_t _bit, _port;
   #endif
   uint32_t _lastreadtime, _maxcycles;
-  bool _lastresult;
+  boolean _lastresult;
 
-  uint32_t expectPulse(bool level);
+  uint32_t expectPulse(boolean level);
 
 };
 

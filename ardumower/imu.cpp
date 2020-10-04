@@ -41,10 +41,10 @@ int giro_deadzone = 1;   //Giro error allowed, make it lower to get more precisi
 MPU6050 mpu(0x69);
 
 
-bool blinkState = false;
+boolean blinkState = false;
 float nextTimeLoop;
 // MPU control/status vars
-bool dmpReady = false;  // set true if DMP init was successful
+boolean dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
 uint8_t devStatus;      // return status after each device operation (0 = success, !0 = error)
 uint16_t packetSize;    // expected DMP packet size (default is 42 bytes)
@@ -74,27 +74,33 @@ float yprtest[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and
 
 void IMUClass::begin() {
   if (!robot.imuUse) return;
-  //initialisation of CompassHMC5833L
   Console.println(F("--------------------------------- IMU INITIALISATION -------------------"));
-  uint8_t data = 0;
-  //while (true) {
-  I2CreadFrom(HMC5883L, 10, 1, &data, 1);
-  Console.print(F("COMPASS HMC5883L ID NEED TO BE 72 IF ALL IS OK ------>  ID="));
-  Console.println(data);
-  if (data != 72) Console.println(F("COMPASS HMC5883L FAIL"));
-  delay(1000);
-  //}
-  comOfs.x = comOfs.y = comOfs.z = 0;
-  comScale.x = comScale.y = comScale.z = 2;
+  //initialisation of CompassHMC5833L
+  if (robot.CompassUse) {
+    Console.println(F("--------------------------------- COMPASS INITIALISATION ---------------"));
+    uint8_t data = 0;
+    //while (true) {
+    I2CreadFrom(HMC5883L, 10, 1, &data, 1);
+    Console.print(F("COMPASS HMC5883L ID NEED TO BE 72 IF ALL IS OK ------>  ID="));
+    Console.println(data);
+    if (data != 72) Console.println(F("COMPASS HMC5883L FAIL"));
+    delay(1000);
+    //}
+    comOfs.x = comOfs.y = comOfs.z = 0;
+    comScale.x = comScale.y = comScale.z = 2;
+    useComCalibration = true;
+    I2CwriteTo(HMC5883L, 0x00, 0x70);  // config A:  8 samples averaged, 75Hz frequency, no artificial bias.
+    I2CwriteTo(HMC5883L, 0x01, 0x20);  // config B: gain
+    I2CwriteTo(HMC5883L, 0x02, 00);  // mode: continuous
+    delay(2000); //    wait 2 second before doing the first reading
+
+  }
+
   loadCalib();
   printCalib();
-  useComCalibration = true;
-  I2CwriteTo(HMC5883L, 0x00, 0x70);  // config A:  8 samples averaged, 75Hz frequency, no artificial bias.
-  I2CwriteTo(HMC5883L, 0x01, 0x20);  // config B: gain
-  I2CwriteTo(HMC5883L, 0x02, 00);  // mode: continuous
-  delay(2000); //    wait 2 second before doing the first reading
 
   //initialisation of MPU6050
+  Console.println(F("--------------------------------- GYRO ACCEL INITIALISATION ---------------"));
   mpu.initialize();
   Console.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
   Console.println(F("Initializing DMP..."));
@@ -133,14 +139,21 @@ void IMUClass::begin() {
   run();
   Console.print(F("AccelGyro Yaw: "));
   Console.print(ypr.yaw);
-  Console.print(F("  Compass Yaw: "));
-  Console.print(comYaw);
+  if (robot.CompassUse) {
+    Console.print(F("  Compass Yaw: "));
+    Console.print(comYaw);
+    CompassGyroOffset = distancePI(ypr.yaw, comYaw);
+    Console.print(F("  Diff between compass and accelGyro in Radian and Deg"));
+    Console.print(CompassGyroOffset);
+    Console.print(" / ");
+    Console.println(CompassGyroOffset * 180 / PI);
+  }
+  else {
+    CompassGyroOffset = 0;
+  }
 
-  CompassGyroOffset = distancePI(ypr.yaw, comYaw);
-  Console.print(F("  Diff between compass and accelGyro in Radian and Deg"));
-  Console.print(CompassGyroOffset);
-  Console.print(" / ");
-  Console.println(CompassGyroOffset * 180 / PI);
+
+
 
   Console.println(F("--------------------------------- IMU READY ------------------------------"));
 }
@@ -311,41 +324,54 @@ void IMUClass::run() {
   mpu.dmpGetQuaternion(&q, fifoBuffer);
   mpu.dmpGetGravity(&gravity, &q);
   mpu.dmpGetYawPitchRoll(yprtest, &q, &gravity);
+
+  //bber4
+  //filter to avoid bad reading
+
+  if ((abs(yprtest[1]) - abs(ypr.pitch)) > 0.3490)
+  {
+    Console.print("Last pitch : ");
+    Console.print(ypr.pitch / PI * 180);
+    Console.print(" Actual pitch : ");
+    Console.println(yprtest[1] / PI * 180);
+    Console.println("pitch change 20 deg in less than 50 ms ????????? value is skip");
+  }
+  else
+  {
+    ypr.pitch = yprtest[1];
+  }
+
+  if ((abs(yprtest[2]) - abs(ypr.roll)) > 0.3490)
+  {
+    Console.print("Last roll : ");
+    Console.print(ypr.roll / PI * 180);
+    Console.print(" Actual roll : ");
+    Console.println(yprtest[2] / PI * 180);
+    Console.println("roll change 20 deg in less than 50 ms ????????? value is skip");
+  }
+  else
+  {
+    ypr.roll = yprtest[2];
+  }
+
   gyroAccYaw = yprtest[0];  // the Gyro Yaw very accurate but drift
-  ypr.pitch = yprtest[1];
-  ypr.roll = yprtest[2];
 
-  // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
-  readHMC5883L();
-  //tilt compensed yaw ????????????
-  comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
-  comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
-  comTilt.z = -com.x  * cos(ypr.roll)         * sin(ypr.pitch) + com.y * sin(ypr.roll) + com.z * cos(ypr.roll) * cos(ypr.pitch);
-  comYaw = scalePI( atan2(comTilt.y, comTilt.x)  ); // the compass yaw not accurate but reliable
-  //last traitement to verify drift
-  /*
-    Console.print ("IMU.YAW ");
-    Console.print (gyroAccYaw);
-    Console.print (" Compass.YAW ");
-    Console.print (comYaw);
-    Console.print (" firstStartCompassYaw ");
-    Console.println (firstStartCompassYaw);
-    //Console.print (" stopYawCompass ");
-
-  */
+  if (robot.CompassUse) {
+    // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
+    readHMC5883L();
+    //tilt compensed yaw ????????????
+    comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
+    comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
+    comTilt.z = -com.x  * cos(ypr.roll)         * sin(ypr.pitch) + com.y * sin(ypr.roll) + com.z * cos(ypr.roll) * cos(ypr.pitch);
+    comYaw = scalePI( atan2(comTilt.y, comTilt.x)  ); // the compass yaw not accurate but reliable
+  }
+  else
+  {
+    CompassGyroOffset = 0;
+  }
 
   // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
   ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
-
-
-
-  /*
-    if (millis() > timeToAdjustGyroToCompass) {
-      Console.println(ypr.yaw);
-      //firstStartCompassYaw = comYaw - gyroAccYaw;
-      timeToAdjustGyroToCompass = millis() + 200;
-    }
-  */
 
 }
 
@@ -564,7 +590,7 @@ void IMUClass::calibComStartStop() {
     printCalib();
     useComCalibration = true;
     state = IMU_RUN;
-   
+
 
   } else {
     // start

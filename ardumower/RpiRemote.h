@@ -12,7 +12,7 @@ class RpiRemote
     {
       public:
         Tokeniser(char* str, char token);
-        bool next(char* out, int len);
+        boolean next(char* out, int len);
 
       private:
 
@@ -40,6 +40,7 @@ class RpiRemote
     unsigned long nextTimeRaspberryPISendPeri; // delay between 2 data send to RPI for perimeter
     unsigned long nextTimeRaspberryPISendBat; // delay between 2 data send to RPI for battery
     unsigned long nextTimeRaspberryPISendByLane; // delay between 2 data send to RPI for bylane
+    unsigned long nextTimeRaspberryPISendImu; // delay between 2 data send to RPI for Imu
 
 
 
@@ -56,14 +57,16 @@ class RpiRemote
     int maxRepetBatToPi ;  // max number of answer
     int delayByLaneToPi ;  //duration between 2 answers
     int maxRepetByLaneToPi ;  // max number of answer
+    int delayImuToPi ;  //duration between 2 answers
+    int maxRepetImuToPi ;  // max number of answer
     
-    bool check_checksum();
+    boolean check_checksum();
     Robot *robot;
     uint8_t parse_hex(char h);
-    bool encode(char c);
+    boolean encode(char c);
     char buf[120];
     uint8_t pos;
-    bool process_buf();
+    boolean process_buf();
     void read_pfo();
     void readWrite_setting();
     void readWrite_var();
@@ -81,6 +84,7 @@ class RpiRemote
     void RaspberryPISendPeri ();
     void RaspberryPISendBat ();
     void RaspberryPISendByLane ();
+    void RaspberryPISendImu ();
     
 };
 

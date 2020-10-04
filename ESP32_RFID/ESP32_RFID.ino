@@ -26,14 +26,21 @@ PN5180ISO15693 nfc(12, 13, 14);
 uint8_t lastUid[8];
 
 void setup() {
+  Serial.begin(115200);
  //BT seial for Pfod init
   Serial2.begin(19200);
+  Serial.println("Start the Bluetooth");
   ESP_BT.begin("ESP32_BT01");
+  Serial.println("Bluetooth Ready");
  
 // rfid reader init
-  nfc.begin(); 
+  Serial.println("Begin the RFID");
+  nfc.begin();
+  Serial.println("Reset the RFID");
   nfc.reset();
+  Serial.println("Init the RFID");
   nfc.setupRF();
+  Serial.println("RFID READER READY");
 }
 
 void loop() {
