@@ -2,7 +2,7 @@
 Ardumower full odometry version
 see https://www.ardumower.de/index.php/de/ for more info.
 
-GY-88 WITH HMC5883L MANDATORY
+Optional and recommended MPU-9250
 
 OPTIONAL RFID
 	Use for multiple area mowing, Fast start Entry point,Fast return to station,soft docking ,etc....
