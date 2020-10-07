@@ -1,6 +1,6 @@
 # AzuritBer
 Ardumower full odometry version
-see https://www.ardumower.de/index.php/de/ for more info.
+see https://www.ardumower.de for more info.
 
 Optional and recommended MPU-9250
 
