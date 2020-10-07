@@ -13,7 +13,9 @@ OPTIONAL RFID
 	Need Raspberry Pi 3B+ or Pi Zero for setting RFID
 
 
-Other branch :
+Other branch 
+
+
 GY87 version use a GY87 IMU connected on I2C1 to avoid i2c adress conflit with RTC but only tested on table and never in mowing condition.
 
 RL1000 version is the code for robomow rl model platform.
