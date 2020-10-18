@@ -4,7 +4,7 @@
 #include "adcman.h"
 #include "config.h"
 
-//#define pinLED 13
+
 
 PerimeterClass Perimeter;
 

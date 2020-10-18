@@ -2811,7 +2811,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
       break;
-
+      
+    //not use actually
     case STATE_PERI_ROLL:
       stateEndTime = millis() + perimeterTrackRollTime + motorZeroSettleTime;
       if (dir == RIGHT) {
