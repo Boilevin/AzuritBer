@@ -5,6 +5,7 @@
   Copyright (c) 2014 by Maxime Carpentieri
   Copyright (c) 2014-2015 by Stefan Manteuffel
   Copyright (c) 2015 by Uwe Zimprich
+  PriÂ²vate-use only! (you need to ask for a commercial-use)
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -895,7 +896,6 @@ void Robot::resetErrorCounters() {
   for (int i = 0; i < ERR_ENUM_COUNT; i++) errorCounter[i] = errorCounterMax[i] = 0;
   loadSaveErrorCounters(false);
   resetMotorFault();
-  MowerOverHeat=false;
 }
 
 void Robot::resetMotorFault() {
@@ -1983,7 +1983,7 @@ void Robot::setup()  {
 
   dht.begin();
   nextTimeReadDHT22 = millis() + 15000; //read only after all the setting of the mower are OK
-  MowerOverHeat = false;
+
   stateStartTime = millis();
   setBeeper(100, 50, 50, 200, 200 );//beep for 3 sec
   gps.init();
@@ -4616,7 +4616,9 @@ void Robot::readDHT22() {
       Console.println(temperatureDht);
 
       nextTimeReadDHT22 = nextTimeReadDHT22 + 180000; // do not read again the temp for the next 3 minute and set the idle bat to 2 minute to poweroff the PCB
-      MowerOverHeat = true;
+      batSwitchOffIfIdle = 2; //use to switch off after 1 minute
+      setNextState(STATE_ERROR, 0);
+      return;
     }
 
     if (isnan(humidityDht) || isnan(temperatureDht) ) {
@@ -4767,6 +4769,8 @@ void Robot::loop()  {
       if (millis() >= nextTimeErrorBeep) {
         nextTimeErrorBeep = millis() + 5000;
         setBeeper(600, 50, 50, 200, 0 );//error
+
+
       }
       motorControlOdo();
       break;
@@ -5479,16 +5483,9 @@ void Robot::loop()  {
       break;
 
     case STATE_PERI_OUT_STOP:
-
       motorControlOdo();
       if (((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft)))
         if (motorLeftPWMCurr == 0 && motorRightPWMCurr == 0)  { //wait until the 2 motors completly stop because rotation is inverted
-          readDHT22(); // here the mower is stop in the first time of this loop so can spend 250ms  for reading
-          if (MowerOverHeat) {
-            batSwitchOffIfIdle = 2; //use to switch off after 1 minute
-            setNextState(STATE_ERROR, rollDir);
-            return;
-          }
           setNextState(STATE_PERI_OUT_REV, rollDir);
         }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
@@ -5774,7 +5771,7 @@ void Robot::loop()  {
 
     case STATE_PERI_OUT_REV:
       motorControlOdo();
-
+      readDHT22(); // here the mower is stop in the first time of this loop so can spend 250ms  for reading
       if (mowPatternCurr == MOW_LANES) {  //  *************************LANE***************************************
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) )
         {
