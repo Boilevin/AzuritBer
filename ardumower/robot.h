@@ -96,6 +96,10 @@ enum {
   ACT_RTC,
   ACT_CHGRELAY,
   ACT_BATTERY_SW,
+  //bber80
+  ACT_GREEN_LED,
+  ACT_RED_LED,
+  
 };
 
 // error types

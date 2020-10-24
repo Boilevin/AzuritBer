@@ -324,6 +324,9 @@ void Mower::setup() {
 
   // LED, buzzer, battery
   pinMode(pinLED, OUTPUT);
+  //bber80
+  pinMode(pinGreenLED, OUTPUT);
+  pinMode(pinRedLED, OUTPUT);
   pinMode(pinBuzzer, OUTPUT);
   digitalWrite(pinBuzzer, 0);
   pinMode(pinBatteryVoltage, INPUT);
@@ -575,6 +578,10 @@ void Mower::setActuator(char type, int value) {
 
     case ACT_BUZZER: if (value == 0) Buzzer.noTone(); else Buzzer.tone(value); break;
     case ACT_LED: digitalWrite(pinLED, value); break;
+    //bber80
+    case ACT_GREEN_LED: digitalWrite(pinGreenLED, value); break;
+    case ACT_RED_LED: digitalWrite(pinRedLED, value); break;
+     
     case ACT_USER_SW1: digitalWrite(pinUserSwitch1, value); break;
     case ACT_USER_SW2: digitalWrite(pinUserSwitch2, value); break;
     case ACT_USER_SW3: digitalWrite(pinUserSwitch3, value); break;
