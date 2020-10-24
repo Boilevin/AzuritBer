@@ -244,6 +244,12 @@ Mower::Mower() {
   userSwitch1       = 0;       // user-defined switch 1 (default value)
   userSwitch2       = 0;       // user-defined switch 2 (default value)
   userSwitch3       = 0;       // user-defined switch 3 (default value)
+//bber80
+  userLed           = 0;       // user-led (default value)
+  userGreenLed      = 0;       // user-green led (default value)
+  userRedLed        = 0;       // user-red led (default value)
+
+  
   // ----- timer -----------------------------------------
   timerUse          = 0;       // use RTC and timer?
   // ----- bluetooth -------------------------------------
@@ -577,8 +583,8 @@ void Mower::setActuator(char type, int value) {
       break; //  Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
 
     case ACT_BUZZER: if (value == 0) Buzzer.noTone(); else Buzzer.tone(value); break;
-    case ACT_LED: digitalWrite(pinLED, value); break;
-    //bber80
+   //bber80
+    case ACT_LED: digitalWrite(pinLED, value); break; 
     case ACT_GREEN_LED: digitalWrite(pinGreenLED, value); break;
     case ACT_RED_LED: digitalWrite(pinRedLED, value); break;
      

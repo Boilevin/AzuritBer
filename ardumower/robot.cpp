@@ -1915,7 +1915,12 @@ void Robot::setUserSwitches() {
   setActuator(ACT_USER_SW2, userSwitch2);
   setActuator(ACT_USER_SW3, userSwitch3);
 }
-
+// set user-Led
+void Robot::setUserLeds() {
+  setActuator(ACT_LED, userLed);
+  setActuator(ACT_GREEN_LED, userGreenLed);
+  setActuator(ACT_RED_LED, userRedLed);
+}
 
 
 void Robot::setup()  {

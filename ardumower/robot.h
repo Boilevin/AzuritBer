@@ -656,6 +656,11 @@ class Robot
     boolean userSwitch1       ;       // user-defined switch 1 (default value)
     boolean userSwitch2       ;       // user-defined switch 2 (default value)
     boolean userSwitch3       ;       // user-defined switch 3 (default value)
+    //bber80
+    boolean userLed           ;       // Main Led (default value)
+    boolean userGreenLed      ;       // Green Led (default value)
+    boolean userRedLed        ;       // Red Led (default value)
+
 
 
     // --------- charging -------------------------------
@@ -781,13 +786,14 @@ class Robot
     // virtual void beep(int numberOfBeeps, boolean shortbeep);
     virtual void printInfo(Stream &s);
     virtual void setUserSwitches();
+    //bber80
+    virtual void setUserLeds();
     virtual void addErrorCounter(byte errType);
     virtual void resetErrorCounters();
     virtual void resetMotorFault();// {}
     //bb
     virtual void setBeeper(int totalDuration, byte OnDuration, byte OffDuration, byte frequenceOn, byte frequenceOff ); // Set the variable for the beeper
-    //virtual void RaspberryPISendStat ();
-
+    
     virtual void receivePiPfodCommand (String RpiCmd, float v1, float v2, float v3);
     virtual void printSettingSerial();
     char* mowPatternNameList(byte mowPatternIndex);

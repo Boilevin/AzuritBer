@@ -1275,6 +1275,15 @@ void RemoteControl::sendCommandMenu(boolean update) {
   sendOnOff(robot->userSwitch2);
   serialPort->print(F("|r3~User switch 3 is "));
   sendOnOff(robot->userSwitch3);
+//bber80
+  serialPort->print(F("|rd~Main Led is "));
+  sendOnOff(robot->userLed);
+  serialPort->print(F("|rd~Green Led is "));
+  sendOnOff(robot->userGreenLed);
+  serialPort->print(F("|rd~Red Led is "));
+  sendOnOff(robot->userRedLed);
+
+  
   serialPort->print("}");
   serialPort->println();
 }
@@ -1397,7 +1406,25 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
   } else if (pfodCmd == "rt") {
     robot->batSwitchOffIfIdle = 0; // to stop immediatly the PCB
     sendCommandMenu(true);
-  } else if (pfodCmd == "r1") {
+  } 
+  //bber80
+   else if (pfodCmd == "rd") {
+    robot->userLed = !robot->userLed;
+    robot->setUserLeds();
+    sendCommandMenu(true);
+  }
+  else if (pfodCmd == "re") {
+    robot->userGreenLed = !robot->userGreenLed;
+    robot->setUserLeds();
+    sendCommandMenu(true);
+  }
+  else if (pfodCmd == "rf") {
+    robot->userRedLed = !robot->userRedLed;
+    robot->setUserLeds();
+    sendCommandMenu(true);
+  }
+  
+  else if (pfodCmd == "r1") {
     robot->userSwitch1 = !robot->userSwitch1;
     robot->setUserSwitches();
     sendCommandMenu(true);
