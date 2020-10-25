@@ -1278,9 +1278,9 @@ void RemoteControl::sendCommandMenu(boolean update) {
 //bber80
   serialPort->print(F("|rd~Main Led is "));
   sendOnOff(robot->userLed);
-  serialPort->print(F("|rd~Green Led is "));
+  serialPort->print(F("|re~Green Led is "));
   sendOnOff(robot->userGreenLed);
-  serialPort->print(F("|rd~Red Led is "));
+  serialPort->print(F("|rf~Red Led is "));
   sendOnOff(robot->userRedLed);
 
   

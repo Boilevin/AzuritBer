@@ -2029,7 +2029,7 @@ void Robot::setup()  {
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
     Console.println ("Watchdog is enable and set to 2 secondes");
-    watchdogEnable(2000);// Watchdog trigger after  2 sec if not reseted.
+    watchdogEnable(10000);// Watchdog trigger after  2 sec if not reseted.
 
   }
   else

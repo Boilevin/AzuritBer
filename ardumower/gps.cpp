@@ -11,7 +11,7 @@ void GPS::init() {
 
 
   Console.println("------------------------------- GPS  Initialisation --------------------------------------------");
-  GpsPort.begin(robot. gpsBaudrate);
+  GpsPort.begin(robot.gpsBaudrate);
 
 
   const char UBLOX_INIT[] PROGMEM =
