@@ -347,10 +347,14 @@ void RemoteControl::sendMotorMenu(boolean update) {
   sendSlider("a02", F("Power max"), robot->motorPowerMax, "", 0.1, 100, 0);
   //sendSlider("a03", F("calibrate left motor "), robot->motorLeftSenseCurrent, "", 1, 1000, 0);
   //sendSlider("a04", F("calibrate right motor"), robot->motorRightSenseCurrent, "", 1, 1000, 0);
-  serialPort->print(F("|a05~Speed l, r"));
+  serialPort->println(F("|a05~Speed l, r"));
   serialPort->print(robot->motorLeftPWMCurr);
   serialPort->print(", ");
   serialPort->print(robot->motorRightPWMCurr);
+  serialPort->println(F("|l03~RPM Motor l, r "));
+  serialPort->print(robot->motorLeftRpmCurr);
+  serialPort->print(", ");
+  serialPort->print(robot->motorRightRpmCurr);
   sendSlider("a06", F("Speed max in rpm"), robot->motorSpeedMaxRpm, "", 1, 100, 1);
   sendSlider("a15", F("Speed max in pwm"), robot->motorSpeedMaxPwm, "", 1, 255, 1);
   sendSlider("a11", F("Accel"), robot->motorAccel, "", 1, 2000, 500);
@@ -960,10 +964,7 @@ void RemoteControl::sendOdometryMenu(boolean update) {
   serialPort->print(robot->odometryLeft);
   serialPort->print(", ");
   serialPort->println(robot->odometryRight);
-  serialPort->println(F("|l03~RPM Motor l, r "));
-  serialPort->print(robot->motorLeftRpmCurr);
-  serialPort->print(", ");
-  serialPort->println(robot->motorRightRpmCurr);
+  
   sendSlider("l04", F("Ticks per one full revolution"), robot->odometryTicksPerRevolution, "", 1, 1500, 500);
   sendSlider("l01", F("Ticks per cm"), robot->odometryTicksPerCm, "", 0.1, 30, 0.1);
   sendSlider("l02", F("Wheel base cm"), robot->odometryWheelBaseCm, "", 0.1, 50, 5);
