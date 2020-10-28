@@ -330,10 +330,6 @@ void RemoteControl::processErrorMenu(String pfodCmd) {
 void RemoteControl::sendMotorMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Motor`1000"));
 
-  serialPort->println(F("|a00~Overload Counter l, r "));
-  serialPort->print(robot->motorLeftSenseCounter);
-  serialPort->print(", ");
-  serialPort->print(robot->motorRightSenseCounter);
   serialPort->println(F("|a01~Power in Watt l, r "));
   serialPort->print(robot->motorLeftPower);
   serialPort->print(", ");
@@ -345,13 +341,11 @@ void RemoteControl::sendMotorMenu(boolean update) {
   //Console.print("motorpowermax=");
   //Console.println(robot->motorPowerMax);
   sendSlider("a02", F("Power max"), robot->motorPowerMax, "", 0.1, 100, 0);
-  //sendSlider("a03", F("calibrate left motor "), robot->motorLeftSenseCurrent, "", 1, 1000, 0);
-  //sendSlider("a04", F("calibrate right motor"), robot->motorRightSenseCurrent, "", 1, 1000, 0);
-  serialPort->println(F("|a05~Speed l, r"));
+  serialPort->println(F("|a05~PWM Speed l, r"));
   serialPort->print(robot->motorLeftPWMCurr);
   serialPort->print(", ");
   serialPort->print(robot->motorRightPWMCurr);
-  serialPort->println(F("|l03~RPM Motor l, r "));
+  serialPort->println(F("|l03~RPM Speed l, r "));
   serialPort->print(robot->motorLeftRpmCurr);
   serialPort->print(", ");
   serialPort->print(robot->motorRightRpmCurr);
@@ -366,23 +360,14 @@ void RemoteControl::sendMotorMenu(boolean update) {
   //sendSlider("a12", F("Bidir speed ratio 1"), robot->motorBiDirSpeedRatio1, "", 0.01, 1.0);
   //sendSlider("a13", F("Bidir speed ratio 2"), robot->motorBiDirSpeedRatio2, "", 0.01, 1.0);
   sendPIDSlider("a14", "RPM", robot->motorLeftPID, 0.01, 3.0);
-  serialPort->println(F("|a10~Testing is"));
-  switch (testmode) {
-    case 0: serialPort->print(F("OFF")); break;
-    case 1: serialPort->print(F("Left motor forw")); break;
-    case 2: serialPort->print(F("Right motor forw")); break;
-  }
+
   //bb add
   if (robot->developerActive) {
     sendSlider("a20", F("MotorSenseLeftScale"), robot->motorSenseLeftScale, "", 0.01, 0.10, 3.00);
     sendSlider("a21", F("MotorSenseRightScale"), robot->motorSenseRightScale, "", 0.01, 0.10, 3.00);
   }
   //end add
-  serialPort->print(F("|a14~for config file:"));
-  serialPort->print(F("motorSenseScale l, r"));
-  serialPort->print(robot->motorSenseLeftScale);
-  serialPort->print(", ");
-  serialPort->print(robot->motorSenseRightScale);
+  
   serialPort->print(F("|a16~Swap left direction "));
   sendYesNo(robot->motorLeftSwapDir);
   serialPort->print(F("|a17~Swap right direction "));
@@ -409,19 +394,6 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
     //Console.print("motorpowermax=");
     //Console.println(robot->motorPowerMax);
   }
-
-  // else if (pfodCmd.startsWith("a03")) {
-  //   processSlider(pfodCmd, robot->motorLeftSenseCurrent, 1);
-  //bb change ???????????????????????????? warning possible DIV by 0 so 1.0 instead of 0
-  //robot->motorSenseLeftScale = robot->motorLeftSenseCurrent / max(0, (float)robot->motorLeftSenseADC);
-  //  robot->motorSenseLeftScale = robot->motorLeftSenseCurrent / max(0.01, (float)robot->motorLeftSenseADC);
-  //}
-  //else if (pfodCmd.startsWith("a04")) {
-  // processSlider(pfodCmd, robot->motorRightSenseCurrent, 1);
-  //bb change ???????????????????? warning possible DIV by 0
-  //robot->motorSenseRightScale = robot->motorRightSenseCurrent / max(0, (float)robot->motorRightSenseADC);
-  // robot->motorSenseRightScale = robot->motorRightSenseCurrent / max(0.01, (float)robot->motorRightSenseADC);
-  //}
   else if (pfodCmd.startsWith("a06")) processSlider(pfodCmd, robot->motorSpeedMaxRpm, 1);
   else if (pfodCmd.startsWith("a15")) processSlider(pfodCmd, robot->motorSpeedMaxPwm, 1);
   else if (pfodCmd.startsWith("a07")) processSlider(pfodCmd, robot->motorRollDegMax, 1);
@@ -452,14 +424,7 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
     sendTestOdoMenu(true);
   }
 
-  else if (pfodCmd == "a10") {
-    testmode = (testmode + 1) % 3;
-    switch (testmode) {
-      case 0: robot->setNextState(STATE_OFF, 0); break;
-      case 1: robot->setNextState(STATE_MANUAL, 0); robot->motorRightSpeedRpmSet = 0; robot->motorLeftSpeedRpmSet = robot->motorSpeedMaxRpm; break;
-      case 2: robot->setNextState(STATE_MANUAL, 0); robot->motorLeftSpeedRpmSet  = 0; robot->motorRightSpeedRpmSet = robot->motorSpeedMaxRpm; break;
-    }
-  }
+
   sendMotorMenu(true);
 }
 
