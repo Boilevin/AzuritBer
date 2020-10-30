@@ -111,14 +111,6 @@
 #define pinUserSwitch3 48          // user-defined switch 3
 #define pinRain 44                 // rain sensor
 
-// IMU (compass/gyro/accel): I2C  (SCL, SDA)
-
-
-
-
-// ------- baudrates---------------------------------
-
-
 
 // ------ used serial ports for console, Bluetooth, ESP8266 -----------------------------
 
@@ -126,11 +118,11 @@
 // we use 'SerialUSB' for 'Console' so the Raspberry PI receise all data
 // we use 'Serial' for 'Console' so the PC receise all data
  
-#define Console Serial
-#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
+//#define Console Serial
+#define Console SerialUSB
 
-//#define Console SerialUSB
-//#define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
+#define CONSOLE_BAUDRATE    115200       // baudrate used for PC or raspberry
+
 
 #define Enable_DueWatchdog true
 //#define Enable_DueWatchdog false

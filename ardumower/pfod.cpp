@@ -363,8 +363,8 @@ void RemoteControl::sendMotorMenu(boolean update) {
 
   //bb add
   if (robot->developerActive) {
-    sendSlider("a20", F("MotorSenseLeftScale"), robot->motorSenseLeftScale, "", 0.01, 0.10, 3.00);
-    sendSlider("a21", F("MotorSenseRightScale"), robot->motorSenseRightScale, "", 0.01, 0.10, 3.00);
+    sendSlider("a20", F("MotorSenseLeftScale"), robot->motorSenseLeftScale, "", 0.01, 3.00, 0.1);
+    sendSlider("a21", F("MotorSenseRightScale"), robot->motorSenseRightScale, "", 0.01, 3.00, 0.1);
   }
   //end add
   
@@ -1226,7 +1226,7 @@ void RemoteControl::sendCommandMenu(boolean update) {
   //serialPort->print(F("|ro~OFF|ra~Start Now in Auto mode|rc~RC mode|"));
 
   serialPort->print(F("|ro~OFF"));
-  serialPort->print(F("|ra~Start Now in Auto mode"));
+  serialPort->print(F("|ra~Start Now "));
   serialPort->println(F("|rb~Actual Status is "));
   serialPort->print(robot->statusName());
   serialPort->println(F("|rs~Actual State is "));
@@ -1236,7 +1236,7 @@ void RemoteControl::sendCommandMenu(boolean update) {
   serialPort->println(F("|rp~Pattern is "));
   serialPort->print(robot->mowPatternName());
   serialPort->print(F("|rh~Go to Station"));
-  serialPort->print(F("|rk~Start Tracking"));
+  //serialPort->print(F("|rk~Start Tracking"));
   serialPort->print(F("|rt~Power OFF PCB"));
   serialPort->print(F("|r1~User switch 1 is "));
   sendOnOff(robot->userSwitch1);
