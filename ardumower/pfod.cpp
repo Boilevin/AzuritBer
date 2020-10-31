@@ -432,18 +432,16 @@ void RemoteControl::sendMowMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Mow`1000"));
   serialPort->print(F("|o12~Force mowing off: "));
   sendYesNo(robot->motorMowForceOff);
-  //serialPort->print(F("|o00~Overload Counter "));
-  //serialPort->print(robot->motorMowSenseCounter);
   serialPort->print(F("|o01~Power in Watt "));
   serialPort->print(robot->motorMowPower);
-  serialPort->print(F("|o11~current in mA "));
+  serialPort->print(F("|o11~Sense in mA "));
   serialPort->print(robot->motorMowSenseCurrent);
   sendSlider("o02", F("Power max"), robot->motorMowPowerMax, "", 0.1, 100, 1);
   sendSlider("o05", F("PWM Max Speed "), robot->motorMowSpeedMaxPwm, "", 1, 255, 50);
   sendSlider("o08", F("PWM Min Speed "), robot->motorMowSpeedMinPwm, "", 1, 255, 50);
   if (robot->developerActive) {
    
-    sendSlider("o03", F("calibrate mow motor "), robot->motorMowSenseScale, "", 0.01, 3, 0);
+    sendSlider("o03", F("calibrate mow Sense "), robot->motorMowSenseScale, "", 0.01, 3, 0);
   }
   serialPort->print(F("|o07~PWM Coeff "));
   serialPort->print(robot->motorMowPwmCoeff);
@@ -855,26 +853,26 @@ void RemoteControl::sendBatteryMenu(boolean update) {
   sendYesNo(robot->batMonitor);
   //bb add
   if (robot->developerActive) {
-    sendSlider("j09", F("Charge Factor"), robot->batChgFactor, "", 0.01, 9, 12);
-    sendSlider("j05", F("Battery Factor "), robot->batFactor, "", 0.01, 9, 12);
-    sendSlider("j08", F("Sense factor"), robot->batSenseFactor, "", 0.01, 12);
+    sendSlider("j09", F("Charge Factor"), robot->batChgFactor, "", 0.01, 12, 9);
+    sendSlider("j05", F("Battery Factor "), robot->batFactor, "", 0.01, 12, 9);
+    sendSlider("j08", F("Sense factor"), robot->batSenseFactor, "", 0.01, 3, 0.1);
   }
   //end add
   //Console.print("batFactor=");
   //Console.println(robot->batFactor);
-  sendSlider("j02", F("Go home if below Volt"), robot->batGoHomeIfBelow, "", 0.1, robot->batFull, (robot->batFull * 0.72)); // for Sony Konion cells 4.2V * 0,72= 3.024V which is pretty safe to use
-  sendSlider("j12", F("Switch off if idle minutes"), robot->batSwitchOffIfIdle, "", 1, 300, 1);
-  sendSlider("j03", F("Switch off if below Volt"), robot->batSwitchOffIfBelow, "", 0.1, robot->batFull, (robot->batFull * 0.72));
+  sendSlider("j02", F("Go home if Volt below"), robot->batGoHomeIfBelow, "", 0.1, robot->batFull, (robot->batFull * 0.72)); // for Sony Konion cells 4.2V * 0,72= 3.024V which is pretty safe to use
+  sendSlider("j12", F("Switch off after minutes"), robot->batSwitchOffIfIdle, "", 1, 300, 1);
+  sendSlider("j03", F("Switch off if Volt below"), robot->batSwitchOffIfBelow, "", 0.1, robot->batFull, (robot->batFull * 0.72));
   serialPort->print(F("|j04~Charge "));
   serialPort->print(robot->chgVoltage);
   serialPort->print("V ");
   serialPort->print(robot->chgCurrent);
   serialPort->print("A");
 
-  sendSlider("j06", F("Charge sense zero"), robot->chgSenseZero, "", 1, 600, 400);
+  //sendSlider("j06", F("Charge sense zero"), robot->chgSenseZero, "", 1, 600, 400);
 
-  sendSlider("j10", F("charging starts if Voltage is below"), robot->startChargingIfBelow, "", 0.1, robot->batFull, (robot->batFull * 0.72));
-  sendSlider("j11", F("Battery is fully charged if current is below"), robot->batFullCurrent, "", 0.1, robot->batChargingCurrentMax, 0);
+  sendSlider("j10", F("Start charge if Voltage below"), robot->startChargingIfBelow, "", 0.1, robot->batFull, (robot->batFull * 0.72));
+  sendSlider("j11", F("Stop charge if Sense below"), robot->batFullCurrent, "", 0.1, robot->batChargingCurrentMax, 0);
   serialPort->println("}");
 }
 
@@ -887,7 +885,7 @@ void RemoteControl::processBatteryMenu(String pfodCmd) {
   }
   else if (pfodCmd.startsWith("j03")) processSlider(pfodCmd, robot->batSwitchOffIfBelow, 0.1);
   else if (pfodCmd.startsWith("j05")) processSlider(pfodCmd, robot->batFactor, 0.01);
-  else if (pfodCmd.startsWith("j06")) processSlider(pfodCmd, robot->chgSenseZero, 1);
+  //else if (pfodCmd.startsWith("j06")) processSlider(pfodCmd, robot->chgSenseZero, 1);
   else if (pfodCmd.startsWith("j08")) processSlider(pfodCmd, robot->batSenseFactor, 0.01);
   else if (pfodCmd.startsWith("j09")) processSlider(pfodCmd, robot->batChgFactor, 0.01);
   else if (pfodCmd.startsWith("j10")) processSlider(pfodCmd, robot->startChargingIfBelow, 0.1);
