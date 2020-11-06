@@ -34,16 +34,16 @@ if (os.name=='posix'):
     streamVideoOnPower = True #auto start of the streaming
 
     #Setting for Mqtt and home automation
-    useMqtt=True
+    useMqtt=False
     Mqtt_Broker_IP="10.0.0.8"
     Mqtt_Port = 1883
     Mqtt_User = "admin"
     Mqtt_Password = "admin"
     Mqtt_ShowDebug = False
     #delay in second between 2 sends of the DUE loops/sec over mqtt
-    Mqtt_IdleFreqency = 1
+    Mqtt_IdleFreqency = 5
     # Always first letter uppercase and set the yaml file according Mower is the defaut name
-    Mqtt_MowerName = "Mower"
+    Mqtt_MowerName = "Denna"
 
 
 
