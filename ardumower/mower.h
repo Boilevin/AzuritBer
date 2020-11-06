@@ -123,8 +123,8 @@
 // ------ used serial ports for console, Bluetooth, ESP8266 -----------------------------
 
 // Due has two serial ports: Native (SerialUSB) and Programming (Serial) -
-// we use 'SerialUSB' for 'Console' so the Raspberry PI receise all data
-// we use 'Serial' for 'Console' so the PC receise all data
+// we use 'SerialUSB' for 'Console' so the Raspberry PI receive all data
+// we use 'Serial' for 'Console' so the PC receive all data
  
 #define Console Serial
 #define CONSOLE_BAUDRATE    115200       // baudrate used for PC

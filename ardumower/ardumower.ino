@@ -16,7 +16,7 @@
  *      If Raspberry PI is not connected you need to change into mower.h
  *          #define Console Serial
  *          //#define Console SerialUSB
- *      and into arduremote setting R/C set raspberryPiuse to NO
+ *      and into arduremote setting Raspberry set raspberryPiuse to NO
  *      then you have access to the Console on the PC 
  *      
  *      If Raspberry PI is connected you need to change into mower.h
