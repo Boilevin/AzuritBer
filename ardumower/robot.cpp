@@ -3457,7 +3457,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       }
       OdoRampCompute();
       break;
-    case STATE_PERI_OUT_ROLL_TOTRACK:  //roll left or right in normal mode
+    case STATE_PERI_OUT_ROLL_TOTRACK:  //roll left to find the wire
 
       AngleRotate = 180;
       Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
