@@ -1630,15 +1630,13 @@ void Robot::motorControlPerimeter() {
 
     if (millis() > perimeterLastTransitionTime + trackingErrorTimeOut) {
       if (perimeterInside) {
-        Console.println("Tracking Fail but and we are inside, So start to find again the perimeter");
-        addErrorCounter(ERR_TRACKING);
+        Console.println("Tracking Fail and we are inside, So start to find again the perimeter");
         setNextState(STATE_PERI_FIND, 0);
       }
       else
       {
-        Console.println("Tracking Fail and we are outside, So stop all");
-        addErrorCounter(ERR_TRACKING);
-        setNextState(STATE_ERROR, 0);
+        Console.println("Tracking Fail and we are outside, So start to roll to find again the perimeter");
+        setNextState(STATE_PERI_OUT_ROLL_TOTRACK, rollDir);
       }
 
     }
@@ -2811,7 +2809,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
       break;
-      
+
     //not use actually
     case STATE_PERI_ROLL:
       stateEndTime = millis() + perimeterTrackRollTime + motorZeroSettleTime;
