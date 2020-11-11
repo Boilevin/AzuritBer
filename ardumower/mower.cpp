@@ -252,7 +252,7 @@ Mower::Mower() {
   bluetoothUse      = 1;      // use Bluetooth module?
   // ----- esp8266 ---------------------------------------
   esp8266Use        = 0;       // use ESP8266 Wifi module?
-  esp8266ConfigString = "1234567321"; // always use 10 char to avoid eeprom corruption
+  esp8266ConfigString = "123test321"; // always use 10 char to avoid eeprom corruption
 
   // ------ mower stats-------------------------------------------
   statsOverride = false; // if set to true mower stats are overwritten - be careful
@@ -445,7 +445,7 @@ void Mower::setup() {
     ESP8266port.println(esp8266ConfigString);
     ESP8266port.flush();
     ESP8266port.end();
-    rc.initSerial(&Serial1, ESP8266_BAUDRATE);
+    rc.initSerial(&ESP8266port, ESP8266_BAUDRATE);
   } else if (bluetoothUse) {
     rc.initSerial(&Bluetooth, BLUETOOTH_BAUDRATE);
   }
