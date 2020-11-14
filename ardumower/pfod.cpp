@@ -1220,7 +1220,7 @@ void RemoteControl::processInfoMenu(String pfodCmd) {
 }
 
 void RemoteControl::sendCommandMenu(boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->print(F("{.Commands`5000"));
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.Commands`1000"));
   //serialPort->print(F("|ro~OFF|ra~Start Now in Auto mode|rc~RC mode|"));
 
   serialPort->print(F("|ro~OFF"));

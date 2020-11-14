@@ -249,7 +249,7 @@ Mower::Mower() {
   // ----- timer -----------------------------------------
   timerUse          = 0;       // use RTC and timer?
   // ----- bluetooth -------------------------------------
-  bluetoothUse      = 1;      // use Bluetooth module?
+  bluetoothUse      = 1;      // use Bluetooth module? It's Impossible to use Bluetooth and esp8266 at same time
   // ----- esp8266 ---------------------------------------
   esp8266Use        = 0;       // use ESP8266 Wifi module?
   esp8266ConfigString = "123test321"; // always use 10 char to avoid eeprom corruption
@@ -440,13 +440,14 @@ void Mower::setup() {
   // Console.println(" --> ******************************************* Back to mower.cpp *********************************");
 
   if (esp8266Use) {
-    Console.println(F("Sending ESP8266 Config"));
+    Console.println(F("ESP8266 in used : Use Arduremote over WIFI"));
     ESP8266port.begin(ESP8266_BAUDRATE);
     ESP8266port.println(esp8266ConfigString);
     ESP8266port.flush();
     ESP8266port.end();
     rc.initSerial(&ESP8266port, ESP8266_BAUDRATE);
   } else if (bluetoothUse) {
+    Console.println(F("BT in used : Use Arduremote over Bluetooth"));
     rc.initSerial(&Bluetooth, BLUETOOTH_BAUDRATE);
   }
 
