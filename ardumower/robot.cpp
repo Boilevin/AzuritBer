@@ -4549,7 +4549,7 @@ void Robot::loop()  {
   if (millis() >= nextTimeInfo) {
     if ((millis() - nextTimeInfo > 250)) {
       if (developerActive) {
-        Console.print("------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec ");
+        Console.print("-- INFO : LOOP NOT PERFECT -- Over 1 sec ");
         Console.println((millis() - nextTimeInfo));
       }
     }

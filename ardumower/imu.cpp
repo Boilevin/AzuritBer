@@ -547,6 +547,8 @@ void IMUClass::calibComStartStop() {
     Console.println(F("compass calibration..."));
     Console.println(F("rotate mower 360 degree around all three axis until NO new data are coming"));
     watchdogReset();
+    comOfs.x = comOfs.y = comOfs.z = 0;
+    comScale.x = comScale.y = comScale.z = 2;
     foundNewMinMax = false;
     useComCalibration = false;
     state = IMU_CAL_COM;
