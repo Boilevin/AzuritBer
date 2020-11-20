@@ -92,7 +92,18 @@ void IMUClass::begin() {
     {
       Console.println("Unable to communicate with MPU-9250");
       Console.println("Check connections, and try again.");
-      delay(5000);
+      delay(1000);
+      watchdogReset();
+      delay(1000);
+      watchdogReset();
+      delay(1000);
+      watchdogReset();
+      delay(1000);
+      watchdogReset();
+      delay(1000);
+      watchdogReset();
+      
+      
     }
   }
   else {

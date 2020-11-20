@@ -32,8 +32,11 @@ int I2CclearBus() {
 
   pinMode(SDA, INPUT_PULLUP); // Make SDA (data) and SCL (clock) pins Inputs with pullup.
   pinMode(SCL, INPUT_PULLUP);
-
-  delay(2500);  // Wait 2.5 secs. This is strictly only necessary on the first power
+  delay(1000);
+  watchdogReset();
+  delay(1000);
+  watchdogReset();
+  delay(500);  // Wait 2.5 secs. This is strictly only necessary on the first power
   // up of the DS3231 module to allow it to initialize properly,
   // but is also assists in reliable programming of FioV3 boards as it gives the
   // IDE a chance to start uploaded the program
@@ -89,7 +92,8 @@ int I2CclearBus() {
 }
 
 void I2Creset(){
-  while (true){
+  unsigned long timeout = millis() + 5000;
+  while (millis() < timeout){
     int rtn = I2CclearBus(); // clear the I2C bus first before calling Wire.begin()
     if (rtn == 0) return;
     Console.println(F("I2C bus error. Could not clear (PCB not powered ON or RTC module missing or JCx jumper set for missing I2C module)"));
