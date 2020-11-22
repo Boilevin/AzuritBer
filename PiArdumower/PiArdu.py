@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-PiVersion="354"
+PiVersion="356"
 import traceback
 import sys
 import serial
@@ -11,7 +11,6 @@ import pickle
 
 import os
 from tkinter import ttk
-
 
 from tkinter import messagebox
 from tkinter import filedialog
@@ -682,7 +681,11 @@ def checkSerial():  #the main loop is that
    
     
     if (useMqtt):
+        start1=time.time()
         Mqqt_client.loop(0.05)
+        duration=time.time()-start1
+        if duration > 0.06 :
+            consoleInsertText("MQTT take more than 60 ms in execu tion" + '\n')
         if (Mqqt_client.connected_flag):            
             if (time.time() > mymower.timeToSendMqttIdle):
                 sendMqtt(Mqtt_MowerName + "/Idle",str(mymower.loopsPerSecond))
@@ -696,7 +699,35 @@ def checkSerial():  #the main loop is that
                 mymower.timeToReconnectMqtt=time.time()+120
                
     
-    fen1.after(50,checkSerial)  # here is the main loop each 150ms
+    fen1.after(20,checkSerial)  # here is the main loop each 50ms
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 #################################### END OF MAINLOOP ###############################################
 
@@ -742,7 +773,7 @@ def decode_message(message):  #decode the nmea message
                     consoleInsertText('PI Restart into 5 Seconds'+ '\n')
                     consoleInsertText('Start to save all Console Data'+ '\n')
                     ButtonSaveReceived_click()  #save the console txt
-                    time.sleep(1)
+                    time.sleep(5)
                     subprocess.Popen('/home/pi/Documents/PiArdumower/Restart.py')
                     fen1.destroy()
                     time.sleep(1)
@@ -757,7 +788,7 @@ def decode_message(message):  #decode the nmea message
                     ButtonSaveReceived_click()  #save the console txt
                     consoleInsertText('All Console Data are saved'+ '\n')
                     consoleInsertText('PI start Shutdown'+ '\n')
-                    time.sleep(1)
+                    time.sleep(5)
                     subprocess.Popen('/home/pi/Documents/PiArdumower/PowerOff.py')
                     fen1.destroy()
                     time.sleep(1)
@@ -2355,55 +2386,6 @@ ButtonReboot = tk.Button(tabMain,text="Reboot All",  command = ButtonReboot_clic
 ButtonReboot.place(x=30,y=115, height=40, width=200)
 
 
-
-def ButtonWifiOn_click():
-    #returnval=messagebox.askyesno('Info',"Turn On the Wifi")
-    #if returnval :
-        subprocess.Popen("sudo systemctl start hostapd", shell=True)
-        subprocess.Popen("sudo systemctl start dnsmasq", shell=True)
-        subprocess.Popen("sudo rfkill unblock wifi", shell=True)
-        consoleInsertText('WIFI is ON'+ '\n')
-
-def ButtonWifiOff_click():
-    #returnval=messagebox.askyesno('Info',"Turn Off the Wifi")
-    #if returnval :
-        subprocess.Popen("sudo systemctl stop hostapd", shell=True)
-        subprocess.Popen("sudo systemctl stop dnsmasq", shell=True)
-        subprocess.Popen("sudo rfkill block wifi", shell=True)
-        consoleInsertText('WIFI is OFF'+ '\n')
-
-ButtonWifiOn= tk.Button(tabMain)
-ButtonWifiOn.place(x=450,y=255, height=40, width=100)
-ButtonWifiOn.configure(command = ButtonWifiOn_click)
-ButtonWifiOn.configure(text="Wifi On")      
-
-
-ButtonWifiOff= tk.Button(tabMain)
-ButtonWifiOff.place(x=560,y=255, height=40, width=100)
-ButtonWifiOff.configure(command = ButtonWifiOff_click)
-ButtonWifiOff.configure(text="Wifi Off")
-
-def ButtonBTOn_click():
-    returnval=messagebox.askyesno('Info',"Turn On the Bluetooth")
-    if returnval :
-        subprocess.Popen("sudo rfkill unblock bluetooth", shell=True)
-def ButtonBTOff_click():
-    returnval=messagebox.askyesno('Info',"Turn Off the Bluetooth")
-    if returnval :
-        subprocess.Popen("sudo rfkill block bluetooth", shell=True)
-
-ButtonBTOn= tk.Button(tabMain)
-ButtonBTOn.place(x=450,y=300, height=40, width=100)
-ButtonBTOn.configure(command = ButtonBTOn_click)
-ButtonBTOn.configure(text="BT On")      
-
-
-ButtonBTOff= tk.Button(tabMain)
-ButtonBTOff.place(x=560,y=300, height=40, width=100)
-ButtonBTOff.configure(command = ButtonBTOff_click)
-ButtonBTOff.configure(text="BT Off")
-
-
 ChkBtnperimeterUse=tk.Checkbutton(tabMain, text="Use Perimeter",relief=tk.SOLID,variable=MainperimeterUse,anchor='nw')
 ChkBtnperimeterUse.place(x=270,y=10,width=250, height=20)
 ChkBtnimuUse=tk.Checkbutton(tabMain, text="Use IMU",relief=tk.SOLID,variable=MainimuUse,anchor='nw')
@@ -2813,23 +2795,6 @@ ButtonRequestSettingFomMower.configure(text="Read From Mower")
 ButtonSetPerimeterApply = tk.Button(tabPerimeter)
 ButtonSetPerimeterApply.place(x=200,y=350, height=25, width=100)
 ButtonSetPerimeterApply.configure(command = ButtonSetPerimeterApply_click,text="Send To Mower")
-
-
-
-ButtonStartArea2 = tk.Button(tabPerimeter)
-ButtonStartArea2.place(x=350,y=315, height=25, width=200)
-ButtonStartArea2.configure(command = ButtonStartArea2_click,text="Start Sender Area2")
-
-
-ButtonStopArea2 = tk.Button(tabPerimeter)
-ButtonStopArea2.place(x=350,y=350, height=25, width=200)
-ButtonStopArea2.configure(command = ButtonStopArea2_click,text="Stop Sender Area2")
-
-
-
-
-
-
 
 
 """************* Bylane setting *****************************"""
@@ -3743,10 +3708,72 @@ ButtonOdoRotNonStop.configure(command = ButtonOdoRotNonStop_click)
 ButtonOdoRotNonStop.configure(text="Rotate Non Stop 100 Turns")
 
 
-#ButtonGoTOArea2= tk.Button(TestPage)
-#ButtonGoTOArea2.place(x=30,y=215, height=25, width=200)
-#ButtonGoTOArea2.configure(command = ButtonGoTOArea2_click)
-#ButtonGoTOArea2.configure(text="Go to Area2")
+
+
+def ButtonWifiOn_click():
+    #returnval=messagebox.askyesno('Info',"Turn On the Wifi")
+    #if returnval :
+        subprocess.Popen("sudo systemctl start hostapd", shell=True)
+        subprocess.Popen("sudo systemctl start dnsmasq", shell=True)
+        subprocess.Popen("sudo rfkill unblock wifi", shell=True)
+        consoleInsertText('WIFI is ON'+ '\n')
+
+def ButtonWifiOff_click():
+    #returnval=messagebox.askyesno('Info',"Turn Off the Wifi")
+    #if returnval :
+        subprocess.Popen("sudo systemctl stop hostapd", shell=True)
+        subprocess.Popen("sudo systemctl stop dnsmasq", shell=True)
+        subprocess.Popen("sudo rfkill block wifi", shell=True)
+        consoleInsertText('WIFI is OFF'+ '\n')
+
+ButtonWifiOn= tk.Button(TestPage)
+ButtonWifiOn.place(x=550,y=65, height=25, width=100)
+ButtonWifiOn.configure(command = ButtonWifiOn_click)
+ButtonWifiOn.configure(text="Wifi On")      
+
+
+ButtonWifiOff= tk.Button(TestPage)
+ButtonWifiOff.place(x=660,y=65, height=25, width=100)
+ButtonWifiOff.configure(command = ButtonWifiOff_click)
+ButtonWifiOff.configure(text="Wifi Off")
+
+def ButtonBTOn_click():
+    returnval=messagebox.askyesno('Info',"Turn On the Bluetooth")
+    if returnval :
+        subprocess.Popen("sudo rfkill unblock bluetooth", shell=True)
+def ButtonBTOff_click():
+    returnval=messagebox.askyesno('Info',"Turn Off the Bluetooth")
+    if returnval :
+        subprocess.Popen("sudo rfkill block bluetooth", shell=True)
+
+ButtonBTOn= tk.Button(TestPage)
+ButtonBTOn.place(x=550,y=15, height=25, width=100)
+ButtonBTOn.configure(command = ButtonBTOn_click)
+ButtonBTOn.configure(text="BT On")      
+
+
+ButtonBTOff= tk.Button(TestPage)
+ButtonBTOff.place(x=660,y=15, height=25, width=100)
+ButtonBTOff.configure(command = ButtonBTOff_click)
+ButtonBTOff.configure(text="BT Off")
+
+
+
+ButtonStartArea2 = tk.Button(TestPage)
+ButtonStartArea2.place(x=50,y=315, height=25, width=150)
+ButtonStartArea2.configure(command = ButtonStartArea2_click,text="Start Sender Area2")
+
+ButtonStopArea2 = tk.Button(TestPage)
+ButtonStopArea2.place(x=50,y=350, height=25, width=150)
+ButtonStopArea2.configure(command = ButtonStopArea2_click,text="Stop Sender Area2")
+
+ButtonStartArea3 = tk.Button(TestPage)
+ButtonStartArea3.place(x=210,y=315, height=25, width=150)
+ButtonStartArea3.configure(command = ButtonStartArea3_click,text="Start Sender Area3")
+
+ButtonStopArea3 = tk.Button(TestPage)
+ButtonStopArea3.place(x=210,y=350, height=25, width=150)
+ButtonStopArea3.configure(command = ButtonStopArea3_click,text="Stop Sender Area3")
 
 ButtonBackHome = tk.Button(TestPage, image=imgBack, command = ButtonBackToMain_click)
 ButtonBackHome.place(x=680, y=280, height=120, width=120)

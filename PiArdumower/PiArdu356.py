@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-PiVersion="347"
+PiVersion="356"
 import traceback
 import sys
 import serial
@@ -11,7 +11,6 @@ import pickle
 
 import os
 from tkinter import ttk
-
 
 from tkinter import messagebox
 from tkinter import filedialog
@@ -30,8 +29,12 @@ from config import Mqtt_Broker_IP
 from config import Mqtt_Port
 from config import Mqtt_IdleFreqency
 from config import Mqtt_MowerName
-from config import streamVideoOnPower
+from config import Mqtt_User
+from config import Mqtt_Password
+from config import Mqtt_ShowDebug
 
+from config import streamVideoOnPower
+from config import Sender1AdressIP
 from config import Sender2AdressIP
 from config import Sender3AdressIP
 
@@ -42,18 +45,21 @@ if(useMqtt):
     Mqqt_client = mqtt_client.Client( client_id = Mqtt_MowerName)
     Mqqt_client.connected_flag=False # create flag in class
        
-    def Mqqt_on_log( Mqqt_client, userdata, level, buf ):     
-        print( "log: ",buf)
+    def Mqqt_on_log( Mqqt_client, userdata, level, buf ):
+        #consoleInsertText("log: ",buf)
+        print( "log: ",str(buf))
 
     def Mqqt_on_connect( Mqqt_client, userdata, flags, rc ):
         if rc==0:           
             Mqqt_client.connected_flag=True #set flag
+            print("MQTT connected "+ '\n')
             consoleInsertText("MQTT connected "+ '\n')
             #initialize all for next loop update MQTT data
             mymower.state=255
             mymower.batVoltage=0
             mymower.lastMqttBatteryValue=0
             mymower.Dht22Temp=0
+            
             sendMqtt(Mqtt_MowerName + "/Status",str(myRobot.statusNames[mymower.status]))
             
                 
@@ -62,21 +68,26 @@ if(useMqtt):
             
         else:
             Mqqt_client.connected_flag=False
-            consoleInsertText("MQTT Bad connection Returned Code:" + rc +'\n')
+            print("MQTT Bad connection Returned Code:" + str(rc) +'\n')
+            consoleInsertText("MQTT Bad connection Returned Code:" + str(rc) +'\n')
             
             
             
     def Mqqt_on_disconnect( Mqqt_client, userdata, rc ):
         Mqqt_client.connected_flag=False
-        mymower.timeToReconnectMqtt=time.time()+120
+        Mqqt_client.loop_stop()    #Stop loop
+        mymower.timeToReconnectMqtt=time.time()+20
+        print("MQTT Disconnected Code:" + str(rc) + '\n')
         consoleInsertText("MQTT Disconnected Code:" + str(rc) + '\n')
                     
     def Mqqt_on_publish( Mqqt_client, userdata, result ):       
         if (Mqqt_client.connected_flag) :
             mymower.callback_id=int(result)
+            #consoleInsertText("MQTT Callback message  " + str(mymower.callback_id) + '\n')
             print("MQTT Callback message  " + str(mymower.callback_id) + '\n')
-        else:            
-            print("MQTT Callback error last message id  " + mymower.mqtt_message_id + " return " + str(mymower.callback_id) + '\n')
+        else:
+            #consoleInsertText("MQTT Callback error last message id  " + mymower.mqtt_message_id + " return " + str(mymower.callback_id) + '\n')
+            print("MQTT Callback error last message id  " + str(mymower.mqtt_message_id) + " return " + str(mymower.callback_id) + '\n')
             mymower.callback_id=0
             #receive a callback from the last message send before disconnect
          
@@ -116,8 +127,9 @@ if(useMqtt):
 
 
     #the on_log and on_publish show debug message in terminal
-    #Mqqt_client.on_log = Mqqt_on_log
-    #Mqqt_client.on_publish = Mqqt_on_publish
+    if (Mqtt_ShowDebug):
+        Mqqt_client.on_log = Mqqt_on_log
+        Mqqt_client.on_publish = Mqqt_on_publish
     Mqqt_client.on_message = Mqqt_on_message
     Mqqt_client.on_connect = Mqqt_on_connect
     Mqqt_client.on_disconnect = Mqqt_on_disconnect   
@@ -133,16 +145,18 @@ if(useMqtt):
         if (testNet == 0):
             consoleInsertText("Broker OK" + '\n')
             try:
-                Mqqt_client.username_pw_set( username="admin", password="admin" )
+                Mqqt_client.username_pw_set( username=Mqtt_User, password=Mqtt_Password )
                 Mqqt_client.connect( host=Mqtt_Broker_IP, port=Mqtt_Port, keepalive=KEEP_ALIVE )
                 Mqqt_client.subscribe( Mqtt_MowerName + "/COMMAND/#" )
-                Mqqt_client.loop_start() 
+                #Mqqt_client.loop_start()
+                print("MQTT Connecting Please Wait " + '\n')
                 consoleInsertText("MQTT Connecting Please Wait " + '\n')
                 mymower.callback_id=0
                 mymower.mqtt_message_id=0
         
             except:
                 Mqqt_client.connected_flag=False
+                print("MQTT connection failed" + '\n')
                 consoleInsertText("MQTT connection failed" + '\n')
                 #Mqqt_client.loop_stop()    #Stop loop
                 mymower.callback_id=0
@@ -157,11 +171,13 @@ if(useMqtt):
         if (Mqqt_client.connected_flag):
             r=Mqqt_client.publish(topic=var_topic,payload=var_payload,qos=0, retain=False)
             #mymower.mqtt_message_id=int(r[1])
-            #consoleInsertText("MQTT send message " + var_topic + " " + var_payload + '\n')   
+            if (Mqtt_ShowDebug):
+                consoleInsertText("MQTT send message " + var_topic + " " + var_payload + '\n')   
                          
 
         else:
-            consoleInsertText("MQTT not connected" + '\n')
+            if (Mqtt_ShowDebug):
+                consoleInsertText("MQTT not connected" + '\n')
             pass
             #consoleInsertText("MQTT not Connected fail to send " + str(mymower.mqtt_message_id) + " " + var_topic + " " + var_payload + '\n')   
 
@@ -293,7 +309,7 @@ def find_rfid_tag():
         
     else:
         consoleInsertText('RFID Tag find ToDO is: %s' % (mymower.newtagToDo)+ '\n')
-
+        consoleInsertText('Area to Mow ---> '+ str(mymower.areaToGo) + '\n')
         if((mymower.newtagToDo=="RTS")): #return to station from station area
             consoleInsertText('RFID Find faster return' + '\n')
             send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0')
@@ -309,31 +325,41 @@ def find_rfid_tag():
             consoleInsertText('RFID change tracking speed'+'\n')
             send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
             send_var_message('w','ActualSpeedPeriPWM',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
-            
+
+        if((mymower.newtagToDo=="AREA2") & (mymower.areaToGo==2)):
+            consoleInsertText('Go to area ---> '+ str(mymower.areaToGo) + '\n')
+            send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagRotAngle2',''+str(mymower.newtagRotAngle2)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
+            send_pfo_message('ry','1','2','3','4','5','6',) 
         
-        if((mymower.newtagToDo=="NEW_AREA")):
-            
-            if (mymower.areaToGo != mymower.areaInMowing):
-                consoleInsertText('Go to area ---> '+ str(mymower.areaToGo) + '\n')
-                send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
-                send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','0','0','0','0','0','0','0')
-                send_var_message('w','newtagRotAngle2',''+str(mymower.newtagRotAngle2)+'','0','0','0','0','0','0','0')
-                send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
-                send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
-                send_pfo_message('ry','1','2','3','4','5','6',)
-                
-            else:  #we are already in the mowing area so return to station from other area
-                mymower.areaToGo=1
-                consoleInsertText('Return to Station area ---> ' + '\n')
-                send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
-                send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','0','0','0','0','0','0','0')
-                send_var_message('w','newtagRotAngle2',''+str(mymower.newtagRotAngle2)+'','0','0','0','0','0','0','0')
-                send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
-                send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
-                send_var_message('w','areaToGo','1','0','0','0','0','0','0','0')
-                send_pfo_message('ry','1','2','3','4','5','6',)
-                #stopsender can freeze the Pi so better to put it after the remote
+        if((mymower.newtagToDo=="AREA3") & (mymower.areaToGo==3)):
+            consoleInsertText('Go to area ---> '+ str(mymower.areaToGo) + '\n')
+            send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagRotAngle2',''+str(mymower.newtagRotAngle2)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
+            send_pfo_message('ry','1','2','3','4','5','6',)    
+        
+        if((mymower.newtagToDo=="AREA1")):
+            mymower.areaToGo=1
+            consoleInsertText('Return to Station area ---> ' + '\n')
+            send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagRotAngle2',''+str(mymower.newtagRotAngle2)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
+            send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
+            send_var_message('w','areaToGo','1','0','0','0','0','0','0','0')
+            send_pfo_message('ry','1','2','3','4','5','6',)
+            #stopsender can freeze the Pi so better to put it after the remote
+            if (mymower.areaInMowing==2):
                 ButtonStopArea2_click()
+            if (mymower.areaInMowing==3):
+                ButtonStopArea3_click()
+            
 
 #################################### VARIABLE INITIALISATION ###############################################
    
@@ -400,6 +426,9 @@ tk_Dht22Temp=tk.DoubleVar()
 tk_Dht22Humid=tk.DoubleVar()
 tk_loopsPerSecond=tk.DoubleVar()
 tk_lastRfidFind=tk.DoubleVar()
+tk_areaToGo=tk.IntVar()
+tk_areaToGo.set(1)
+
 
 """variable use into refreh plot"""
 tk_millis=tk.IntVar()
@@ -509,17 +538,17 @@ class mower:
         mower.areaInMowing=1
         mower.areaToGo=1
         
-        mower.sigArea2Off=True
+        mower.sigAreaOff=True
         
-        mower.timeToStartArea2Signal=0
+        mower.timeToStartAreaSignal=0
         mower.focusOnPage=0
         mower.dueSerialReceived=''
         mower.autoRecordBatChargeOn=False
 
         mower.mqtt_message_id=0
         mower.callback_id=0
-        mower.timeToSendMqttIdle=time.time()+65
-        mower.timeToReconnectMqtt=time.time()+120
+        mower.timeToSendMqttIdle=time.time()+20
+        mower.timeToReconnectMqtt=time.time()+40
         mower.lastMqttBatteryValue=0
         
         
@@ -652,6 +681,11 @@ def checkSerial():  #the main loop is that
    
     
     if (useMqtt):
+        start1=time.time()
+        Mqqt_client.loop(0.05)
+        duration=time.time()-start1
+        if duration > 0.06 :
+            consoleInsertText("MQTT take more than 60 ms in execu tion" + '\n')
         if (Mqqt_client.connected_flag):            
             if (time.time() > mymower.timeToSendMqttIdle):
                 sendMqtt(Mqtt_MowerName + "/Idle",str(mymower.loopsPerSecond))
@@ -664,8 +698,36 @@ def checkSerial():  #the main loop is that
                 Mqqt_Connection()
                 mymower.timeToReconnectMqtt=time.time()+120
                
-     
-    fen1.after(20,checkSerial)  # here is the main loop each 20ms
+    
+    fen1.after(20,checkSerial)  # here is the main loop each 50ms
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
 #################################### END OF MAINLOOP ###############################################
 
@@ -711,7 +773,7 @@ def decode_message(message):  #decode the nmea message
                     consoleInsertText('PI Restart into 5 Seconds'+ '\n')
                     consoleInsertText('Start to save all Console Data'+ '\n')
                     ButtonSaveReceived_click()  #save the console txt
-                    time.sleep(1)
+                    time.sleep(5)
                     subprocess.Popen('/home/pi/Documents/PiArdumower/Restart.py')
                     fen1.destroy()
                     time.sleep(1)
@@ -726,7 +788,7 @@ def decode_message(message):  #decode the nmea message
                     ButtonSaveReceived_click()  #save the console txt
                     consoleInsertText('All Console Data are saved'+ '\n')
                     consoleInsertText('PI start Shutdown'+ '\n')
-                    time.sleep(1)
+                    time.sleep(5)
                     subprocess.Popen('/home/pi/Documents/PiArdumower/PowerOff.py')
                     fen1.destroy()
                     time.sleep(1)
@@ -898,6 +960,7 @@ def decode_message(message):  #decode the nmea message
                 if(myRobot.statusNames[mymower.status]=="TRACK_TO_START"):
                     mymower.areaInMowing=int(message.val1)
                     mymower.areaToGo=int(message.val2)
+                    tk_areaToGo.set(mymower.areaToGo)
                     
             if message.sentence_type =='RFI': # message for status info send on change only 
                 mymower.status=int(message.status)
@@ -964,11 +1027,17 @@ def decode_message(message):  #decode the nmea message
                 tk_date_Now.set(time.strftime('%d/%m/%y %H:%M:%S',time.localtime()))
                 tk_time_Now.set(time.strftime('%H:%M:%S',time.localtime()))
 
-                if ((mymower.sigArea2Off) & (myRobot.stateNames[mymower.state]=='WAITSIG2')):
-                    if(time.time() >= mower.timeToStartArea2Signal):
-                        mower.timeToStartArea2Signal=time.time()+5  #try to communicate with sender each 5 secondes
+                if ((mymower.sigAreaOff) & (myRobot.stateNames[mymower.state]=='WAITSIG2')):
+                    if(time.time() >= mower.timeToStartAreaSignal):
+                        mower.timeToStartAreaSignal=time.time()+5  #try to communicate with sender each 5 secondes
                         #ButtonWifiOn_click() #reset dns and acces point
-                        ButtonStartArea2_click()
+                        if (mymower.areaToGo==1):
+                            ButtonStartArea1_click()
+                        if (mymower.areaToGo==2):
+                            ButtonStartArea2_click()
+                        if (mymower.areaToGo==3):
+                            ButtonStartArea3_click()
+                        
                         
                 tk_MainStatusLine.set(myRobot.statusNames[mymower.status] + "/" + myRobot.stateNames[mymower.state] )
                 
@@ -1129,7 +1198,7 @@ def decode_message(message):  #decode the nmea message
                         myRobot.odometryTicksPerCm=message.val4
                         myRobot.odometryWheelBaseCm=message.val5
                         myRobot.autoResetActive=message.val6
-                        myRobot.odometryRightSwapDir=message.val7
+                        myRobot.CompassUse=message.val7
                         myRobot.twoWayOdometrySensorUse=message.val8
                         myRobot.buttonUse=message.val9
                         myRobot.userSwitch1=message.val10
@@ -2022,7 +2091,7 @@ def ButtonSendSettingToDue_click():
                             '',''+str(myRobot.odometryTicksPerCm)+\
                             '',''+str(myRobot.odometryWheelBaseCm)+\
                             '',''+str(myRobot.autoResetActive)+\
-                            '',''+str(myRobot.odometryRightSwapDir)+\
+                            '',''+str(myRobot.CompassUse)+\
                             '',''+str(myRobot.twoWayOdometrySensorUse)+\
                             '',''+str(myRobot.buttonUse)+\
                             '',''+str(myRobot.userSwitch1)+'',)
@@ -2315,55 +2384,6 @@ def ButtonReboot_click():
     
 ButtonReboot = tk.Button(tabMain,text="Reboot All",  command = ButtonReboot_click)
 ButtonReboot.place(x=30,y=115, height=40, width=200)
-
-
-
-def ButtonWifiOn_click():
-    #returnval=messagebox.askyesno('Info',"Turn On the Wifi")
-    #if returnval :
-        subprocess.Popen("sudo systemctl start hostapd", shell=True)
-        subprocess.Popen("sudo systemctl start dnsmasq", shell=True)
-        subprocess.Popen("sudo rfkill unblock wifi", shell=True)
-        consoleInsertText('WIFI is ON'+ '\n')
-
-def ButtonWifiOff_click():
-    #returnval=messagebox.askyesno('Info',"Turn Off the Wifi")
-    #if returnval :
-        subprocess.Popen("sudo systemctl stop hostapd", shell=True)
-        subprocess.Popen("sudo systemctl stop dnsmasq", shell=True)
-        subprocess.Popen("sudo rfkill block wifi", shell=True)
-        consoleInsertText('WIFI is OFF'+ '\n')
-
-ButtonWifiOn= tk.Button(tabMain)
-ButtonWifiOn.place(x=450,y=255, height=40, width=100)
-ButtonWifiOn.configure(command = ButtonWifiOn_click)
-ButtonWifiOn.configure(text="Wifi On")      
-
-
-ButtonWifiOff= tk.Button(tabMain)
-ButtonWifiOff.place(x=560,y=255, height=40, width=100)
-ButtonWifiOff.configure(command = ButtonWifiOff_click)
-ButtonWifiOff.configure(text="Wifi Off")
-
-def ButtonBTOn_click():
-    returnval=messagebox.askyesno('Info',"Turn On the Bluetooth")
-    if returnval :
-        subprocess.Popen("sudo rfkill unblock bluetooth", shell=True)
-def ButtonBTOff_click():
-    returnval=messagebox.askyesno('Info',"Turn Off the Bluetooth")
-    if returnval :
-        subprocess.Popen("sudo rfkill block bluetooth", shell=True)
-
-ButtonBTOn= tk.Button(tabMain)
-ButtonBTOn.place(x=450,y=300, height=40, width=100)
-ButtonBTOn.configure(command = ButtonBTOn_click)
-ButtonBTOn.configure(text="BT On")      
-
-
-ButtonBTOff= tk.Button(tabMain)
-ButtonBTOff.place(x=560,y=300, height=40, width=100)
-ButtonBTOff.configure(command = ButtonBTOff_click)
-ButtonBTOff.configure(text="BT Off")
 
 
 ChkBtnperimeterUse=tk.Checkbutton(tabMain, text="Use Perimeter",relief=tk.SOLID,variable=MainperimeterUse,anchor='nw')
@@ -2679,16 +2699,13 @@ def ButtonStartArea2_click():
     sub = subprocess.Popen("curl "+Sender2AdressIP+"/A1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output,error_output = sub.communicate()
     if str(output)=="b'SENDER IS ON'":
-        mymower.sigArea2Off=False
+        mymower.sigAreaOff=False
         consoleInsertText("Area2 Sender is Running" + '\n')    
     else:
-        mymower.sigArea2Off=True
+        mymower.sigAreaOff=True
         consoleInsertText("*********** Area2 Sender FAIL To Start ************" + '\n')     
         #print (error_output)
-        consoleInsertText(str(error_output)+ '\n')
-    
-        
-       
+        consoleInsertText(str(error_output)+ '\n') 
     send_var_message('w','areaInMowing','2','0','0','0','0','0','0','0')
          
 def ButtonStopArea2_click():
@@ -2696,7 +2713,7 @@ def ButtonStopArea2_click():
     sub = subprocess.Popen("curl "+Sender2AdressIP+"/A0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output, error_output = sub.communicate()   
     if str(output)=="b'SENDER IS OFF'":
-        mymower.sigArea2Off=True
+        mymower.sigAreaOff=True
         consoleInsertText("Area2 Sender is Stop" + '\n')   
     else:
         print ("Area2 Sender FAIL TO response")
@@ -2704,7 +2721,35 @@ def ButtonStopArea2_click():
         print (error_output)
         consoleInsertText(str(error_output)+ '\n') 
     send_var_message('w','areaInMowing','1','0','0','0','0','0','0','0')
-                  
+
+def ButtonStartArea3_click():
+    ipMessage="curl "+Sender3AdressIP+"/A1"
+    consoleInsertText("Try to Start Area3 Sender" + ipMessage + '\n')
+    sub = subprocess.Popen("curl "+Sender3AdressIP+"/A1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+    output,error_output = sub.communicate()
+    if str(output)=="b'SENDER IS ON'":
+        mymower.sigAreaOff=False
+        consoleInsertText("Area3 Sender is Running" + '\n')    
+    else:
+        mymower.sigAreaOff=True
+        consoleInsertText("*********** Area3 Sender FAIL To Start ************" + '\n')     
+        #print (error_output)
+        consoleInsertText(str(error_output)+ '\n') 
+    send_var_message('w','areaInMowing','3','0','0','0','0','0','0','0')
+    
+def ButtonStopArea3_click():
+    consoleInsertText("Try to Stop Area3 Sender" + '\n')  
+    sub = subprocess.Popen("curl "+Sender3AdressIP+"/A0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+    output, error_output = sub.communicate()   
+    if str(output)=="b'SENDER IS OFF'":
+        mymower.sigArea3Off=True
+        consoleInsertText("Area3 Sender is Stop" + '\n')   
+    else:
+        print ("Area3 Sender FAIL TO response")
+        consoleInsertText("*********** Area3 Sender FAIL To Stop ************" + '\n')   
+        print (error_output)
+        consoleInsertText(str(error_output)+ '\n') 
+    send_var_message('w','areaInMowing','1','0','0','0','0','0','0','0')                 
 
 sliderTimeBelowSmag = tk.Scale(tabPerimeter,orient='horizontal',relief=tk.SOLID, from_=0, to=500, label='Error if Smag below (0 to 500)')
 sliderTimeBelowSmag.place(x=5,y=10,width=250, height=50)
@@ -2750,23 +2795,6 @@ ButtonRequestSettingFomMower.configure(text="Read From Mower")
 ButtonSetPerimeterApply = tk.Button(tabPerimeter)
 ButtonSetPerimeterApply.place(x=200,y=350, height=25, width=100)
 ButtonSetPerimeterApply.configure(command = ButtonSetPerimeterApply_click,text="Send To Mower")
-
-
-
-ButtonStartArea2 = tk.Button(tabPerimeter)
-ButtonStartArea2.place(x=350,y=315, height=25, width=200)
-ButtonStartArea2.configure(command = ButtonStartArea2_click,text="Start Sender Area2")
-
-
-ButtonStopArea2 = tk.Button(tabPerimeter)
-ButtonStopArea2.place(x=350,y=350, height=25, width=200)
-ButtonStopArea2.configure(command = ButtonStopArea2_click,text="Stop Sender Area2")
-
-
-
-
-
-
 
 
 """************* Bylane setting *****************************"""
@@ -2852,9 +2880,14 @@ def button_home_click():
     send_pfo_message('rh','1','2','3','4','5','6',)
     
 def button_track_click():
+    mymower.areaToGo=tk_areaToGo.get()
+    send_var_message('w','mowPatternCurr',''+str(tk_mowingPattern.get())+'','laneUseNr','1','rollDir','0','0','0','0')
+    send_var_message('w','whereToStart','1','areaToGo',''+str(tk_areaToGo.get())+'','actualLenghtByLane','50','0','0','0')
     send_pfo_message('rk','1','2','3','4','5','6',)
 
 def buttonStartMow_click():
+    mymower.areaToGo=tk_areaToGo.get()
+    send_var_message('w','areaToGo',''+str(tk_areaToGo.get())+'','0','0','0','0','0','0','0')
     send_var_message('w','mowPatternCurr',''+str(tk_mowingPattern.get())+'','0','0','0','0','0','0','0')
     send_pfo_message('ra','1','2','3','4','5','6',)
    
@@ -2864,41 +2897,41 @@ AutoPage = tk.Frame(fen1)
 AutoPage.place(x=0, y=0, height=400, width=800)
 
 batteryFrame= tk.Frame(AutoPage)
-batteryFrame.place(x=10, y=180, height=60, width=100)
+batteryFrame.place(x=230, y=10, height=60, width=100)
 batteryFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 
 tk.Label(batteryFrame,text="BATTERY",fg='green').pack(side='top',anchor='n')
 tk.Label(batteryFrame,textvariable=tk_batVoltage, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 temperatureFrame= tk.Frame(AutoPage)
-temperatureFrame.place(x=130, y=180, height=60, width=100)
+temperatureFrame.place(x=340, y=10, height=60, width=100)
 temperatureFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 
 tk.Label(temperatureFrame,text="TEMPERATURE",fg='green').pack(side='top',anchor='n')
 tk.Label(temperatureFrame,textvariable=tk_Dht22Temp, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 loopsFrame= tk.Frame(AutoPage)
-loopsFrame.place(x=250, y=180, height=60, width=100)
+loopsFrame.place(x=445, y=10, height=60, width=100)
 loopsFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 
 tk.Label(loopsFrame,text="LOOP/SEC",fg='green').pack(side='top',anchor='n')
 tk.Label(loopsFrame,textvariable=tk_loopsPerSecond, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 yawFrame= tk.Frame(AutoPage)
-yawFrame.place(x=370, y=180, height=60, width=80)
+yawFrame.place(x=245, y=70, height=60, width=80)
 yawFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 tk.Label(yawFrame,text="YAW",fg='green').pack(side='top',anchor='n')
 tk.Label(yawFrame,textvariable=tk_ImuYaw, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 pitchFrame= tk.Frame(AutoPage)
-pitchFrame.place(x=470, y=180, height=60, width=80)
+pitchFrame.place(x=355, y=70, height=60, width=80)
 pitchFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 tk.Label(pitchFrame,text="PITCH",fg='green').pack(side='top',anchor='n')
 tk.Label(pitchFrame,textvariable=tk_ImuPitch, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
 
 
 rollFrame= tk.Frame(AutoPage)
-rollFrame.place(x=570, y=180, height=60, width=80)
+rollFrame.place(x=460, y=70, height=60, width=80)
 rollFrame.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
 tk.Label(rollFrame,text="ROLL",fg='green').pack(side='top',anchor='n')
 tk.Label(rollFrame,textvariable=tk_ImuRoll, fg='red',font=("Arial", 20)).pack(side='bottom',anchor='n')
@@ -2907,19 +2940,27 @@ tk.Label(rollFrame,textvariable=tk_ImuRoll, fg='red',font=("Arial", 20)).pack(si
 
 
 Frame1 = tk.Frame(AutoPage)
-Frame1.place(x=10, y=20, height=150, width=130)
-tk.Label(Frame1,text="MOW PATTERN",fg='green').pack(side='top',anchor='w')
-RdBtn_Random=tk.Radiobutton(Frame1, text="Random", variable=tk_mowingPattern, value=0).pack(side='top',anchor='w')
-RdBtn_ByLane=tk.Radiobutton(Frame1, text="By Lane", variable=tk_mowingPattern, value=1).pack(side='top',anchor='w')
-RdBtn_Perimeter=tk.Radiobutton(Frame1, text="Wire", variable=tk_mowingPattern, value=2).pack(side='top',anchor='w')
+Frame1.place(x=10, y=180, height=150, width=520)
+Frame1.configure(borderwidth="3",relief=tk.GROOVE,background="#d9d9d9",highlightbackground="#d9d9d9",highlightcolor="black")
+tk.Label(Frame1,text="MOW PATTERN",fg='green').place(x=5,y=5)
+RdBtn_Random=tk.Radiobutton(Frame1, text="Random",font=("Arial", 12), variable=tk_mowingPattern, value=0).place(x=5,y=25,width=90, height=30)
+RdBtn_ByLane=tk.Radiobutton(Frame1, text="By Lane", font=("Arial", 12),variable=tk_mowingPattern, value=1).place(x=105,y=25,width=90, height=30)
+RdBtn_Perimeter=tk.Radiobutton(Frame1, text="Wire", font=("Arial", 12),variable=tk_mowingPattern, value=2).place(x=205,y=25,width=90, height=30)
+
+tk.Label(Frame1,text="AREA Nr",fg='green').place(x=5,y=65)
+RdBtn_Random=tk.Radiobutton(Frame1, text="1",font=("Arial", 12), variable=tk_areaToGo, value=1).place(x=5,y=85,width=90, height=30)
+RdBtn_ByLane=tk.Radiobutton(Frame1, text="2", font=("Arial", 12),variable=tk_areaToGo, value=2).place(x=105,y=85,width=90, height=30)
+RdBtn_Perimeter=tk.Radiobutton(Frame1, text="3", font=("Arial", 12),variable=tk_areaToGo, value=3).place(x=205,y=85,width=90, height=30)
+
 ButtonStartMow = tk.Button(AutoPage, image=imgstartMow, command = buttonStartMow_click)
-ButtonStartMow.place(x=130,y=0,width=100, height=130)
+ButtonStartMow.place(x=10,y=10,width=100, height=130)
 Buttonhome = tk.Button(AutoPage, image=imgHome, command = button_home_click)
-Buttonhome.place(x=250,y=0,width=100, height=130)
-Buttontrack = tk.Button(AutoPage, image=imgTrack, command = button_track_click)
-Buttontrack.place(x=380,y=0,width=100, height=130)
+Buttonhome.place(x=120,y=10,width=100, height=130)
+Buttontrack = tk.Button(Frame1, image=imgTrack, command = button_track_click)
+Buttontrack.place(x=380,y=10,width=100, height=130)
 ButtonStopAllAuto = tk.Button(AutoPage, image=imgStopAll, command = button_stop_all_click)
-ButtonStopAllAuto.place(x=500,y=0,width=100, height=130)
+ButtonStopAllAuto.place(x=580,y=10,width=100, height=130)
+
 
 ButtonBackHome = tk.Button(AutoPage, image=imgBack, command = ButtonBackToMain_click)
 ButtonBackHome.place(x=680, y=280, height=120, width=120)
@@ -3667,10 +3708,72 @@ ButtonOdoRotNonStop.configure(command = ButtonOdoRotNonStop_click)
 ButtonOdoRotNonStop.configure(text="Rotate Non Stop 100 Turns")
 
 
-#ButtonGoTOArea2= tk.Button(TestPage)
-#ButtonGoTOArea2.place(x=30,y=215, height=25, width=200)
-#ButtonGoTOArea2.configure(command = ButtonGoTOArea2_click)
-#ButtonGoTOArea2.configure(text="Go to Area2")
+
+
+def ButtonWifiOn_click():
+    #returnval=messagebox.askyesno('Info',"Turn On the Wifi")
+    #if returnval :
+        subprocess.Popen("sudo systemctl start hostapd", shell=True)
+        subprocess.Popen("sudo systemctl start dnsmasq", shell=True)
+        subprocess.Popen("sudo rfkill unblock wifi", shell=True)
+        consoleInsertText('WIFI is ON'+ '\n')
+
+def ButtonWifiOff_click():
+    #returnval=messagebox.askyesno('Info',"Turn Off the Wifi")
+    #if returnval :
+        subprocess.Popen("sudo systemctl stop hostapd", shell=True)
+        subprocess.Popen("sudo systemctl stop dnsmasq", shell=True)
+        subprocess.Popen("sudo rfkill block wifi", shell=True)
+        consoleInsertText('WIFI is OFF'+ '\n')
+
+ButtonWifiOn= tk.Button(TestPage)
+ButtonWifiOn.place(x=550,y=65, height=25, width=100)
+ButtonWifiOn.configure(command = ButtonWifiOn_click)
+ButtonWifiOn.configure(text="Wifi On")      
+
+
+ButtonWifiOff= tk.Button(TestPage)
+ButtonWifiOff.place(x=660,y=65, height=25, width=100)
+ButtonWifiOff.configure(command = ButtonWifiOff_click)
+ButtonWifiOff.configure(text="Wifi Off")
+
+def ButtonBTOn_click():
+    returnval=messagebox.askyesno('Info',"Turn On the Bluetooth")
+    if returnval :
+        subprocess.Popen("sudo rfkill unblock bluetooth", shell=True)
+def ButtonBTOff_click():
+    returnval=messagebox.askyesno('Info',"Turn Off the Bluetooth")
+    if returnval :
+        subprocess.Popen("sudo rfkill block bluetooth", shell=True)
+
+ButtonBTOn= tk.Button(TestPage)
+ButtonBTOn.place(x=550,y=15, height=25, width=100)
+ButtonBTOn.configure(command = ButtonBTOn_click)
+ButtonBTOn.configure(text="BT On")      
+
+
+ButtonBTOff= tk.Button(TestPage)
+ButtonBTOff.place(x=660,y=15, height=25, width=100)
+ButtonBTOff.configure(command = ButtonBTOff_click)
+ButtonBTOff.configure(text="BT Off")
+
+
+
+ButtonStartArea2 = tk.Button(TestPage)
+ButtonStartArea2.place(x=50,y=315, height=25, width=150)
+ButtonStartArea2.configure(command = ButtonStartArea2_click,text="Start Sender Area2")
+
+ButtonStopArea2 = tk.Button(TestPage)
+ButtonStopArea2.place(x=50,y=350, height=25, width=150)
+ButtonStopArea2.configure(command = ButtonStopArea2_click,text="Stop Sender Area2")
+
+ButtonStartArea3 = tk.Button(TestPage)
+ButtonStartArea3.place(x=210,y=315, height=25, width=150)
+ButtonStartArea3.configure(command = ButtonStartArea3_click,text="Start Sender Area3")
+
+ButtonStopArea3 = tk.Button(TestPage)
+ButtonStopArea3.place(x=210,y=350, height=25, width=150)
+ButtonStopArea3.configure(command = ButtonStopArea3_click,text="Stop Sender Area3")
 
 ButtonBackHome = tk.Button(TestPage, image=imgBack, command = ButtonBackToMain_click)
 ButtonBackHome.place(x=680, y=280, height=120, width=120)
@@ -4002,13 +4105,13 @@ consoleInsertText('Read Area In Mowing from PCB1.3'+ '\n')
 send_req_message('PERI','1000','1','1','0','0','0',)
 if(useMqtt):
     consoleInsertText('Wait update Date/Time from internet'+ '\n')
-    consoleInsertText('Initial start MQTT after 1 minute'+ '\n')
-    mymower.timeToReconnectMqtt=time.time()+60
+    consoleInsertText('Initial start MQTT after 10 secondes'+ '\n')
+    mymower.timeToReconnectMqtt=time.time()+10
 
 consoleInsertText('Control PI time and PCB1.3 time'+ '\n')
 read_time_setting()
-
-BtnGpsRecordStop_click()
+ButtonAuto_click()
+#BtnGpsRecordStop_click()
 
 if (streamVideoOnPower):
     BtnStreamVideoStart_click()
