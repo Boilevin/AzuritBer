@@ -4,14 +4,12 @@
  *      FOR IMU : MPU-9250 or 9255 MANDATORY 
  *      
  *      Connect DUE programming port to PC for programming and PC console
- *      Connect DUE Native USB port to Raspberry Pi 
+ *      Optionnal Connect DUE Native USB port to Raspberry Pi 
  *      
  *      During all test and dev set Enable_DueWatchdog to false
  *      or increase the delay in robot.cpp line : watchdogEnable(2000);// Watchdog trigger after  2 sec if not reseted.
  *      
- *      --------------------------------- GPS ----------------------------------------------------
- *      GPS You need to change speed into pfod setting according to your module
- *     
+ *      
  *      ------------------------------ RASPBERRY -------------------------------------------------
  *      If Raspberry PI is not connected you need to change into mower.h
  *          #define Console Serial
