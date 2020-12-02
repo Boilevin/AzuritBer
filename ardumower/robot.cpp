@@ -431,7 +431,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, rainUse);
   eereadwrite(readflag, addr, gpsUse);
   eereadwrite(readflag, addr, stuckIfGpsSpeedBelow);
-  eereadwrite(readflag, addr, gpsBaudrate);  //baudrate for the GPS
+  eereadwrite(readflag, addr, gpsBaudrate);  //int free for other var : baudrate for the GPS
   eereadwrite(readflag, addr, dropUse);
   eereadwrite(readflag, addr, statsOverride);
   eereadwrite(readflag, addr, freeboolean); // old bluetoothUse only define into mower.cpp free for other boolean
