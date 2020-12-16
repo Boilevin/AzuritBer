@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kst version="2.0">
+    <data>
+        <source reader="ASCII file" file="/home/pi/Documents/PiArdumower/plot/PlotBat.txt" fileRelative="plot/PlotBat.txt">
+            <properties vector="INDEX" interpretation="2" delimiters="#" columntype="2" columndelimiter=";" headerstart="2" fields="0" readfields="true" usedot="true" columnwidthisconst="false" readunits="false" units="0"/>
+        </source>
+    </data>
+    <variables>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotBat.txt" fileRelative="plot/PlotBat.txt" field="Time" start="-1" count="200" skip="-1" doAve="false" initialVNum="1" initialXNum="1"/>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotBat.txt" fileRelative="plot/PlotBat.txt" field="chgVoltage" start="-1" count="200" skip="-1" doAve="false" initialVNum="2" initialXNum="13"/>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotBat.txt" fileRelative="plot/PlotBat.txt" field="batVoltage" start="-1" count="200" skip="-1" doAve="false" initialVNum="3" initialXNum="25"/>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotBat.txt" fileRelative="plot/PlotBat.txt" field="chgSense" start="-1" count="200" skip="-1" doAve="false" initialVNum="4" initialXNum="37"/>
+        <string value="2019-09-21 09:27:43" initialTNum="1"/>
+        <string value="2019-09-21 09:27:43" initialTNum="2"/>
+        <string value="PlotBat.txt" initialTNum="3"/>
+        <string value="/home/pi/Documents/PiArdumower/log" initialTNum="4"/>
+        <string orphan="true" editable="true" value="2018-05-07 21:25:23" initialTNum="1"/>
+        <string orphan="true" editable="true" value="2018-05-07 21:25:23" initialTNum="2"/>
+        <string orphan="true" editable="true" value="PlotBat.txt" initialTNum="3"/>
+        <string orphan="true" editable="true" value="/home/pi/Documents/PiArdumower/log" initialTNum="4"/>
+        <string orphan="true" editable="true" value="2018-04-08 18:40:16" initialTNum="1"/>
+        <string orphan="true" editable="true" value="2018-04-08 18:40:16" initialTNum="2"/>
+        <string orphan="true" editable="true" value="PlotBat.txt" initialTNum="3"/>
+        <string orphan="true" editable="true" value="/home/pi/Documents/PiArdumower/log" initialTNum="4"/>
+        <string orphan="true" editable="true" value="2018-03-18 16:36:51" initialTNum="1"/>
+        <string orphan="true" editable="true" value="2018-03-18 16:36:51" initialTNum="2"/>
+        <string orphan="true" editable="true" value="PlotMot.txt" initialTNum="3"/>
+        <string orphan="true" editable="true" value="/home/pi/Documents/PiArdumower/log" initialTNum="4"/>
+        <string orphan="true" editable="true" value="2018-03-18 16:37:27" initialTNum="5"/>
+        <string orphan="true" editable="true" value="2018-03-18 16:37:27" initialTNum="6"/>
+        <string orphan="true" editable="true" value="PlotBat.txt" initialTNum="7"/>
+        <string orphan="true" editable="true" value="/home/pi/Documents/PiArdumower/log" initialTNum="8"/>
+        <string value="2019-09-21 14:52:19" initialTNum="9"/>
+        <string value="2019-09-21 14:52:19" initialTNum="10"/>
+        <string value="PlotBat.txt" initialTNum="11"/>
+        <string value="/home/pi/Documents/PiArdumower/plot" initialTNum="12"/>
+        <string value="0;0;0;0" initialTNum="13"/>
+    </variables>
+    <objects/>
+    <relations>
+        <curve xvector="Time (V1)" yvector="chgVoltage (V2)" color="#008000" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="0" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="-5855578" initialCNum="1"/>
+        <curve xvector="Time (V1)" yvector="batVoltage (V3)" color="#000000" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="1" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="0" initialCNum="2"/>
+        <curve xvector="Time (V1)" yvector="chgSense (V4)" color="#ff00ff" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="0" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="0" initialCNum="3"/>
+    </relations>
+    <graphics>
+        <view name="View &amp;1" width="1595" height="779">
+            <plot tiedxzoom="false" tiedyzoom="false" leftlabelvisible="true" bottomlabelvisible="true" rightlabelvisible="true" toplabelvisible="true" globalfont="DejaVu Math TeX Gyre,12,-1,5,50,0,0,0,0,0" globalfontscale="15.3" globalfontcolor="#000000" showlegend="true" hidebottomaxislabel="false" hidetopaxislabel="false" hideleftaxislabel="false" hiderightaxislabel="false" initialPlotNum="1" name="Plot">
+                <position x="411.227" y="459.602"/>
+                <rect x="-408.196" y="-70.6087" width="1587.98" height="385.995"/>
+                <relativesize width="0.9956" height="0.4955" centerx="0.4997" centery="0.7471" posx="0.00190002" posy="0.49935"/>
+                <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                    <brush color="#000000" style="1"/>
+                </pen>
+                <brush color="#ffffff" style="1"/>
+                <legend auto="true" title="" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="9.18822" verticaldisplay="false" name="Legend">
+                    <position x="-247.047" y="-22.707"/>
+                    <rect x="0" y="0" width="158" height="25"/>
+                    <relativesize width="0.106542" height="0.0851805" centerx="0.103271" centery="0.156397" posx="0.05" posy="0.113807"/>
+                    <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                    <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                        <brush color="#000000" style="1"/>
+                    </pen>
+                    <brush color="#ffffff" style="1"/>
+                </legend>
+                <cartesianrender name="Cartesian Plot" type="1">
+                    <relation tag="chgSense vs Time (C3)"/>
+                </cartesianrender>
+                <plotaxis id="xaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="0">
+                    <plotmarkers xaxis="true" linecolor="#000000" linestyle="1" linewidth="1" curvemode="-1119257"/>
+                </plotaxis>
+                <plotaxis id="yaxis" visible="true" log="false" reversed="false" autobaseoffset="false" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="2">
+                    <plotmarkers xaxis="false" linecolor="#000000" linestyle="1" linewidth="1" curvemode="-1119257"/>
+                </plotaxis>
+                <plotlabel id="leftlabel" visible="true" overridetext="chgSense" autolabel="true" font="DejaVu Math TeX Gyre,12,-1,5,50,0,0,0,0,0" fontscale="15.3" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="rightlabel" visible="true" overridetext="" autolabel="true" font="DejaVu Math TeX Gyre,12,-1,5,50,0,0,0,0,0" fontscale="15.3" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="toplabel" visible="true" overridetext="" autolabel="true" font="DejaVu Math TeX Gyre,12,-1,5,50,0,0,0,0,0" fontscale="15.3" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="bottomlabel" visible="true" overridetext="Time" autolabel="true" font="DejaVu Math TeX Gyre,12,-1,5,50,0,0,0,0,0" fontscale="15.3" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="numberlabel" visible="true" overridetext="" autolabel="false" font="DejaVu Math TeX Gyre,12,-1,5,50,0,0,0,0,0" fontscale="15.3" fontcolor="#000000" fontuseglobal="true"/>
+                <projectionrect x="0" y="0" width="15.011" height="3"/>
+            </plot>
+            <plot tiedxzoom="false" tiedyzoom="false" leftlabelvisible="true" bottomlabelvisible="true" rightlabelvisible="true" toplabelvisible="true" globalfont="Sans,10,-1,5,50,0,0,0,0,0" globalfontscale="15.3137" globalfontcolor="#000000" showlegend="true" hidebottomaxislabel="false" hidetopaxislabel="false" hideleftaxislabel="false" hiderightaxislabel="false" initialPlotNum="1" name="Plot">
+                <position x="2.99812" y="2.99615"/>
+                <rect x="0" y="0" width="1588" height="386.005"/>
+                <relativesize width="0.995614" height="0.495513" centerx="0.499687" centery="0.251603" posx="0.0018797" posy="0.00384615"/>
+                <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                    <brush color="#000000" style="1"/>
+                </pen>
+                <brush color="#ffffff" style="1"/>
+                <legend auto="true" title="" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="9.18822" verticaldisplay="false" name="Legend">
+                    <position x="161.15" y="53.3086"/>
+                    <rect x="0" y="0" width="338" height="25"/>
+                    <relativesize width="0.227916" height="0.0851775" centerx="0.163958" centery="0.174814" posx="0.05" posy="0.132225"/>
+                    <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                    <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                        <brush color="#000000" style="1"/>
+                    </pen>
+                    <brush color="#ffffff" style="1"/>
+                </legend>
+                <cartesianrender name="Cartesian Plot" type="1">
+                    <relation tag="chgVoltage vs Time (C1)"/>
+                    <relation tag="batVoltage vs Time (C2)"/>
+                </cartesianrender>
+                <plotaxis id="xaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="0">
+                    <plotmarkers xaxis="true" linecolor="#000000" linestyle="1" linewidth="1" curvemode="-1119257"/>
+                </plotaxis>
+                <plotaxis id="yaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="1">
+                    <plotmarkers xaxis="false" linecolor="#000000" linestyle="1" linewidth="1" curvemode="-1119257"/>
+                </plotaxis>
+                <plotlabel id="leftlabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="15.3137" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="rightlabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="15.3137" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="toplabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="15.3137" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="bottomlabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="15.3137" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="numberlabel" visible="true" overridetext="" autolabel="true" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="15.3137" fontcolor="#000000" fontuseglobal="true"/>
+                <projectionrect x="0" y="-0.62225" width="15.011" height="26.9745"/>
+            </plot>
+        </view>
+    </graphics>
+</kst>

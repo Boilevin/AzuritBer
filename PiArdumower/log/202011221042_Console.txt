@@ -1,0 +1,29 @@
+10:42:27 Start to save all Console Data
+10:42:27 PI Restart into 5 Seconds
+10:42:27 MQTT Disconnected Code:0
+10:42:27 Close Mqtt Connection
+10:42:27 TIME TO RESTART
+10:42:26 Due reset after 1 secondes, send a command to Pi for restart also
+10:42:22 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 10183
+10:42:22 UserSettings are saved from EEprom Address : 2000 To 2501
+10:42:12 START TO SAVE USER SETTINGS PLEASE WAIT
+10:42:07 0,A,4508.04804,N,00000.26669,E,0.983,,221120,,,A*62
+10:42:07 b----------------- warning >120 char received  from GPS ?????? ------------
+10:42:06 b$GNVTG,,T,,M,0.403,N,0.746,K,A*3F
+10:27:55 MQTT connected 
+10:27:55 MQTT Connecting Please Wait 
+10:27:55 Broker OK
+10:27:55 PING Broker
+10:27:55 MQTT not connected retry each 2 minutes
+10:27:46 PLEASE SET MINUTE CORRECTLY
+10:27:46 PLEASE SET HOUR CORRECTLY
+10:27:46 PLEASE SET DAY CORRECTLY
+10:27:46 PLEASE SET MONTH CORRECTLY
+10:27:46 Date Time from Raspberry Pi : 22/11/2020 10:27
+10:27:46 Date Time from PCB1.3       : 17/4/2020 13:11
+10:27:45 Control PI time and PCB1.3 time
+10:27:45 Initial start MQTT after 10 secondes
+10:27:45 Wait update Date/Time from internet
+10:27:45 Read Area In Mowing from PCB1.3
+10:27:45 Read Setting from PCB1.3
+

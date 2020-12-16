@@ -1,0 +1,12 @@
+09:48:12 Start to save all Console Data
+09:48:12 Close Mqtt Connection
+09:48:12 PCB power OFF after 30 secondes Wait Until PI Stop 
+09:48:12 Battery IDLE trigger 
+09:47:45 Date Time from Raspberry Pi : 25/10/2020 9:47
+09:47:45 Date Time from PCB1.3       : 25/10/2020 9:47
+09:47:45 Control PI time and PCB1.3 time
+09:47:45 Initial start MQTT after 1 minute
+09:47:45 Wait update Date/Time from internet
+09:47:45 Read Area In Mowing from PCB1.3
+09:47:45 Read Setting from PCB1.3
+

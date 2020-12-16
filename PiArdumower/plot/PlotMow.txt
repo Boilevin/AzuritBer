@@ -1,0 +1,2 @@
+Time;motorMowPower;motorMowPWMCurr
+0;0;0

@@ -1,0 +1,6 @@
+12:40:10 Start to save all Console Data
+12:40:10 MQTT Disconnected Code:0
+12:40:10 Close Mqtt Connection
+12:40:10 PCB power OFF after 30 secondes Wait Until PI Stop 
+12:40:10 Battery IDLE trigger 
+

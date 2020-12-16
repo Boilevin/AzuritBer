@@ -1,0 +1,26 @@
+12:46:26 Start to save all Console Data
+12:46:26 MQTT Disconnected Code:0
+12:46:26 Close Mqtt Connection
+12:46:26 PCB power OFF after 30 secondes Wait Until PI Stop 
+12:46:26 Battery IDLE trigger 
+12:46:13 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 336
+12:31:43 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 296
+12:31:41 MQTT connected 
+12:31:40 MQTT Connecting Please Wait 
+12:31:40 Broker OK
+12:31:40 PING Broker
+12:31:40 MQTT not connected retry each 2 minutes
+12:31:39 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 326
+12:31:35 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 322
+12:31:31 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 307
+12:31:31 PLEASE SET MINUTE CORRECTLY
+12:31:31 PLEASE SET DAY CORRECTLY
+12:31:31 Date Time from Raspberry Pi : 30/10/2020 12:31
+12:31:31 Date Time from PCB1.3       : 31/10/2020 12:45
+12:31:30 Start Video streaming
+12:31:30 Control PI time and PCB1.3 time
+12:31:30 Initial start MQTT after 10 secondes
+12:31:30 Wait update Date/Time from internet
+12:31:30 Read Area In Mowing from PCB1.3
+12:31:30 Read Setting from PCB1.3
+

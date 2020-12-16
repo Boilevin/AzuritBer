@@ -1,0 +1,8 @@
+10:07:23 Start to save all Console Data
+10:07:23 PCB power OFF after 30 secondes Wait Until PI Stop 
+10:07:23 Battery IDLE trigger 
+10:03:31 0,A,4508.04832,N,00000.26404,E,0.136,,251020,,,A*65
+10:03:31 b----------------- warning >120 char received  from GPS ?????? ------------
+10:03:31 N,00000.26407,E,0.142,,251020,,,A*61
+10:03:31 ----------------- warning >120 char received  from GPS ?????? ------------
+

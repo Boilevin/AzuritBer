@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kst version="2.0">
+    <data>
+        <source reader="ASCII file" file="/home/pi/Documents/PiArdumower/plot/PlotMot.txt" fileRelative="plot/PlotMot.txt">
+            <properties vector="INDEX" interpretation="2" delimiters="#" columntype="2" columndelimiter=";" headerstart="2" fields="0" readfields="true" usedot="true" columnwidthisconst="false" readunits="false" units="0"/>
+        </source>
+    </data>
+    <variables>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotMot.txt" fileRelative="plot/PlotMot.txt" field="Time" start="-1" count="200" skip="-1" doAve="false" initialVNum="19" initialXNum="217"/>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotMot.txt" fileRelative="plot/PlotMot.txt" field="motorLeftPower" start="-1" count="200" skip="-1" doAve="false" initialVNum="20" initialXNum="229"/>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotMot.txt" fileRelative="plot/PlotMot.txt" field="motorRightPower" start="-1" count="200" skip="-1" doAve="false" initialVNum="21" initialXNum="241"/>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotMot.txt" fileRelative="plot/PlotMot.txt" field="motorLeftPWMCurr" start="-1" count="200" skip="-1" doAve="false" initialVNum="22" initialXNum="253"/>
+        <datavector file="/home/pi/Documents/PiArdumower/plot/PlotMot.txt" fileRelative="plot/PlotMot.txt" field="motorRightPWMCurr" start="-1" count="200" skip="-1" doAve="false" initialVNum="23" initialXNum="265"/>
+        <string value="2019-09-21 11:33:32" initialTNum="1"/>
+        <string value="2019-09-21 11:33:32" initialTNum="2"/>
+        <string value="PlotMot.txt" initialTNum="3"/>
+        <string value="/home/pi/Documents/PiArdumower/log" initialTNum="4"/>
+        <string value="2019-09-21 14:45:06" initialTNum="29"/>
+        <string value="2019-09-21 14:45:06" initialTNum="30"/>
+        <string value="PlotMot.txt" initialTNum="31"/>
+        <string value="/home/pi/Documents/PiArdumower/plot" initialTNum="32"/>
+        <string value="0;0;0;0;0" initialTNum="33"/>
+    </variables>
+    <objects/>
+    <relations>
+        <curve xvector="Time (V19)" yvector="motorLeftPower (V20)" color="#4682b4" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="0" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="0" initialCNum="13"/>
+        <curve xvector="Time (V19)" yvector="motorRightPower (V21)" color="#501010" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="1" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="753408" initialCNum="14"/>
+        <curve xvector="Time (V19)" yvector="motorLeftPWMCurr (V22)" color="#105010" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="2" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="858368" initialCNum="15"/>
+        <curve xvector="Time (V19)" yvector="motorRightPWMCurr (V23)" color="#aa0000" headcolor="#000000" haslines="true" linewidth="0" linestyle="0" haspoints="false" pointtype="3" pointdensity="0" hasbars="false" barstyle="0" ignoreautoscale="false" hashead="false" headtype="162304" initialCNum="16"/>
+    </relations>
+    <graphics>
+        <view name="View &amp;1" width="1595" height="779">
+            <plot tiedxzoom="false" tiedyzoom="false" leftlabelvisible="true" bottomlabelvisible="true" rightlabelvisible="true" toplabelvisible="true" globalfont="Caladea,12,-1,5,50,0,0,0,0,0" globalfontscale="12" globalfontcolor="#000000" showlegend="true" hidebottomaxislabel="false" hidetopaxislabel="false" hideleftaxislabel="false" hiderightaxislabel="false" initialPlotNum="6" name="Plot">
+                <position x="797.52" y="196.244"/>
+                <rect x="-794.489" y="-193.245" width="1587.98" height="385.995"/>
+                <relativesize width="0.9956" height="0.4955" centerx="0.4997" centery="0.2516" posx="0.00190001" posy="0.00385001"/>
+                <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                    <brush color="#000000" style="1"/>
+                </pen>
+                <brush color="#ffffff" style="1"/>
+                <legend auto="true" title="" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="7.2" verticaldisplay="false" name="Legend">
+                    <position x="-661.84" y="-144.409"/>
+                    <rect x="0" y="0" width="357" height="20"/>
+                    <relativesize width="0.235958" height="0.0644134" centerx="0.167979" centery="0.146014" posx="0.05" posy="0.113807"/>
+                    <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                    <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                        <brush color="#000000" style="1"/>
+                    </pen>
+                    <brush color="#ffffff" style="1"/>
+                </legend>
+                <cartesianrender name="Cartesian Plot" type="1">
+                    <relation tag="motorLeftPower vs Time (C13)"/>
+                    <relation tag="motorRightPower vs Time (C14)"/>
+                </cartesianrender>
+                <plotaxis id="xaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="0">
+                    <plotmarkers xaxis="true" linecolor="#000000" linestyle="1" linewidth="1" curvemode="1506"/>
+                </plotaxis>
+                <plotaxis id="yaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="2">
+                    <plotmarkers xaxis="false" linecolor="#000000" linestyle="1" linewidth="1" curvemode="1007"/>
+                </plotaxis>
+                <plotlabel id="leftlabel" visible="true" overridetext="" autolabel="true" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="rightlabel" visible="true" overridetext="" autolabel="true" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="toplabel" visible="true" overridetext="" autolabel="true" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="bottomlabel" visible="true" overridetext="Time" autolabel="true" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="numberlabel" visible="true" overridetext="" autolabel="false" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <projectionrect x="85" y="0" width="50" height="40"/>
+            </plot>
+            <plot tiedxzoom="false" tiedyzoom="false" leftlabelvisible="true" bottomlabelvisible="true" rightlabelvisible="true" toplabelvisible="true" globalfont="Caladea,12,-1,5,50,0,0,0,0,0" globalfontscale="12" globalfontcolor="#000000" showlegend="true" hidebottomaxislabel="false" hidetopaxislabel="false" hideleftaxislabel="false" hiderightaxislabel="false" initialPlotNum="1" name="Plot">
+                <position x="797.52" y="582.239"/>
+                <rect x="-794.489" y="-193.245" width="1587.98" height="385.995"/>
+                <relativesize width="0.9956" height="0.4955" centerx="0.4997" centery="0.7471" posx="0.00190001" posy="0.49935"/>
+                <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                    <brush color="#000000" style="1"/>
+                </pen>
+                <brush color="#ffffff" style="1"/>
+                <legend auto="true" title="" font="Sans,10,-1,5,50,0,0,0,0,0" fontscale="7.2" verticaldisplay="false" name="Legend">
+                    <position x="-661.84" y="-144.409"/>
+                    <rect x="0" y="0" width="397" height="20"/>
+                    <relativesize width="0.262396" height="0.0644134" centerx="0.181198" centery="0.146014" posx="0.05" posy="0.113807"/>
+                    <transform m11="1" m12="0" m13="0" m21="0" m22="1" m23="0" m31="0" m32="0" m33="1"/>
+                    <pen style="1" width="0" miterlimit="2" cap="16" joinStyle="64">
+                        <brush color="#000000" style="1"/>
+                    </pen>
+                    <brush color="#ffffff" style="1"/>
+                </legend>
+                <cartesianrender name="Cartesian Plot" type="1">
+                    <relation tag="motorLeftPWMCurr vs Time (C15)"/>
+                    <relation tag="motorRightPWMCurr vs Time (C16)"/>
+                </cartesianrender>
+                <plotaxis id="xaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="0">
+                    <plotmarkers xaxis="true" linecolor="#000000" linestyle="1" linewidth="1" curvemode="32424384"/>
+                </plotaxis>
+                <plotaxis id="yaxis" visible="true" log="false" reversed="false" autobaseoffset="true" baseoffset="false" interpret="false" interpretation="1" display="4" majortickmode="5" minortickcount="5" autominortickcount="true" drawmajorticks="true" drawminorticks="true" drawmajorgridlines="true" drawminorgridlines="false" drawmajorgridlinecolor="#a0a0a4" drawminorgridlinecolor="#a0a0a4" drawmajorgridlinestyle="2" drawminorgridlinestyle="2" drawmajorgridlinewidth="1" drawminorgridlinewidth="1" significantdigits="9" rotation="0" zoommode="2">
+                    <plotmarkers xaxis="false" linecolor="#000000" linestyle="1" linewidth="1" curvemode="432"/>
+                </plotaxis>
+                <plotlabel id="leftlabel" visible="true" overridetext="" autolabel="true" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="rightlabel" visible="true" overridetext="" autolabel="true" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="toplabel" visible="true" overridetext="" autolabel="true" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="bottomlabel" visible="true" overridetext="Time" autolabel="true" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <plotlabel id="numberlabel" visible="true" overridetext="" autolabel="false" font="Caladea,12,-1,5,50,0,0,0,0,0" fontscale="12" fontcolor="#000000" fontuseglobal="true"/>
+                <projectionrect x="85" y="-255" width="50" height="510"/>
+            </plot>
+        </view>
+    </graphics>
+</kst>

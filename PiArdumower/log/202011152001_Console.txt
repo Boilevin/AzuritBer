@@ -1,0 +1,22 @@
+20:01:04 Start to save all Console Data
+20:01:04 MQTT Disconnected Code:0
+20:01:04 Close Mqtt Connection
+20:01:04 PCB power OFF after 30 secondes Wait Until PI Stop 
+20:01:04 Battery IDLE trigger 
+20:01:03 MQTT connected 
+20:01:03 MQTT Connecting Please Wait 
+20:01:03 Broker OK
+20:01:03 PING Broker
+20:01:03 MQTT not connected retry each 2 minutes
+20:00:54 PLEASE SET MINUTE CORRECTLY
+20:00:54 PLEASE SET HOUR CORRECTLY
+20:00:54 PLEASE SET DAY CORRECTLY
+20:00:54 PLEASE SET MONTH CORRECTLY
+20:00:54 Date Time from Raspberry Pi : 15/11/2020 20:0
+20:00:54 Date Time from PCB1.3       : 16/4/2020 12:18
+20:00:53 Control PI time and PCB1.3 time
+20:00:53 Initial start MQTT after 10 secondes
+20:00:53 Wait update Date/Time from internet
+20:00:53 Read Area In Mowing from PCB1.3
+20:00:53 Read Setting from PCB1.3
+

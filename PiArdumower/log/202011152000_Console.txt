@@ -1,0 +1,35 @@
+20:00:16 Start to save all Console Data
+20:00:16 PI Restart into 5 Seconds
+20:00:16 MQTT Disconnected Code:0
+20:00:16 Close Mqtt Connection
+20:00:16 TIME TO RESTART
+20:00:16 Due reset after 1 secondes, send a command to Pi for restart also
+19:57:34 Start Video streaming
+19:55:10 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 9986
+19:55:09 UserSettings are saved from EEprom Address : 2000 To 2501
+19:54:59 START TO SAVE USER SETTINGS PLEASE WAIT
+19:53:02 MQTT connected 
+19:52:52 MQTT Connecting Please Wait 
+19:52:52 Broker OK
+19:52:52 PING Broker
+19:52:52 MQTT not connected retry each 2 minutes
+17:10:30 WAIT / OFF 
+17:10:30 Robot Stats address Stop = 826
+17:10:30 Robot Stats address Start = 800
+17:10:30 Save Robot Stats
+17:10:30 WAIT / POUTSTOP
+17:10:30 WAIT / ACCELFRWRD
+17:10:30 WAIT / POUTSTOP
+17:10:30 WAIT / ACCELFRWRD
+17:10:30 WAIT / OFF 
+17:10:30 Robot Stats address Stop = 826
+17:10:30 Robot Stats address Start = 800
+17:10:29 Save Robot Stats
+17:10:29 WAIT / POUTSTOP
+17:10:29 WAIT / ACCELFRWRD
+17:10:29 Control PI time and PCB1.3 time
+17:10:29 Initial start MQTT after 10 secondes
+17:10:29 Wait update Date/Time from internet
+17:10:29 Read Area In Mowing from PCB1.3
+17:10:29 Read Setting from PCB1.3
+

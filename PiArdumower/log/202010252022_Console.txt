@@ -1,0 +1,8 @@
+20:22:02 Start to save all Console Data
+20:22:02 MQTT Disconnected Code:0
+20:22:02 Close Mqtt Connection
+20:22:02 PCB power OFF after 30 secondes Wait Until PI Stop 
+20:22:02 Battery IDLE trigger 
+20:21:54 Topic : Mower/COMMAND/ Data  : b'STOP'
+20:21:54 Reception message MQTT...
+

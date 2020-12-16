@@ -1,0 +1,40 @@
+10:47:19 Start to save all Console Data
+10:47:19 PCB power OFF after 30 secondes Wait Until PI Stop 
+10:47:19 Battery IDLE trigger 
+10:46:52 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 286
+10:46:44 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 260
+10:46:38 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 274
+10:44:36 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 516
+10:44:35 WAIT / OFF 
+10:44:35 Robot Stats address Stop = 826
+10:44:35 Robot Stats address Start = 800
+10:44:35 Save Robot Stats
+10:44:21 ERROR / ERR 
+10:44:21 Robot Stats address Stop = 826
+10:44:21 Robot Stats address Start = 800
+10:44:20 Save Robot Stats
+10:44:20 Error : IMU Roll / Tilt---------------------------------------------------------------------------- -- > -3 / 41
+10:43:53 MANUAL / MANU
+10:43:50 WAIT / OFF 
+10:43:50 Robot Stats address Stop = 826
+10:43:50 Robot Stats address Start = 800
+10:43:49 Save Robot Stats
+10:43:49 Compute Max State Duration : 35714.00
+10:43:49 Real State Duration : 3317
+10:43:49 Test finish 
+10:43:46 TESTING / TESTMOTOR
+10:43:42 WAIT / OFF 
+10:43:42 Robot Stats address Stop = 826
+10:43:42 Robot Stats address Start = 800
+10:43:42 Save Robot Stats
+10:43:42 Compute Max State Duration : 35714.00
+10:43:42 Real State Duration : 3332
+10:43:42 Test finish 
+10:43:38 TESTING / TESTMOTOR
+10:40:38 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 272
+10:39:02 Date Time from Raspberry Pi : 25/10/2020 10:39
+10:39:02 Date Time from PCB1.3       : 25/10/2020 10:39
+10:39:02 Control PI time and PCB1.3 time
+10:39:02 Read Area In Mowing from PCB1.3
+10:39:02 Read Setting from PCB1.3
+

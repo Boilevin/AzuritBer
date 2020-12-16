@@ -1,0 +1,9 @@
+10:17:15 Start to save all Console Data
+10:17:15 PCB power OFF after 30 secondes Wait Until PI Stop 
+10:17:15 Battery IDLE trigger 
+10:07:48 Date Time from Raspberry Pi : 25/10/2020 10:7
+10:07:48 Date Time from PCB1.3       : 25/10/2020 10:14
+10:07:47 Control PI time and PCB1.3 time
+10:07:47 Read Area In Mowing from PCB1.3
+10:07:47 Read Setting from PCB1.3
+

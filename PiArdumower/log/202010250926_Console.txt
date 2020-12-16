@@ -1,0 +1,6 @@
+09:25:46 MQTT connected 
+09:25:46 MQTT Connecting Please Wait 
+09:25:46 Broker OK
+09:25:46 PING Broker
+09:25:46 MQTT not connected retry each 2 minutes
+

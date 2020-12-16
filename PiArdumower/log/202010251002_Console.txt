@@ -1,0 +1,14 @@
+10:02:16 Start to save all Console Data
+10:02:16 PI Restart into 5 Seconds
+10:02:16 TIME TO RESTART
+10:02:16 Due reset after 1 secondes, send a command to Pi for restart also
+10:01:48 0,A,4508.05090,N,00000.26574,E,0.090,,251020,,,A*66
+10:01:48 b----------------- warning >120 char received  from GPS ?????? ------------
+10:01:48 b$GNVTG,,T,,M,0.042,N,0.077,K,A*3B
+10:01:48 000.26550,E,085940.00,A,A*71
+10:01:41 Date Time from Raspberry Pi : 25/10/2020 10:1
+10:01:41 Date Time from PCB1.3       : 25/10/2020 10:1
+10:01:41 Control PI time and PCB1.3 time
+10:01:41 Read Area In Mowing from PCB1.3
+10:01:41 Read Setting from PCB1.3
+

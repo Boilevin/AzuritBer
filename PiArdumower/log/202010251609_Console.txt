@@ -1,0 +1,184 @@
+16:09:39 Start to save all Console Data
+16:09:39 MQTT Disconnected Code:0
+16:09:38 Close Mqtt Connection
+16:09:38 PCB power OFF after 30 secondes Wait Until PI Stop 
+16:09:38 Battery IDLE trigger 
+16:09:24 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 939
+16:09:24 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 1079
+16:09:24 statsBatteryChargingCapacityAverage in mAh : 0.00
+16:09:24 statsBatteryChargingCapacityTotal in Ah    : 0.00
+16:09:24 statsBatteryChargingCapacityTrip in mAh    : 0.00
+16:09:24 statsBatteryChargingCounterTotal           : 0
+16:09:24 statsMowTimeMinutesTotal                   : 0
+16:09:24 statsMowTimeMinutesTrip                    : 0
+16:09:24 ---------- robot stats ---------------------------------------
+16:09:24 esp8266ConfigString                        : 1234567321
+16:09:24 esp8266Use                                 : 0
+16:09:24 ---------- esp8266 ------------------------------------------
+16:09:24 bluetoothuse                               : 1
+16:09:24 ---------- bluetooth-----------------------------------------
+16:09:24 timerUse                                   : 0
+16:09:24 ---------- timer ---------------------------------------------
+16:09:24 userSwitch3                                : 0
+16:09:24 userSwitch2                                : 0
+16:09:24 userSwitch1                                : 0
+16:09:24 ---------- user-defined switch -------------------------------
+16:09:24 mowPatternDurationMax                      : 120
+16:09:24 buttonUse                                  : 1
+16:09:24 ---------- other ---------------------------------------------
+16:09:24 RaspberryPIUse                              : 1
+16:09:24 ---------- RASPBERRY PI-----------------------------------------
+16:09:24 rfidUse                                     : 0
+16:09:24 ---------- RFID -----------------------------------------------
+16:09:24 gpsBaudrate                                : 9600
+16:09:24 stuckIfGpsSpeedBelow                       : 0.20
+16:09:24 gpsUse                                     : 0
+16:09:23 ---------- GPS -----------------------------------------------
+16:09:23 odometryRightSwapDir                       : 1
+16:09:23 odometryWheelBaseCm                        : 41.30
+16:09:23 odometryTicksPerCm                         : 11.80
+16:09:23 odometryTicksPerRevolution                 : 960
+16:09:23 ---------- odometry ------------------------------------------
+16:09:23 autoResetActive                            : 0
+16:09:23 dockingSpeed                               : 60
+16:09:23 UseBumperDock                            : 1
+16:09:23 stationCheckDist                           : 2
+16:09:23 stationForwDist                            : 30
+16:09:23 stationRollAngle                            : 45
+16:09:23 stationRevDist                             : 50
+16:09:23 ---------- charging station ----------------------------------
+16:09:23 chgNull                                    : 2
+16:09:23 chgChange                                  : 0
+16:09:23 chgSense                                   : 185.00
+16:09:23 batSenseFactor                                  : 1.11
+16:09:23 chgSenseZero                               : 511.00
+16:09:23 chargingTimeout                            : 18000000
+16:09:23 startChargingIfBelow                       : 25.00
+16:09:23 batFullCurrent                             : 0.10
+16:09:23 batChargingCurrentMax                      : 2.00
+16:09:23 batFull                                    : 29.40
+16:09:23 batChgFactor                               : 10.89
+16:09:23 batFactor                                  : 10.88
+16:09:23 batSwitchOffIfIdle                         : 181
+16:09:23 batSwitchOffIfBelow                        : 23.00
+16:09:23 batGoHomeIfBelow                           : 24.30
+16:09:23 batMonitor                                 : 1
+16:09:23 ---------- battery -------------------------------------------
+16:09:23 remoteUse                                  : 0
+16:09:23 ---------- model R/C -----------------------------------------
+16:09:23 compassRollSpeedCoeff                      : 40
+16:09:23 maxDurationDmpAutocalib                    : 60
+16:09:23 delayBetweenTwoDmpAutocalib                : 71
+16:09:23 maxDriftPerSecond                          : 0.05
+16:09:23 imuDirPID.Kd                               : 0.00
+16:09:23 imuDirPID.Ki                               : 3.30
+16:09:23 imuDirPID.Kp                               : 4.40
+16:09:23 stopMotorDuringCalib                       : 0
+16:09:22 imuUse                                     : 1
+16:09:22 ---------- IMU (compass/accel/gyro) --------------------------
+16:09:22 lawnSensorUse                              : 0
+16:09:22 ---------- lawn sensor ---------------------------------------
+16:09:22 maxLenghtByLane                           : 25
+16:09:22 DistBetweenLane                           : 38
+16:09:22 yawOppositeLane3RollLeft                  : -45.00
+16:09:22 yawOppositeLane2RollLeft                  : -88.00
+16:09:22 yawOppositeLane1RollLeft                  : -138.00
+16:09:22 yawOppositeLane3RollRight                 : -43.00
+16:09:22 yawOppositeLane2RollRight                 : -92.00
+16:09:22 yawOppositeLane1RollRight                 : -132.00
+16:09:22 yawSet3                                   : 135.00
+16:09:22 yawSet2                                   : 90.00
+16:09:22 yawSet1                                   : 45.00
+16:09:22 ---------- By Lanes mowing ---------------------------------------
+16:09:22 DistPeriObstacleForw                       : 25
+16:09:22 DistPeriOutForw                            : 60
+16:09:22 DistPeriObstacleRev                        : 30
+16:09:22 DistPeriOutRev                             : 40
+16:09:22 trackingBlockInnerWheelWhilePerimeterStrug : 1
+16:09:22 read2Coil                                  : 0
+16:09:22 swapCoilPolarityLeft                       : 0
+16:09:22 swapCoilPolarityRight                      : 0
+16:09:22 perimeterMagMaxValue                       : 2000
+16:09:22 trackingErrorTimeOut                       : 10000
+16:09:22 trackingPerimeterTransitionTimeOut         : 1500
+16:09:22 perimeterPID.Kd                            : 0.00
+16:09:22 perimeterPID.Ki                            : 8.00
+16:09:22 perimeterPID.Kp                            : 16.50
+16:09:22 perimeterTrackRevTime                      : 2200
+16:09:22 perimeterTrackRollTime                     : 1500
+16:09:22 MaxSpeedperiPwm                            : 180
+16:09:22 perimeterTriggerMinSmag                    : 200
+16:09:22 perimeterUse                               : 1
+16:09:22 ---------- perimeter -----------------------------------------
+16:09:22 sonarToFrontDist                           : 30
+16:09:22 sonarTriggerBelow                          : 87
+16:09:22 sonarCenterUse                             : 0
+16:09:22 sonarRightUse                              : 1
+16:09:22 sonarLeftUse                               : 1
+16:09:21 sonarUse                                   : 0
+16:09:21 ---------- sonar ---------------------------------------------
+16:09:21 MaxTemperature                             : 55.00
+16:09:21 DHT22Use                                   : 1
+16:09:21 ----------  DHT22 Temperature --------------------------------
+16:09:21 rainUse                                    : 0
+16:09:21 ---------- rain ----------------------------------------------
+16:09:21 dropContact                                : 0
+16:09:21 dropUse                                    : 0
+16:09:21 ---------- drop ----------------------------------------------
+16:09:21 bumperUse                                  : 1
+16:09:21 ---------- bumper --------------------------------------------
+16:09:21 motorMowPID.Kd                             : 0.01
+16:09:21 motorMowPID.Ki                             : 0.01
+16:09:21 motorMowPID.Kp                             : 0.00
+16:09:21 motorMowSenseScale                         : 1.54
+16:09:21 motorMowRPMSet                             : 100
+16:09:21 motorMowModulate                           : 0
+16:09:21 motorMowPowerMax                           : 100.00
+16:09:21 motorMowSpeedMaxPwm                        : 216
+16:09:21 motorMowAccel                              : 2000.00
+16:09:21 motorMowForceOff                           : 1
+16:09:21 ---------- mower motor ---------------------------------------
+16:09:21 motorRightOffsetRev                        : 0
+16:09:21 motorRightOffsetFwd                          : 0
+16:09:21 motorLeftSwapDir                           : 0
+16:09:21 motorRightSwapDir                          : 0
+16:09:21 motorLeftPID.Kd                            : 0.00
+16:09:21 motorLeftPID.Ki                            : 0.40
+16:09:21 motorLeftPID.Kp                            : 1.00
+16:09:21 motorBiDirSpeedRatio2                      : 0.92
+16:09:21 motorBiDirSpeedRatio1                      : 0.30
+16:09:21 motorTickPerSecond                         : 168
+16:09:21 SpeedOdoMax                                : 140
+16:09:21 SpeedOdoMin                                : 50
+16:09:21 motorRightOffsetRev                        : 0
+16:09:21 motorRightOffsetFwd                        : 0
+16:09:21 circleTimeForObstacle                      : 4000
+16:09:21 DistPeriObstacleAvoid                     : 100
+16:09:21 motorForwTimeMax                           : 80000
+16:09:21 DistPeriOutStop                            : 15
+16:09:21 DistPeriOutRev                             : 40
+16:09:20 motorRollDegMin                            : 20
+16:09:20 motorRollDegMax                            : 100
+16:09:20 motorZeroSettleTime                        : 2000
+16:09:20 motorPowerIgnoreTime                       : 2000
+16:09:20 motorSenseLeftScale                        : 1.65
+16:09:20 motorSenseRightScale                       : 1.87
+16:09:20 motorPowerMax                              : 45.60
+16:09:20 motorSpeedMaxPwm                           : 161
+16:09:20 motorSpeedMaxRpm                           : 24
+16:09:20 motorAccel                                 : 1500
+16:09:20 ---------- wheel motors --------------------------------------
+16:04:02 MQTT connected 
+16:04:02 MQTT Connecting Please Wait 
+16:04:02 Broker OK
+16:04:02 PING Broker
+16:04:02 MQTT not connected retry each 2 minutes
+16:03:52 Date Time from Raspberry Pi : 25/10/2020 16:3
+16:03:52 Date Time from PCB1.3       : 25/10/2020 16:4
+16:03:52 Start Video streaming
+16:03:52 Control PI time and PCB1.3 time
+16:03:52 Initial start MQTT after 10 secondes
+16:03:52 Wait update Date/Time from internet
+16:03:52 Read Area In Mowing from PCB1.3
+16:03:52 Read Setting from PCB1.3
+

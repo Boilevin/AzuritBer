@@ -1,0 +1,177 @@
+11:49:38 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 15191
+11:49:37 statsBatteryChargingCapacityAverage in mAh : 1000.00
+11:49:37 statsBatteryChargingCapacityTotal in Ah    : 10.00
+11:49:37 statsBatteryChargingCapacityTrip in mAh    : 0.00
+11:49:37 statsBatteryChargingCounterTotal           : 10
+11:49:37 statsMowTimeMinutesTotal                   : 300
+11:49:37 statsMowTimeMinutesTrip                    : 0
+11:49:37 ---------- robot stats ---------------------------------------
+11:49:37 esp8266ConfigString                        : 1234567321
+11:49:37 esp8266Use                                 : 0
+11:49:37 ---------- esp8266 ------------------------------------------
+11:49:36 bluetoothuse                               : 1
+11:49:36 ---------- bluetooth-----------------------------------------
+11:49:36 timerUse                                   : 0
+11:49:36 ---------- timer ---------------------------------------------
+11:49:36 userSwitch3                                : 0
+11:49:36 userSwitch2                                : 0
+11:49:36 userSwitch1                                : 0
+11:49:36 ---------- user-defined switch -------------------------------
+11:49:36 mowPatternDurationMax                      : 120
+11:49:36 buttonUse                                  : 1
+11:49:35 ---------- other ---------------------------------------------
+11:49:35 RaspberryPIUse                              : 1
+11:49:35 ---------- RASPBERRY PI-----------------------------------------
+11:49:35 rfidUse                                     : 0
+11:49:35 ---------- RFID -----------------------------------------------
+11:49:35 gpsBaudrate                                : 9600
+11:49:35 stuckIfGpsSpeedBelow                       : 0.20
+11:49:35 gpsUse                                     : 0
+11:49:35 ---------- GPS -----------------------------------------------
+11:49:35 odometryRightSwapDir                       : 1
+11:49:34 odometryWheelBaseCm                        : 41.30
+11:49:34 odometryTicksPerCm                         : 11.80
+11:49:34 odometryTicksPerRevolution                 : 960
+11:49:34 ---------- odometry ------------------------------------------
+11:49:34 autoResetActive                            : 0
+11:49:34 dockingSpeed                               : 60
+11:49:34 UseBumperDock                            : 1
+11:49:34 stationCheckDist                           : 2
+11:49:34 stationForwDist                            : 30
+11:49:34 stationRollAngle                            : 45
+11:49:33 stationRevDist                             : 50
+11:49:33 ---------- charging station ----------------------------------
+11:49:33 chgNull                                    : 2
+11:49:33 chgChange                                  : 0
+11:49:33 chgSense                                   : 185.00
+11:49:33 batSenseFactor                                  : 1.11
+11:49:33 chgSenseZero                               : 511.00
+11:49:33 chargingTimeout                            : 18000000
+11:49:33 startChargingIfBelow                       : 25.00
+11:49:33 batFullCurrent                             : 0.10
+11:49:32 batChargingCurrentMax                      : 2.00
+11:49:32 batFull                                    : 29.40
+11:49:32 batChgFactor                               : 10.89
+11:49:32 batFactor                                  : 10.88
+11:49:32 batSwitchOffIfIdle                         : 181
+11:49:32 batSwitchOffIfBelow                        : 23.00
+11:49:32 batGoHomeIfBelow                           : 24.30
+11:49:32 batMonitor                                 : 1
+11:49:32 ---------- battery -------------------------------------------
+11:49:32 remoteUse                                  : 0
+11:49:31 ---------- model R/C -----------------------------------------
+11:49:31 compassRollSpeedCoeff                      : 40
+11:49:31 maxDurationDmpAutocalib                    : 60
+11:49:31 delayBetweenTwoDmpAutocalib                : 71
+11:49:31 maxDriftPerSecond                          : 0.05
+11:49:31 imuDirPID.Kd                               : 0.00
+11:49:31 imuDirPID.Ki                               : 3.30
+11:49:31 imuDirPID.Kp                               : 4.40
+11:49:31 stopMotorDuringCalib                       : 0
+11:49:30 imuUse                                     : 1
+11:49:30 ---------- IMU (compass/accel/gyro) --------------------------
+11:49:30 lawnSensorUse                              : 0
+11:49:30 ---------- lawn sensor ---------------------------------------
+11:49:30 maxLenghtByLane                           : 25
+11:49:30 DistBetweenLane                           : 38
+11:49:30 yawOppositeLane3RollLeft                  : -45.00
+11:49:30 yawOppositeLane2RollLeft                  : -88.00
+11:49:30 yawOppositeLane1RollLeft                  : -138.00
+11:49:30 yawOppositeLane3RollRight                 : -43.00
+11:49:29 yawOppositeLane2RollRight                 : -92.00
+11:49:29 yawOppositeLane1RollRight                 : -132.00
+11:49:29 yawSet3                                   : 135.00
+11:49:29 yawSet2                                   : 90.00
+11:49:29 yawSet1                                   : 45.00
+11:49:29 ---------- By Lanes mowing ---------------------------------------
+11:49:29 DistPeriObstacleForw                       : 25
+11:49:29 DistPeriOutForw                            : 60
+11:49:29 DistPeriObstacleRev                        : 30
+11:49:29 DistPeriOutRev                             : 40
+11:49:28 trackingBlockInnerWheelWhilePerimeterStrug : 1
+11:49:28 read2Coil                                  : 0
+11:49:28 swapCoilPolarityLeft                       : 0
+11:49:28 swapCoilPolarityRight                      : 0
+11:49:28 perimeterMagMaxValue                       : 2000
+11:49:28 trackingErrorTimeOut                       : 10000
+11:49:28 trackingPerimeterTransitionTimeOut         : 1500
+11:49:28 perimeterPID.Kd                            : 0.00
+11:49:28 perimeterPID.Ki                            : 8.00
+11:49:28 perimeterPID.Kp                            : 16.50
+11:49:27 perimeterTrackRevTime                      : 2200
+11:49:27 perimeterTrackRollTime                     : 1500
+11:49:27 MaxSpeedperiPwm                            : 180
+11:49:27 perimeterTriggerMinSmag                    : 200
+11:49:27 perimeterUse                               : 1
+11:49:27 ---------- perimeter -----------------------------------------
+11:49:27 sonarToFrontDist                           : 30
+11:49:27 sonarTriggerBelow                          : 87
+11:49:27 sonarCenterUse                             : 0
+11:49:27 sonarRightUse                              : 1
+11:49:26 sonarLeftUse                               : 1
+11:49:26 sonarUse                                   : 0
+11:49:26 ---------- sonar ---------------------------------------------
+11:49:26 MaxTemperature                             : 55.00
+11:49:26 DHT22Use                                   : 1
+11:49:26 ----------  DHT22 Temperature --------------------------------
+11:49:26 rainUse                                    : 0
+11:49:26 ---------- rain ----------------------------------------------
+11:49:26 dropContact                                : 0
+11:49:26 dropUse                                    : 0
+11:49:25 ---------- drop ----------------------------------------------
+11:49:25 bumperUse                                  : 1
+11:49:25 ---------- bumper --------------------------------------------
+11:49:25 motorMowPID.Kd                             : 0.01
+11:49:25 motorMowPID.Ki                             : 0.01
+11:49:25 motorMowPID.Kp                             : 0.00
+11:49:25 motorMowSenseScale                         : 1.54
+11:49:25 motorMowRPMSet                             : 100
+11:49:25 motorMowModulate                           : 0
+11:49:25 motorMowPowerMax                           : 100.00
+11:49:25 motorMowSpeedMaxPwm                        : 216
+11:49:24 motorMowAccel                              : 2000.00
+11:49:24 motorMowForceOff                           : 1
+11:49:24 ---------- mower motor ---------------------------------------
+11:49:24 motorRightOffsetRev                        : 0
+11:49:24 motorRightOffsetFwd                          : 0
+11:49:24 motorLeftSwapDir                           : 0
+11:49:24 motorRightSwapDir                          : 0
+11:49:24 motorLeftPID.Kd                            : 0.00
+11:49:24 motorLeftPID.Ki                            : 0.40
+11:49:24 motorLeftPID.Kp                            : 1.00
+11:49:23 motorBiDirSpeedRatio2                      : 0.92
+11:49:23 motorBiDirSpeedRatio1                      : 0.30
+11:49:23 motorTickPerSecond                         : 168
+11:49:23 SpeedOdoMax                                : 140
+11:49:23 SpeedOdoMin                                : 50
+11:49:23 motorRightOffsetRev                        : 0
+11:49:23 motorRightOffsetFwd                        : 0
+11:49:23 circleTimeForObstacle                      : 4000
+11:49:23 DistPeriObstacleAvoid                     : 100
+11:49:23 motorForwTimeMax                           : 80000
+11:49:22 DistPeriOutStop                            : 15
+11:49:22 DistPeriOutRev                             : 40
+11:49:22 motorRollDegMin                            : 20
+11:49:22 motorRollDegMax                            : 100
+11:49:22 motorZeroSettleTime                        : 2000
+11:49:22 motorPowerIgnoreTime                       : 2000
+11:49:22 motorSenseLeftScale                        : 1.65
+11:49:22 motorSenseRightScale                       : 1.87
+11:49:22 motorPowerMax                              : 45.60
+11:49:22 motorSpeedMaxPwm                           : 161
+11:49:21 motorSpeedMaxRpm                           : 24
+11:49:21 motorAccel                                 : 1500
+11:49:21 ---------- wheel motors --------------------------------------
+11:34:39 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 262
+11:21:39 ------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec 276
+11:18:54 MQTT connected 
+11:18:53 MQTT Connecting Please Wait 
+11:18:53 Broker OK
+11:18:53 PING Broker
+11:18:53 MQTT not connected retry each 2 minutes
+11:18:33 MQTT Disconnected Code:1
+11:18:33 Do NOT FORGET to put JP8 in Auto mode
+11:18:33 Flash Finish
+11:04:09 Do NOT FORGET to put JP8 in Alawys on mode
+11:04:09 Choose a file and click on Flash buitton
+
