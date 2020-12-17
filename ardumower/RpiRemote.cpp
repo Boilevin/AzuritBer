@@ -1162,7 +1162,12 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "stateCurr", 20) == 0)  robot->stateCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "statusCurr", 20) == 0)  robot->statusCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "nextTimeTimer", 20) == 0)  robot->nextTimeTimer = atoi(received_value[i]);
-
+      if (strncmp(variable_name[i], "PiNewHeading", 20) == 0)  robot->PiNewHeading = atoi(received_value[i]);
+      if (strncmp(variable_name[i], "PiNewHeadingDurat", 20) == 0) { 
+        robot->PiNewHeadingEnd  = millis() + 1000 * atoi(received_value[i]);
+      }
+      
+      
       //bber50
       if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)
       {

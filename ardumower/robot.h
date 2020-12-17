@@ -537,7 +537,8 @@ class Robot
     int delayBetweenTwoDmpAutocalib;
     int maxDurationDmpAutocalib;
     float maxDriftPerSecond;
-
+    int PiNewHeading; // use by Pi vision detection
+    unsigned long PiNewHeadingEnd; // use by Pi vision detection to change heading for a small duration
     // ------- perimeter state --------------------------
 
     //bb

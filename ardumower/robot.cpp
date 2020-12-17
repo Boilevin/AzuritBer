@@ -144,7 +144,9 @@ Robot::Robot() {
 
   gpsLat = gpsLon = gpsX = gpsY = 0;
   robotIsStuckCounter = 0;
-
+  
+  PiNewHeading = 0;
+  PiNewHeadingEnd = 0;
   imuDriveHeading = 0;
   periFindDriveHeading = 0;
   remoteDriveHeading = 0;
@@ -1228,7 +1230,10 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   if (statusCurr == REMOTE) {   //possible heading change
     imuDriveHeading = remoteDriveHeading / PI * 180;
   }
-
+  //Pi vision change heading
+  if (PiNewHeading !=0 and (millis() < PiNewHeadingEnd)){
+     imuDriveHeading=imuDriveHeading+PiNewHeading;
+  }
   /*
     Console.print(" **************** compute  at  ");
     Console.println(millis());

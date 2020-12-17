@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-PiVersion="400"
+PiVersion="502"
 import traceback
 import sys
 import serial
@@ -558,12 +558,16 @@ class mower:
         mower.lastMqttBatteryValue=0
         
         mower.personDetect=False
+        mower.personDetectAt=time.time()
         mower.dogDetect=False
         mower.catDetect=False
+
+        mower.VisionNewHeading=0
+        mower.VisionNewHeadingDuration=5  #duration of the new heading in seconde
         
         #mower.timeToSendMqttMowPattern=time.time()+200
         
-        
+       
     
 mymower=mower()
 myRobot=robot()
@@ -707,11 +711,12 @@ def checkSerial():  #the main loop is that
 
     if (mymower.personDetect==True):
         #need to send offset for heading via pfod message + or - according location
-        send_var_message('w','motorSpeedMaxPwm','50','0','0','0','0','0','0','0')
+        
+        send_var_message('w','PiNewHeading',''+str(mymower.VisionNewHeading)+'','PiNewHeadingDurat',''+str(mymower.VisionNewHeadingDuration)+'','0','0','0','0','0')
         mymower.personDetect=False
 
     
-    fen1.after(20,checkSerial)  # here is the main loop each 50ms
+    fen1.after(20,checkSerial)  # here is the main loop each 20ms
     
    
 
@@ -3623,12 +3628,14 @@ def visionThread(num):
     import tensorflow as tf
 
     import sys
+
+    count=0
     consoleInsertText("Initialise Vision " + '\n')
 # Set up camera constants
-#IM_WIDTH = 1280
-#IM_HEIGHT = 720
-    IM_WIDTH = 640   # Use smaller resolution for
-    IM_HEIGHT = 480  # slightly faster framerate
+    IM_WIDTH = 1280
+    IM_HEIGHT = 720
+    #IM_WIDTH = 640   # Use smaller resolution for
+    #IM_HEIGHT = 480  # slightly faster framerate
 
 # Select camera type (if user enters --usbcam when calling this script,
 # a USB webcam will be used)
@@ -3719,58 +3726,79 @@ def visionThread(num):
     rawCapture = PiRGBArray(camera, size=(IM_WIDTH,IM_HEIGHT))
     rawCapture.truncate(0)
     consoleInsertText("Vision Started "+ '\n')
+
+
+    
     for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
-        t1 = cv2.getTickCount()
+        
+        if (time.time() > mymower.personDetectAt+7):  #wait 7 secondes before next detection
+            
+        
+            t1 = cv2.getTickCount()
       
         # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
         # i.e. a single-column array, where each item in the column has the pixel RGB value
-        frame = np.copy(frame1.array)
-        frame.setflags(write=1)
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame_expanded = np.expand_dims(frame_rgb, axis=0)
+            frame = np.copy(frame1.array)
+            frame.setflags(write=1)
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame_expanded = np.expand_dims(frame_rgb, axis=0)
 
         # Perform the actual detection by running the model with the image as input
-        (boxes, scores, classes, num) = sess.run(
-            [detection_boxes, detection_scores, detection_classes, num_detections],
-            feed_dict={image_tensor: frame_expanded})
+        
+            
+            (boxes, scores, classes, num) = sess.run(
+                [detection_boxes, detection_scores, detection_classes, num_detections],
+                feed_dict={image_tensor: frame_expanded})
 
         # Draw the results of the detection (aka 'visulaize the results')
-        vis_util.visualize_boxes_and_labels_on_image_array(
-            frame,
-            np.squeeze(boxes),
-            np.squeeze(classes).astype(np.int32),
-            np.squeeze(scores),
-            category_index,
-            use_normalized_coordinates=True,
-            line_thickness=2,
-            min_score_thresh=0.60)
+            vis_util.visualize_boxes_and_labels_on_image_array(
+                frame,
+                np.squeeze(boxes),
+                np.squeeze(classes).astype(np.int32),
+                np.squeeze(scores),
+                category_index,
+                use_normalized_coordinates=True,
+                line_thickness=2,
+                min_score_thresh=0.60)
         #print (np.squeeze(scores))
         
         
-        cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
+            cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
 
         # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow('Object detector', frame)
-        if (int(classes[0][0]) == 1 and scores[0][0] > 0.75 ):
+            cv2.imshow('Object detector', frame)
+        
+            if (int(classes[0][0]) == 1 and scores[0][0] > 0.75 ):
              
-             x = int(((boxes[0][0][1]+boxes[0][0][3])/2)*IM_WIDTH)
-             y = int(((boxes[0][0][0]+boxes[0][0][2])/2)*IM_HEIGHT)
-             consoleInsertText("person detect at " + str(x) + "  " + str(y) + '\n')
-             mymower.personDetect=True
+                 x = int(((boxes[0][0][1]+boxes[0][0][3])/2)*IM_WIDTH)
+                 y = int(((boxes[0][0][0]+boxes[0][0][2])/2)*IM_HEIGHT)
+                 consoleInsertText("person detect at " + str(x) + "  " + str(y) + '\n')
+                 if (x > IM_WIDTH/2) :
+                     mymower.VisionNewHeading=30
+                 else :
+                     mymower.VisionNewHeading=-30
+                 
+                 mymower.VisionNewHeadingDuration=5
+                 consoleInsertText("rotate " + str(mymower.VisionNewHeading)  + '\n')   
              
 
-
+                 mymower.personDetect=True
+                 mymower.personDetectAt = time.time()
+                 
+                 cv2.imwrite("/home/pi/Documents/PiArdumower/vision/visionperson%d.jpg" % count, frame)
+                 count=count+1
+                 #cv2.imwrite("frame%d.jpg" % count, frame)
 
              
              #time.sleep(5)
-        t2 = cv2.getTickCount()
-        time1 = (t2-t1)/freq
-        frame_rate_calc = 1/time1
+            t2 = cv2.getTickCount()
+            time1 = (t2-t1)/freq
+            frame_rate_calc = 1/time1
         
         # Press 'q' to quit
-        if cv2.waitKey(1) == ord('q'):
-            break
-
+            if cv2.waitKey(1) == ord('q'):
+                break
+        #clear frame capture for next loop
         rawCapture.truncate(0)
 
     camera.close()

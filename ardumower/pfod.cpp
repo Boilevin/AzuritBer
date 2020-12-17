@@ -865,11 +865,16 @@ void RemoteControl::sendRemoteMenu(boolean update) {
 }
 
 void RemoteControl::processRemoteMenu(String pfodCmd) {
+  //Command only coming from raspberry pi
   //if (pfodCmd == "h00" ) robot->remoteUse = !robot->remoteUse;
   if (pfodCmd == "h01" ) robot->RaspberryPIUse = !robot->RaspberryPIUse;
   if (pfodCmd == "h02" ) robot->printSettingSerial();  //use by pi to show all the variable in the console
   if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode
   if (pfodCmd == "h04" ) robot->autoReboot();  //use by pi to reset due and pi
+  if (pfodCmd == "h05" ) robot->userLed=1;  //use by pi to change heading when vision detect something
+
+
+
 
   sendRemoteMenu(true);
 }
