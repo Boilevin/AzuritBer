@@ -144,7 +144,7 @@ Robot::Robot() {
 
   gpsLat = gpsLon = gpsX = gpsY = 0;
   robotIsStuckCounter = 0;
-  
+
   PiNewHeading = 0;
   PiNewHeadingEnd = 0;
   imuDriveHeading = 0;
@@ -1230,10 +1230,7 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   if (statusCurr == REMOTE) {   //possible heading change
     imuDriveHeading = remoteDriveHeading / PI * 180;
   }
-  //Pi vision change heading
-  if (PiNewHeading !=0 and (millis() < PiNewHeadingEnd)){
-     imuDriveHeading=imuDriveHeading+PiNewHeading;
-  }
+
   /*
     Console.print(" **************** compute  at  ");
     Console.println(millis());
@@ -1374,49 +1371,58 @@ void Robot::motorControlOdo() {
     motorRightPID.Kp = motorLeftPID.Kp;
     motorRightPID.Ki = motorLeftPID.Ki;
     motorRightPID.Kd = motorLeftPID.Kd;
-    // USE THE IMU
+    // USE THE IMU AND MOW BY LANE
     if ((imuUse) && (mowPatternCurr == MOW_LANES) && (stateCurr == STATE_FORWARD_ODO)) { //if mow by lane need different cible
       YawActualDeg = imu.ypr.yaw / PI * 180;
       if (laneUseNr == 1) {   //from -45 to 45 deg
         yawCiblePos = yawSet1 ;
-        // ImuPidCiblePos= yawSet1+360;
+        
         if (rollDir == RIGHT) {
           yawCibleNeg = yawOppositeLane1RollRight;
-          // ImuPidCibleNeg = imu.rotate360(yawOppositeLane1RollRight);
+          
         }
         else {
           yawCibleNeg = yawOppositeLane1RollLeft;
-          // ImuPidCibleNeg = imu.rotate360(yawOppositeLane1RollLeft);
+          
         }
 
       }
       if (laneUseNr == 2) {   //from 45 to 135 deg
         yawCiblePos = yawSet2;
-        //ImuPidCiblePos= yawSet2;
+        
         if (rollDir == RIGHT) {
           yawCibleNeg = yawOppositeLane2RollRight;
-          // ImuPidCibleNeg = abs(yawOppositeLane2RollRight);
+          
         }
         else {
           yawCibleNeg = yawOppositeLane2RollLeft;
-          // ImuPidCibleNeg = abs(yawOppositeLane2RollLeft);
+          
         }
       }
       if (laneUseNr == 3) {    //from 135 to -135 or 225 deg
         yawCiblePos = yawSet3;
-        // ImuPidCiblePos= imu.rotate360(yawSet3);
+        
         if (rollDir == RIGHT) {
           yawCibleNeg = yawOppositeLane3RollRight;
-          // ImuPidCibleNeg = imu.rotate360(yawOppositeLane3RollRight);
+          
         }
         else {
           yawCibleNeg = yawOppositeLane3RollLeft;
-          //  ImuPidCibleNeg = imu.rotate360(yawOppositeLane3RollLeft);
+          
         }
       }
 
       if ((imu.ypr.yaw / PI * 180) > 0 ) imuDriveHeading = yawCiblePos;
       else imuDriveHeading = yawCibleNeg;
+
+      //Pi vision change heading
+      if (PiNewHeading != 0 and (millis() < PiNewHeadingEnd)) {
+        imuDriveHeading = imu.scale180(imuDriveHeading + PiNewHeading);
+      }
+
+
+
+
       imuDirPID.x = imu.distance180(YawActualDeg, imuDriveHeading);
       imuDirPID.w = 0;
       imuDirPID.y_min = -motorSpeedMaxPwm / 2;
@@ -1466,9 +1472,11 @@ void Robot::motorControlOdo() {
       if (imuUse) /// use the IMU for straight line
       {
         YawActualDeg = imu.ypr.yaw / PI * 180;
-        // if(abs(YawActualDeg) >90) YawMedianDeg = imu.rotate360(YawActualDeg);
-        // else YawMedianDeg= YawActualDeg+90;
-
+        
+        //Pi vision change heading
+        if (PiNewHeading != 0 and (millis() < PiNewHeadingEnd)) {
+          imuDriveHeading = imu.scale180(imuDriveHeading + PiNewHeading);
+        }
         imuDirPID.x = imu.distance180(YawActualDeg, imuDriveHeading);
         imuDirPID.w = 0;
         imuDirPID.y_min = -motorSpeedMaxPwm / 2;
@@ -1918,6 +1926,8 @@ void Robot::setUserSwitches() {
   setActuator(ACT_USER_SW2, userSwitch2);
   setActuator(ACT_USER_SW3, userSwitch3);
 }
+//bber60
+
 // set user-Led
 void Robot::setUserLeds() {
   setActuator(ACT_LED, userLed);
@@ -1925,6 +1935,13 @@ void Robot::setUserLeds() {
   setActuator(ACT_RED_LED, userRedLed);
 }
 
+
+void Robot::setUserOut() {
+  setActuator(ACT_USER_OUT1, userOut1);
+  setActuator(ACT_USER_OUT2, userOut2);
+  setActuator(ACT_USER_OUT3, userOut3);
+  setActuator(ACT_USER_OUT4, userOut4);
+}
 
 void Robot::setup()  {
 
@@ -2737,7 +2754,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeRight = 0;
       motorRightSpeedRpmSet = motorSpeedMaxRpm ;
       motorLeftSpeedRpmSet = motorSpeedMaxRpm ;
-      //bber60
+
 
       stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * 30000);// set a very large distance 300 ml for random mowing
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 30000);

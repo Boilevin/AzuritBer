@@ -871,9 +871,7 @@ void RemoteControl::processRemoteMenu(String pfodCmd) {
   if (pfodCmd == "h02" ) robot->printSettingSerial();  //use by pi to show all the variable in the console
   if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode
   if (pfodCmd == "h04" ) robot->autoReboot();  //use by pi to reset due and pi
-  if (pfodCmd == "h05" ) robot->userLed=1;  //use by pi to change heading when vision detect something
-
-
+  
 
 
   sendRemoteMenu(true);
@@ -1281,12 +1279,15 @@ void RemoteControl::sendCommandMenu(boolean update) {
   serialPort->print(F("|r3~User switch 3 is "));
   sendOnOff(robot->userSwitch3);
 //bber80
-  serialPort->print(F("|rd~Main Led is "));
-  sendOnOff(robot->userLed);
-  serialPort->print(F("|re~Green Led is "));
-  sendOnOff(robot->userGreenLed);
-  serialPort->print(F("|rf~Red Led is "));
-  sendOnOff(robot->userRedLed);
+  serialPort->print(F("|rd1~UserOut1 ON "));
+  //sendOnOff(robot->userLed);
+  serialPort->print(F("|rd0~UserOut1 OFF "));
+  //sendOnOff(robot->userLed);
+ 
+  serialPort->print(F("|re~UserOut2 is "));
+  sendOnOff(robot->userOut2);
+  serialPort->print(F("|rf~UserOut2 is "));
+  sendOnOff(robot->userOut3);
 
   
   serialPort->print("}");
@@ -1412,20 +1413,25 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     robot->batSwitchOffIfIdle = 0; // to stop immediatly the PCB
     sendCommandMenu(true);
   } 
-  //bber80
-   else if (pfodCmd == "rd") {
-    robot->userLed = !robot->userLed;
-    robot->setUserLeds();
+  //bber60
+   else if (pfodCmd == "rd1") {
+    robot->userOut1 = 1;
+    robot->setUserOut();
+    sendCommandMenu(true);
+  }
+   else if (pfodCmd == "rd0") {
+    robot->userOut1 = 0;
+    robot->setUserOut();
     sendCommandMenu(true);
   }
   else if (pfodCmd == "re") {
-    robot->userGreenLed = !robot->userGreenLed;
-    robot->setUserLeds();
+    robot->userOut2 = !robot->userOut2;
+    robot->setUserOut();
     sendCommandMenu(true);
   }
   else if (pfodCmd == "rf") {
-    robot->userRedLed = !robot->userRedLed;
-    robot->setUserLeds();
+    robot->userOut3 = !robot->userOut3;
+    robot->setUserOut();
     sendCommandMenu(true);
   }
   

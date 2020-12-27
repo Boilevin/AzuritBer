@@ -91,10 +91,12 @@
 #define pinChargeVoltage A9        // charging voltage sensor
 #define pinChargeCurrent A8        // charge current sensor
 #define pinChargeRelay 50          // charge relay
-#define pinRemoteMow 12            // remote control mower motor
-#define pinRemoteSteer 11          // remote control steering 
-#define pinRemoteSpeed 10          // remote control speed
-#define pinRemoteSwitch 52         // remote control switch
+//bber60
+#define pinUserOut1 12            // remote control mower motor
+#define pinUserOut2 11          // remote control steering 
+#define pinUserOut3 10          // remote control speed
+#define pinUserOut4 52         // remote control switch
+
 #define pinVoltageMeasurement A7   // test pin for your own voltage measurements
 
 #define pinOdometryLeft DAC0     // left odometry sensor

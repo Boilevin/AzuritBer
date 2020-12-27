@@ -99,7 +99,11 @@ enum {
   //bber80
   ACT_GREEN_LED,
   ACT_RED_LED,
-  
+  //bber60
+  ACT_USER_OUT1,
+  ACT_USER_OUT2,
+  ACT_USER_OUT3,
+  ACT_USER_OUT4,
 };
 
 // error types
@@ -657,10 +661,18 @@ class Robot
     boolean userSwitch1       ;       // user-defined switch 1 (default value)
     boolean userSwitch2       ;       // user-defined switch 2 (default value)
     boolean userSwitch3       ;       // user-defined switch 3 (default value)
-    //bber80
+    //bber60
     boolean userLed           ;       // Main Led (default value)
     boolean userGreenLed      ;       // Green Led (default value)
     boolean userRedLed        ;       // Red Led (default value)
+
+    boolean userOut1        ;       // output on remote connector Mow (default value)
+    boolean userOut2        ;       // output on remote connector steering
+    boolean userOut3        ;       // output on remote connector speed
+    boolean userOut4        ;       // output on remote connector switch
+
+
+
 
 
 
@@ -789,6 +801,9 @@ class Robot
     virtual void setUserSwitches();
     //bber80
     virtual void setUserLeds();
+    //bber60
+    virtual void setUserOut();
+    
     virtual void addErrorCounter(byte errType);
     virtual void resetErrorCounters();
     virtual void resetMotorFault();// {}

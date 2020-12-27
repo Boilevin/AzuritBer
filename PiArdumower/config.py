@@ -8,7 +8,7 @@ if (os.name=='posix'):
     myOS="Linux"
 
     #If PCB1.3 is used with DUE normalu always true
-    DueConnectedOnPi=False
+    DueConnectedOnPi=True
     
     #Old code possible to directly connect a GPS to PI for tracking only
     GpsConnectedOnPi=False
@@ -20,7 +20,7 @@ if (os.name=='posix'):
     #the battery cycle can be recorded on each charging cycle see plot folder
     AutoRecordBatCharging=True
     #Possible to remove the in and out NMEA message visualisation in console
-    useDebugConsole=False
+    useDebugConsole=True
     
     #On multiple area it's the sender IP, Use to start and stop them over HTTP
     #Sender1AdressIP is the station sender 
@@ -45,6 +45,10 @@ if (os.name=='posix'):
     # Always first letter uppercase and set the yaml file according Mower is the defaut name
     Mqtt_MowerName = "Mower"
 
+    #Setting for Vision
+    personDetectNewHeading = 30
+    personDetectNewHeadingDuration = 2
+    personDetectMinScore = 78
     
 
 

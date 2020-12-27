@@ -266,7 +266,8 @@ Mower::Mower() {
   // -----------configuration end-------------------------------------
 }
 
-
+//bber60
+/*
 // remote control (RC) ppm signal change interrupt
 ISR(PCINT0_vect) {
   unsigned long timeMicros = micros();
@@ -277,7 +278,7 @@ ISR(PCINT0_vect) {
   robot.setRemotePPMState(timeMicros, remoteSpeedState, remoteSteerState, remoteMowState, remoteSwitchState);
 }
 
-
+*/
 volatile long oldOdoPins_A = 0;
 volatile long oldOdoPins_B = 0;
 ISR(PCINT2_vect)
@@ -290,7 +291,7 @@ ISR(PCINT2_vect)
     if (robot.motorRightPWMCurr >= 0) robot.odometryRight++; else robot.odometryRight--;
     oldOdoPins_A = actPins_A;
   }
-  if (setPins_B & 0b00000000000000001000000000000000)           // pin right has changed
+  if (setPins_B & 0b00000000000000001000000000000000)     // pin right has changed
   {
     if (robot.motorLeftPWMCurr >= 0) robot.odometryLeft++; else robot.odometryLeft--;
     oldOdoPins_B = actPins_B;
@@ -394,12 +395,18 @@ void Mower::setup() {
 
   // rain
   pinMode(pinRain, INPUT);
-
+  //bber60
+  /*
   // R/C
   pinMode(pinRemoteMow, INPUT);
   pinMode(pinRemoteSteer, INPUT);
   pinMode(pinRemoteSpeed, INPUT);
   pinMode(pinRemoteSwitch, INPUT);
+*/
+  pinMode(pinUserOut1, OUTPUT);
+  pinMode(pinUserOut2, OUTPUT);
+  pinMode(pinUserOut3, OUTPUT);
+  pinMode(pinUserOut4, OUTPUT);
 
   // odometry
   //not sure the pullupis necessary with PCB1.3
@@ -459,20 +466,20 @@ void Mower::setup() {
   //-----------------------------------------------------------------------------------------------------------------UweZ geÃ¤ndert Anfang---------------------------------
   // Due interrupts
   attachInterrupt(pinOdometryLeft, PCINT2_vect, CHANGE);
-  attachInterrupt(pinOdometryLeft2, PCINT2_vect, CHANGE);
+  //attachInterrupt(pinOdometryLeft2, PCINT2_vect, CHANGE);
   attachInterrupt(pinOdometryRight, PCINT2_vect, CHANGE);
-  attachInterrupt(pinOdometryRight2, PCINT2_vect, CHANGE);
-
+  //attachInterrupt(pinOdometryRight2, PCINT2_vect, CHANGE);
+  //bber60
+  /*
   attachInterrupt(pinRemoteSpeed, PCINT0_vect, CHANGE);
   attachInterrupt(pinRemoteSteer, PCINT0_vect, CHANGE);
   attachInterrupt(pinRemoteMow, PCINT0_vect, CHANGE);
   attachInterrupt(pinRemoteSwitch, PCINT0_vect, CHANGE);
-
-  //attachInterrupt(pinMotorMowRpm, rpm_interrupt, CHANGE);
+  
   attachInterrupt(pinMotorMowRpm, PCINT2_vect, CHANGE);
   // Console.print(millis());
   //Console.println(" --> ******************************************* End of attach interrupt *********************************");
-
+  */
 
 }
 
@@ -583,11 +590,17 @@ void Mower::setActuator(char type, int value) {
       break; //  Motortreiber einstellung - bei Bedarf Ã¤ndern z.B setL298N auf setMC33926
 
     case ACT_BUZZER: if (value == 0) Buzzer.noTone(); else Buzzer.tone(value); break;
-   //bber80
+   //bber60
+   /*
     case ACT_LED: digitalWrite(pinLED, value); break; 
     case ACT_GREEN_LED: digitalWrite(pinGreenLED, value); break;
     case ACT_RED_LED: digitalWrite(pinRedLED, value); break;
-     
+    */
+    case ACT_USER_OUT1: digitalWrite(pinUserOut1, value); break;
+    case ACT_USER_OUT2: digitalWrite(pinUserOut2, value); break;
+    case ACT_USER_OUT3: digitalWrite(pinUserOut3, value); break;
+    case ACT_USER_OUT4: digitalWrite(pinUserOut4, value); break;
+    
     case ACT_USER_SW1: digitalWrite(pinUserSwitch1, value); break;
     case ACT_USER_SW2: digitalWrite(pinUserSwitch2, value); break;
     case ACT_USER_SW3: digitalWrite(pinUserSwitch3, value); break;
