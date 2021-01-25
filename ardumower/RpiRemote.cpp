@@ -1335,6 +1335,7 @@ void RpiRemote::readWrite_setting()
         robot->datetime.date.day = val[3];
         robot->datetime.date.month = val[4];
         robot->datetime.date.year = val[5];
+        robot->setActuator(ACT_RTC, 0);
       }
     }
     if (Setting_page == "All") {
