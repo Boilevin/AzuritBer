@@ -2,13 +2,16 @@ sudo apt-get update
 
 sudo apt-get upgrade
 
-tensorflow lite
+----opencv-----
+sudo apt install python3-opencv
+
+----tensorflow lite----
 sudo pip3 install https://github.com/google-coral/pycoral/releases/download/release-frogfish/tflite_runtime-2.5.0-cp37-cp37m-linux_armv7l.whl
 
 
 
-
-tensorflow
+----optionnal to test more reliable detection------
+----tensorflow----
 https://www.framboise314.fr/vision-artificielle-testez-la-technologie-tensorflow-opencv4-sur-raspberry-pi-4/
 or 
 https://github.com/EdjeElectronics/TensorFlow-Object-Detection-on-the-Raspberry-Pi
