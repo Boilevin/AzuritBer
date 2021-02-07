@@ -1376,39 +1376,29 @@ void Robot::motorControlOdo() {
       YawActualDeg = imu.ypr.yaw / PI * 180;
       if (laneUseNr == 1) {   //from -45 to 45 deg
         yawCiblePos = yawSet1 ;
-        
         if (rollDir == RIGHT) {
           yawCibleNeg = yawOppositeLane1RollRight;
-          
         }
         else {
           yawCibleNeg = yawOppositeLane1RollLeft;
-          
         }
-
       }
       if (laneUseNr == 2) {   //from 45 to 135 deg
         yawCiblePos = yawSet2;
-        
         if (rollDir == RIGHT) {
           yawCibleNeg = yawOppositeLane2RollRight;
-          
         }
         else {
           yawCibleNeg = yawOppositeLane2RollLeft;
-          
         }
       }
       if (laneUseNr == 3) {    //from 135 to -135 or 225 deg
         yawCiblePos = yawSet3;
-        
         if (rollDir == RIGHT) {
           yawCibleNeg = yawOppositeLane3RollRight;
-          
         }
         else {
           yawCibleNeg = yawOppositeLane3RollLeft;
-          
         }
       }
 
@@ -1419,8 +1409,6 @@ void Robot::motorControlOdo() {
       if (PiNewHeading != 0 and (millis() < PiNewHeadingEnd)) {
         imuDriveHeading = imu.scale180(imuDriveHeading + PiNewHeading);
       }
-
-
 
 
       imuDirPID.x = imu.distance180(YawActualDeg, imuDriveHeading);
@@ -1472,7 +1460,7 @@ void Robot::motorControlOdo() {
       if (imuUse) /// use the IMU for straight line
       {
         YawActualDeg = imu.ypr.yaw / PI * 180;
-        
+
         //Pi vision change heading
         if (PiNewHeading != 0 and (millis() < PiNewHeadingEnd)) {
           imuDriveHeading = imu.scale180(imuDriveHeading + PiNewHeading);
@@ -2044,11 +2032,14 @@ void Robot::setup()  {
   RightMowIna226.calibrate(0.01, 4);
 
 
-
+  userOut1 = 1;      // output on remote connector Mow (default value)
+  userOut2 = 1;      // output on remote connector steering
+  userOut3 = 1;      // output on remote connector speed
+  userOut4 = 1;      // output on remote connector switch
 
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
-    Console.println ("Watchdog is enable and set to 2 secondes");
+    Console.println ("Watchdog is enable and set to 10 secondes");
     watchdogEnable(10000);// Watchdog trigger after  2 sec if not reseted.
 
   }
@@ -4763,7 +4754,16 @@ void Robot::loop()  {
 
 
     */
-
+    //if vision dtect something make the clignotant
+    if (PiNewHeading != 0 and (millis() < PiNewHeadingEnd)) {
+      if (PiNewHeading>0){
+       userOut2 = !userOut2;
+      }
+      else{
+       userOut3 = !userOut3;
+      }
+    }
+    
     if ((millis() - nextTimeInfo > 250)) {
       if (developerActive) {
         Console.print("------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec ");

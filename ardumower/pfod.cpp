@@ -1279,14 +1279,12 @@ void RemoteControl::sendCommandMenu(boolean update) {
   serialPort->print(F("|r3~User switch 3 is "));
   sendOnOff(robot->userSwitch3);
 //bber80
-  serialPort->print(F("|rd1~UserOut1 ON "));
-  //sendOnOff(robot->userLed);
-  serialPort->print(F("|rd0~UserOut1 OFF "));
-  //sendOnOff(robot->userLed);
- 
+  serialPort->print(F("|rd1~UserOut1 OFF "));
+  serialPort->print(F("|rd0~UserOut1 ON "));
+   
   serialPort->print(F("|re~UserOut2 is "));
   sendOnOff(robot->userOut2);
-  serialPort->print(F("|rf~UserOut2 is "));
+  serialPort->print(F("|rf~UserOut3 is "));
   sendOnOff(robot->userOut3);
 
   
