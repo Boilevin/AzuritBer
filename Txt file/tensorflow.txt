@@ -12,6 +12,14 @@ sudo pip3 install https://github.com/google-coral/pycoral/releases/download/rele
 
 ----optionnal to test more reliable detection------
 ----tensorflow----
+pip3 install tensorflow
+
+sudo apt-get install libatlas-base-dev
+
+sudo pip3 install pillow lxml jupyter matplotlib cython
+
+
+
 https://www.framboise314.fr/vision-artificielle-testez-la-technologie-tensorflow-opencv4-sur-raspberry-pi-4/
 or 
 https://github.com/EdjeElectronics/TensorFlow-Object-Detection-on-the-Raspberry-Pi
