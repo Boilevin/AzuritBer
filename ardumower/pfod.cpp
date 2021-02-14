@@ -1282,12 +1282,11 @@ void RemoteControl::sendCommandMenu(boolean update) {
   serialPort->print(F("|rd1~UserOut1 ON "));
   serialPort->print(F("|rd0~UserOut1 OFF "));
    
-  serialPort->print(F("|re~UserOut2 is "));
-  sendOnOff(robot->userOut2);
-  serialPort->print(F("|rf~UserOut3 is "));
-  sendOnOff(robot->userOut3);
-
+  serialPort->print(F("|re1~UserOut2 ON "));
+  serialPort->print(F("|re0~UserOut2 OFF "));
   
+  serialPort->print(F("|rf1~UserOut3 ON "));
+  serialPort->print(F("|rf0~UserOut3 OFF "));
   serialPort->print("}");
   serialPort->println();
 }
@@ -1422,17 +1421,27 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     robot->setUserOut();
     sendCommandMenu(true);
   }
-  else if (pfodCmd == "re") {
-    robot->userOut2 = !robot->userOut2;
+   else if (pfodCmd == "re1") {
+    robot->userOut2 = 1;
     robot->setUserOut();
     sendCommandMenu(true);
   }
-  else if (pfodCmd == "rf") {
-    robot->userOut3 = !robot->userOut3;
+   else if (pfodCmd == "re0") {
+    robot->userOut2 = 0;
     robot->setUserOut();
     sendCommandMenu(true);
   }
-  
+   else if (pfodCmd == "rf1") {
+    robot->userOut3 = 1;
+    robot->setUserOut();
+    sendCommandMenu(true);
+  }
+   else if (pfodCmd == "rf0") {
+    robot->userOut3 = 0;
+    robot->setUserOut();
+    sendCommandMenu(true);
+  }
+   
   else if (pfodCmd == "r1") {
     robot->userSwitch1 = !robot->userSwitch1;
     robot->setUserSwitches();

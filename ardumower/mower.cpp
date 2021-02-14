@@ -596,10 +596,10 @@ void Mower::setActuator(char type, int value) {
     case ACT_GREEN_LED: digitalWrite(pinGreenLED, value); break;
     case ACT_RED_LED: digitalWrite(pinRedLED, value); break;
     */
-    case ACT_USER_OUT1: digitalWrite(pinUserOut1, !value); break;  //Userout use relay board and output are invert
-    case ACT_USER_OUT2: digitalWrite(pinUserOut2, !value); break;
-    case ACT_USER_OUT3: digitalWrite(pinUserOut3, !value); break;
-    case ACT_USER_OUT4: digitalWrite(pinUserOut4, !value); break;
+    case ACT_USER_OUT1: digitalWrite(pinUserOut1, value); break;  
+    case ACT_USER_OUT2: digitalWrite(pinUserOut2, value); break;
+    case ACT_USER_OUT3: digitalWrite(pinUserOut3, value); break;
+    case ACT_USER_OUT4: digitalWrite(pinUserOut4, value); break;
     
     case ACT_USER_SW1: digitalWrite(pinUserSwitch1, value); break;
     case ACT_USER_SW2: digitalWrite(pinUserSwitch2, value); break;

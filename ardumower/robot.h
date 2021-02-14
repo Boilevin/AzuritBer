@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.3-Azurit-RL1000"
+#define VER "1.5-AzuritBer-RL1000"
 
 
 // sensors
@@ -671,7 +671,7 @@ class Robot
     boolean userOut3        ;       // output on remote connector speed
     boolean userOut4        ;       // output on remote connector switch
 
-
+    boolean invert_userOut  ;       //switch use in case the userOut use a relay board 
 
 
 

@@ -1925,30 +1925,30 @@ void Robot::setUserLeds() {
 
 
 void Robot::setUserOut() {
-  setActuator(ACT_USER_OUT1, userOut1);
-  setActuator(ACT_USER_OUT2, userOut2);
-  setActuator(ACT_USER_OUT3, userOut3);
-  setActuator(ACT_USER_OUT4, userOut4);
+  if (invert_userOut) {
+    setActuator(ACT_USER_OUT1, !userOut1);
+    setActuator(ACT_USER_OUT2, !userOut2);
+    setActuator(ACT_USER_OUT3, !userOut3);
+    setActuator(ACT_USER_OUT4, !userOut4);
+  }
+  else {
+    setActuator(ACT_USER_OUT1, userOut1);
+    setActuator(ACT_USER_OUT2, userOut2);
+    setActuator(ACT_USER_OUT3, userOut3);
+    setActuator(ACT_USER_OUT4, userOut4);
+  }
+
 }
 
 void Robot::setup()  {
-
-  // i don't understand why the mower start before the robot setup ????????????????????????????????????????????
-
+  //Need to check that : why mower start before the robot setup ????????????????????????????????????????????
   Console.print(" --> ++++++++++++++++++++++++++++++++++* Start Robot Setup at ");
   Console.print(millis());
   Console.println(" --> +++++++++++++++++++++++++++");
 
-
   ADCMan.begin();
   PinMan.begin();
   if (RaspberryPIUse) MyRpi.init();
-
-
-
-
-
-
 
   //setDefaultTime();
   //init of timer for factory setting
@@ -1966,13 +1966,7 @@ void Robot::setup()  {
     timer[i].startRollDir = 0;
     timer[i].startLaneMaxlengh = 0;
     timer[i].rfidBeacon = 0;
-
-
-
   }
-
-
-
   setMotorPWM(0, 0, false);
   loadSaveErrorCounters(true);
   loadUserSettings();
@@ -2016,7 +2010,6 @@ void Robot::setup()  {
   // Console.print ("        Free memory is :   ");
   // Console.println (freeMemory ());
 
-  //bber1
   Console.println ("Starting all the Ina226 current mow motor ");
   CenterMowIna226.begin(0x41);
   LeftMowIna226.begin(0x40);
@@ -2032,24 +2025,27 @@ void Robot::setup()  {
   RightMowIna226.calibrate(0.01, 4);
 
 
-  userOut1 = 1;      // output on remote connector Mow (default value)
-  userOut2 = 1;      // output on remote connector steering
-  userOut3 = 1;      // output on remote connector speed
-  userOut4 = 1;      // output on remote connector switch
+  userOut1 = 0;      // output on remote connector Mow (default value)
+  userOut2 = 0;      // output on remote connector steering
+  userOut3 = 0;      // output on remote connector speed
+  userOut4 = 0;      // output on remote connector switch
+  invert_userOut = 1;  // if a 4 relay board is used ,set this to true
+  //initialise output
+  setUserOut() ;
+
+
+
 
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
-    Console.println ("Watchdog is enable and set to 10 secondes");
-    watchdogEnable(10000);// Watchdog trigger after  2 sec if not reseted.
-
+    Console.println ("Watchdog is enable");
+    watchdogEnable(5000);// Watchdog trigger after x sec if not reseted.
   }
   else
   {
     Console.println ("Watchdog is disable");
   }
-
   nextTimeInfo = millis();
-
 }
 
 
@@ -2436,10 +2432,10 @@ void Robot::readSerial() {
 
 void Robot::checkButton() {
   if ( (!buttonUse) || (millis() < nextTimeButtonCheck) ) return;
-
   nextTimeButtonCheck = millis() + 50;
   boolean buttonPressed = (readSensor(SEN_BUTTON) == LOW);
-  if ( ((!buttonPressed) && (buttonCounter > 0)) || ((buttonPressed) && (millis() >= nextTimeButton)) ) {
+  if ( ((!buttonPressed) && (buttonCounter > 0)) || ((buttonPressed) && (millis() >= nextTimeButton)) )
+  {
     nextTimeButton = millis() + 1000;
     if (buttonPressed) {
       Console.println(F("buttonPressed"));
@@ -2450,7 +2446,9 @@ void Robot::checkButton() {
     }
     else {
       // ON/OFF button released
-      if  ( ((stateCurr != STATE_OFF) || (stateCurr == STATE_ERROR)) && (stateCurr != STATE_STATION) ) {
+      
+      if  ( ((stateCurr != STATE_OFF) || (stateCurr == STATE_ERROR)) && (stateCurr != STATE_STATION) )
+      {
         motorMowEnable = false;
         setNextState(STATE_OFF, 0);
       } else if (buttonCounter == 1) {
@@ -4756,14 +4754,14 @@ void Robot::loop()  {
     */
     //if vision dtect something make the clignotant
     if (PiNewHeading != 0 and (millis() < PiNewHeadingEnd)) {
-      if (PiNewHeading>0){
-       userOut2 = !userOut2;
+      if (PiNewHeading > 0) {
+        userOut2 = !userOut2;
       }
-      else{
-       userOut3 = !userOut3;
+      else {
+        userOut3 = !userOut3;
       }
     }
-    
+
     if ((millis() - nextTimeInfo > 250)) {
       if (developerActive) {
         Console.print("------ LOOP NOT OK DUE IS OVERLOAD -- Over 1 sec ");
