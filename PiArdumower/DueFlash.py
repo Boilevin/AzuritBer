@@ -42,6 +42,7 @@ def ButtonFlash_click():
         print("restart the DUE")
         myShell.send('stty -F /dev/ttyACM0 115200')
         time.sleep(3)
+        os.remove(str(tk_fileName.get()))
         fen1.destroy()
     if os.path.exists('/dev/ttyACM1') == True:
         print("put the DUE into flash mode on ttyACM1")
@@ -56,6 +57,7 @@ def ButtonFlash_click():
         print("restart the DUE")
         myShell.send('stty -F /dev/ttyACM1 115200')
         time.sleep(3)
+        os.remove(str(tk_fileName.get()))
         fen1.destroy()
     
     
