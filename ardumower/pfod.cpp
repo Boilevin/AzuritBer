@@ -460,8 +460,6 @@ void RemoteControl::sendMowMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Mow`1000"));
   serialPort->print(F("|o12~Force mowing off: "));
   sendYesNo(robot->motorMowForceOff);
-  //serialPort->print(F("|o00~Overload Counter "));
-  //serialPort->print(robot->motorMowSenseCounter);
   serialPort->print(F("|o01~Actual Power (Watt)"));
   serialPort->print(robot->Left_Mow_Power);
   serialPort->print("/");
@@ -470,20 +468,18 @@ void RemoteControl::sendMowMenu(boolean update) {
   serialPort->print(robot->Right_Mow_Power);
   serialPort->print(F("|o11~Actual Max Value "));
   serialPort->print(robot->motorMowPower);
-  sendSlider("o02", F("Power max"), robot->motorMowPowerMax, "", 0.1, 100);
-  serialPort->print(F("|o04~Speed "));
-  serialPort->print(robot->motorMowPWMCurr);
+  sendSlider("o02", F("Power max"), robot->motorMowPowerMax, "", 0.1, 100); 
   sendSlider("o05", F("PWM Speed max"), robot->motorMowSpeedMaxPwm, "", 1, 255, 0);
+  sendSlider("o08", F("PWM Min Speed "), robot->motorMowSpeedMinPwm, "", 1, 255, 50);
   if (robot->developerActive) {
-    serialPort->print(F("|o06~Modulate "));
-    sendYesNo(robot->motorMowModulate);
     sendSlider("o03", F("calibrate mow motor "), robot->motorMowSenseScale, "", 0.01, 3, 0);
   }
-  serialPort->print(F("|o07~RPM "));
-  serialPort->print(robot->motorMowRpmCurr);
-  sendSlider("o08", F("RPM set"), robot->motorMowRPMSet, "", 1, 4500, 1);
+  serialPort->print(F("|o07~PWM Coeff "));
+  serialPort->print(robot->motorMowPwmCoeff);
+  serialPort->print(F("|o04~Actual PWM "));
+  serialPort->print(robot->motorMowPWMCurr);
   sendSlider("o13", F("Mow Pattern Max Duration Minutes"), robot->mowPatternDurationMax, "", 1, 255, 10);
-  sendPIDSlider("o09", "RPM", robot->motorMowPID, 0.01, 1.0);
+  //sendPIDSlider("o09", "RPM", robot->motorMowPID, 0.01, 1.0);
 
   serialPort->println(F("|o10~Testing is"));
   switch (testmode) {
@@ -502,14 +498,13 @@ void RemoteControl::processMowMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("o12")) robot->motorMowForceOff = !robot->motorMowForceOff;
   else if (pfodCmd.startsWith("o03")) processSlider(pfodCmd, robot->motorMowSenseScale, 0.01);
   else if (pfodCmd.startsWith("o05")) processSlider(pfodCmd, robot->motorMowSpeedMaxPwm, 1);
-  else if (pfodCmd == "o06") robot->motorMowModulate = !robot->motorMowModulate;
-  else if (pfodCmd.startsWith("o08")) processSlider(pfodCmd, robot->motorMowRPMSet, 1);
+  else if (pfodCmd.startsWith("o08")) processSlider(pfodCmd, robot->motorMowSpeedMinPwm, 1);
   else if (pfodCmd.startsWith("o13")) processSlider(pfodCmd, robot->mowPatternDurationMax, 1);
-  else if (pfodCmd.startsWith("o09")) processPIDSlider(pfodCmd, "o09", robot->motorMowPID, 0.01, 1.0);
+ // else if (pfodCmd.startsWith("o09")) processPIDSlider(pfodCmd, "o09", robot->motorMowPID, 0.01, 1.0);
   else if (pfodCmd == "o10") {
     testmode = (testmode + 1) % 2;
     switch (testmode) {
-      case 0: robot->setNextState(STATE_OFF, 0); robot->motorMowRpmCurr = 0; robot->motorMowEnable = false; break;
+      case 0: robot->setNextState(STATE_OFF, 0); robot->motorMowPwmCoeff = 100; robot->motorMowEnable = false; break;
       case 1: robot->setNextState(STATE_MANUAL, 0); robot->motorMowEnable = true; break;
     }
   }

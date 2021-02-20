@@ -440,13 +440,11 @@ class Robot
     boolean motorMowForceOff ; // user switch for mower motor on/off has highest priority
     boolean highGrassDetect;  //detect that the mow motor is on high load so high grass
     float triggerMotorMowHightGrass ;     // motor mower percent of power vs power Max  trigger to start spirale or half lane
-    // boolean motorMowEnableOverride ; // user switch for mower motor on/off has highest priority if true the motor is stop
-    // mower motor sppeed; range 0..motorMowSpeedMaxPwm
     float motorMowAccel       ;  // motor mower acceleration (warning: do not set too high)
     int motorMowSpeedMaxPwm ;    // motor mower max PWM
+    int motorMowSpeedMinPwm ;    // motor mower min PWM (only for speed modulation)
     float motorMowPowerMax ;     // motor mower max power (Watt)
-    //char motorMowModulate  ;      // motor mower cutter modulation?
-    //bb 8
+
     byte spiraleNbTurn;  //count the number of revolution of the spirale (10 revolutions for example before stop)
     byte halfLaneNb; //count the number of lane same as spirale (10  for example before stop)
 
@@ -456,6 +454,7 @@ class Robot
     PID motorMowPID ;    // motor mower RPM PID controller
     int motorMowSpeedPWMSet;
     int motorMowPWMCurr ;         // current speed
+    int motorMowPwmCoeff ;      // current coeff
     int motorMowSenseADC ;
     float motorMowSenseCurrent ;
     float motorMowPower ;       // motor power (range 0..MAX_MOW_POWER)
@@ -510,6 +509,8 @@ class Robot
     byte compassRollSpeedCoeff;
     RunningMedian compassYawMedian = RunningMedian(60);
     RunningMedian accelGyroYawMedian = RunningMedian(60);
+    RunningMedian motorMowPowerMedian = RunningMedian(30);
+    
     //bb 5
 
 

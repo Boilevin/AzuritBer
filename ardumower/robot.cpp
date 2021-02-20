@@ -122,13 +122,14 @@ Robot::Robot() {
   motorMowEnable = false;
   motorMowForceOff = false;
   //ignoreRfidTag = false;
-  motorMowSpeedPWMSet = 255;  //use to set the speed of the mow motor
+  motorMowSpeedPWMSet = motorMowSpeedMinPwm;  //use to set the speed of the mow motor
   motorMowPWMCurr = 0;
   motorMowSenseADC = 0;
   motorMowSenseCurrent  = 0;
   motorMowPower = 0;
   motorMowSenseCounter = 0;
   motorMowSenseErrorCounter = 0;
+  motorMowPwmCoeff = 100;
   motorMowRpmCurr = 0;
   lastMowSpeedPWM = 0;
   lastSetMotorMowSpeedTime = 0;
@@ -345,7 +346,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, motorForwTimeMax);
   eereadwrite(readflag, addr, motorMowSpeedMaxPwm);
   eereadwrite(readflag, addr, motorMowPowerMax);
-  eereadwrite(readflag, addr, motorMowRPMSet);
+  eereadwrite(readflag, addr, motorMowSpeedMinPwm);
   eereadwrite(readflag, addr, motorMowSenseScale);
   eereadwrite(readflag, addr, motorLeftPID.Kp);
   eereadwrite(readflag, addr, motorLeftPID.Ki);
@@ -566,12 +567,10 @@ void Robot::printSettingSerial() {
   Console.println(motorMowAccel);
   Console.print  (F("motorMowSpeedMaxPwm                        : "));
   Console.println(motorMowSpeedMaxPwm);
+  Console.print  (F("(motorMowSpeedMinPwm                       : "));
+  Console.println(motorMowSpeedMinPwm);
   Console.print  (F("motorMowPowerMax                           : "));
   Console.println(motorMowPowerMax);
-  Console.print  (F("motorMowModulate                           : "));
-  Console.println(motorMowModulate, 1);
-  Console.print  (F("motorMowRPMSet                             : "));
-  Console.println(motorMowRPMSet);
   Console.print  (F("motorMowSenseScale                         : "));
   Console.println(motorMowSenseScale);
   Console.print  (F("motorMowPID.Kp                             : "));
@@ -1010,8 +1009,6 @@ void Robot::setMotorMowPWM(int pwm, boolean useAccel) {
   else {
     motorMowPWMCurr += int(TaC) * (pwm - motorMowPWMCurr) / motorMowAccel;
   }
-
-  //bber13
   setActuator(ACT_MOTOR_MOW, min(motorMowSpeedMaxPwm, max(0, motorMowPWMCurr)));
 }
 
@@ -1803,66 +1800,44 @@ void Robot::motorControl() {
 
 
 
-// motor mow speed controller (slowly adjusts output speed to given input speed)
-// input: motorMowEnable, motorMowModulate, motorMowRpmCurr
-// output: motorMowPWMCurr
 void Robot::motorMowControl() {
   if (millis() < nextTimeMotorMowControl) return;
   nextTimeMotorMowControl = millis() + 100;
-
   if (motorMowForceOff) motorMowEnable = false;
-
-  double mowSpeed ;
-  if (!motorMowEnable) {
-    mowSpeed = 0;
-    lastMowSpeedPWM = mowSpeed;
-    motorMowPID.esum = 0;
-    motorMowPID.x = 0;
-    if (stateCurr == STATE_ERROR) {
-      setMotorMowPWM(mowSpeed, false); //stop immediatly on error (tilt etc....)
+  //Auto adjust the motor speed according to cutting power (The goal is On high grass the motor rotate faster)
+  //A runningmedian process is used to check each seconde the power value of mow motor
+  //if power is low the speed is reduce to have a longer mowing duration and less noise.
+  if (motorMowEnable) {
+    motorMowPowerMedian.add(motorMowPower);
+    if (motorMowPowerMedian.getCount() > 10) { //check each 1 secondes
+      int prevcoeff =  motorMowPwmCoeff;
+      motorMowPwmCoeff = int((100 * motorMowPowerMedian.getAverage(4)) / (0.8 * motorMowPowerMax));//0.8 can be adjust to have other result
+      
+      if (motorMowPwmCoeff < prevcoeff) {
+        //filter on speed reduce to keep the mow speed high for longuer duration
+        motorMowPwmCoeff = int((0.1) * motorMowPwmCoeff + (0.9) * prevcoeff);// use only 10% of the new value
+      }
+      if ((statusCurr == WIRE_MOWING) || (statusCurr == SPIRALE_MOWING)) motorMowPwmCoeff = 100;
+      if (motorMowPwmCoeff > 100) motorMowPwmCoeff = 100;
+      if (motorMowEnable) {
+        motorMowSpeedPWMSet = motorMowSpeedMinPwm + ((double)(motorMowSpeedMaxPwm - motorMowSpeedMinPwm)) * (((double)motorMowPwmCoeff) / 100.0);
+      }
+      if (motorMowSpeedPWMSet < motorMowSpeedMinPwm) motorMowSpeedPWMSet = motorMowSpeedMinPwm;
+      if (motorMowSpeedPWMSet > motorMowSpeedMaxPwm) motorMowSpeedPWMSet = motorMowSpeedMaxPwm;
+      //max speed on wire and spirale
+      motorMowPowerMedian.clear();
     }
-    else
-    {
-      setMotorMowPWM(mowSpeed, true);
-    }
-
   }
-  else {
-    //if ((motorMowModulate) && (motorMowRpmCurr != 0)){
-    // speed sensor available
-
-    if (motorMowModulate) {
-      if (mowSpeed < motorMowRPMSet ) {
-        mowSpeed = lastMowSpeedPWM + 200;
-        if (mowSpeed > motorMowRPMSet) mowSpeed = motorMowRPMSet;
-      } else if (mowSpeed > motorMowRPMSet ) {
-        mowSpeed = lastMowSpeedPWM - 200;
-        if (mowSpeed < motorMowRPMSet) mowSpeed = motorMowRPMSet;
-      }
-
-      motorMowPID.x = 0.2 * motorMowRpmCurr + 0.8 * motorMowPID.x;
-      motorMowPID.w = mowSpeed; // 3300 => 2300
-      motorMowPID.y_min = -motorMowSpeedMaxPwm / 2;
-      motorMowPID.y_max = motorMowSpeedMaxPwm / 2;
-      motorMowPID.max_output = motorMowSpeedMaxPwm / 2;
-      motorMowPID.compute();
-
-      setMotorMowPWM(mowSpeed / 20.0 + motorMowPID.y, false);
-      lastMowSpeedPWM = mowSpeed;
-    }
-    else {
-      if ((errorCounter[ERR_MOW_SENSE] == 0) && (errorCounter[ERR_STUCK] == 0)) {
-        // no speed sensor available
-        mowSpeed = motorMowSpeedPWMSet;
-        if (stateCurr == STATE_ERROR) {
-          setMotorMowPWM(mowSpeed, false); //stop immediatly on error (tilt etc....)
-        }
-        else
-        {
-          setMotorMowPWM(mowSpeed, true);
-        }
-      }
-    }
+  else
+  {
+    motorMowSpeedPWMSet = 0;
+  }
+  if (stateCurr == STATE_ERROR) {
+    setMotorMowPWM(0, false); //stop immediatly on error (tilt etc....)
+  }
+  else
+  {
+    setMotorMowPWM(motorMowSpeedPWMSet, true);
   }
 }
 
@@ -2106,7 +2081,7 @@ void Robot::printInfo(Stream & s) {
                   (int)perimeterInside, perimeterCounter, (int)(!perimeter.signalTimedOut(0)) );
     } else {
       Streamprint(s, "odo %4d %4d ", (int)odometryLeft, (int)odometryRight);
-      Streamprint(s, "spd %4d %4d %4d ", (int)motorLeftSpeedRpmSet, (int)motorRightSpeedRpmSet, (int)motorMowRpmCurr);
+      Streamprint(s, "spd %4d %4d %4d ", (int)motorLeftSpeedRpmSet, (int)motorRightSpeedRpmSet, (int)motorMowPwmCoeff);
       if (consoleMode == CONSOLE_SENSOR_VALUES) {
         // sensor values
         Streamprint(s, "sen %4d %4d %4d ", (int)motorLeftPower, (int)motorRightPower, (int)motorMowPower);
