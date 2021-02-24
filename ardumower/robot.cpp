@@ -1041,7 +1041,7 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
   // ----- driver protection (avoids driver explosion) ----------
   if ( ((pwmLeft < 0) && (motorLeftPWMCurr > 0)) || ((pwmLeft > 0) && (motorLeftPWMCurr < 0)) ) { // slowing before reverse
     if (developerActive) {
-      Console.print("WARNING PROTECTION ON LEFT MOTOR ");
+      Console.print("PROTECTION ON LEFT MOTOR ");
       Console.print("  motorLeftPWMCurr=");
       Console.print (motorLeftPWMCurr);
       Console.print("  pwmLeft=");
@@ -1053,7 +1053,7 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
   }
   if ( ((pwmRight < 0) && (motorRightPWMCurr > 0)) || ((pwmRight > 0) && (motorRightPWMCurr < 0)) ) { // slowing before reverse
     if (developerActive) {
-      Console.print("WARNING PROTECTION ON RIGHT MOTOR ");
+      Console.print("PROTECTION ON RIGHT MOTOR ");
       Console.print("  motorRightPWMCurr=");
       Console.print (motorRightPWMCurr);
       Console.print("  pwmRight=");
@@ -1199,7 +1199,6 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
 
 
   //compute the approximative moving time in millis()
-  //warning maybe 40000 need to be adjusted
   //Need to compute in 2 times to avoid overflow  !!!!!
 
   movingTimeLeft = 1000 * distToMoveLeft / motorTickPerSecond ;
