@@ -1401,11 +1401,7 @@ void Robot::motorControlOdo() {
       if ((imu.ypr.yaw / PI * 180) > 0 ) imuDriveHeading = yawCiblePos;
       else imuDriveHeading = yawCibleNeg;
 
-      //Pi vision change heading
-      if (PiNewHeading != 0 and (millis() < PiNewHeadingEnd)) {
-        imuDriveHeading = imu.scale180(imuDriveHeading + PiNewHeading);
-      }
-
+      
 
       imuDirPID.x = imu.distance180(YawActualDeg, imuDriveHeading);
       imuDirPID.w = 0;
@@ -1457,10 +1453,7 @@ void Robot::motorControlOdo() {
       {
         YawActualDeg = imu.ypr.yaw / PI * 180;
 
-        //Pi vision change heading
-        if (PiNewHeading != 0 and (millis() < PiNewHeadingEnd)) {
-          imuDriveHeading = imu.scale180(imuDriveHeading + PiNewHeading);
-        }
+       
         imuDirPID.x = imu.distance180(YawActualDeg, imuDriveHeading);
         imuDirPID.w = 0;
         imuDirPID.y_min = -motorSpeedMaxPwm / 2;
