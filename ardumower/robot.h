@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.6-AzuritBer-RL1000"
+#define VER "1.7-AzuritBer-RL1000"
 
 
 // sensors
@@ -813,6 +813,7 @@ class Robot
     
     virtual void receivePiPfodCommand (String RpiCmd, float v1, float v2, float v3);
     virtual void printSettingSerial();
+    virtual void checkBumpers();
     char* mowPatternNameList(byte mowPatternIndex);
     
 
@@ -837,7 +838,8 @@ class Robot
     virtual void checkBattery();
     virtual void checkTimer();
     virtual void checkCurrent();
-    virtual void checkBumpers();
+    //bber90
+    //virtual void checkBumpers();
     virtual void checkDrop();                                                                                                             // Dropsensor - Absturzsensor
     virtual void checkBumpersPerimeter();
     virtual void checkPerimeterBoundary();

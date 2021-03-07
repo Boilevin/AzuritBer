@@ -4171,8 +4171,8 @@ void Robot::checkBumpers() {
   if ((millis() < 3000) || (!bumperUse)) return;
 
   if ((bumperLeft || bumperRight)) {
-    if (statusCurr == MANUAL) {
-      Console.println("Bumper trigger in Manual mode ?????????");
+    if ((statusCurr == MANUAL) || (stateCurr == STATE_OFF)) {
+      Console.println("Bumper trigger in Manual or OFF mode ?????????");
       setNextState(STATE_OFF, 0); //the bumper stop all in manual mode
     }
     else
@@ -4195,7 +4195,7 @@ void Robot::checkBumpers() {
 }
 
 // check drop
-void Robot::checkDrop() {  //the drop is used as a contact in front of the robot to detect the charging station
+void Robot::checkDrop() {  //the drop is used as a contact in front of the robot to detect the charging station or a center bumper
   if ((millis() < 3000) || (!dropUse)) return;
   if ((dropLeft || dropRight)) {
     if (statusCurr == MANUAL) {
