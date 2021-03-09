@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.7-AzuritBer-RL1000"
+#define VER "1.71-AzuritBer-RL1000"
 
 
 // sensors

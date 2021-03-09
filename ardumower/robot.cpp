@@ -2399,44 +2399,69 @@ void Robot::readSerial() {
 
 void Robot::checkButton() {
   if ( (!buttonUse) || (millis() < nextTimeButtonCheck) ) return;
-  nextTimeButtonCheck = millis() + 50;
+  nextTimeButtonCheck = millis() + 100;
   boolean buttonPressed = (readSensor(SEN_BUTTON) == LOW);
   if ( ((!buttonPressed) && (buttonCounter > 0)) || ((buttonPressed) && (millis() >= nextTimeButton)) )
   {
     nextTimeButton = millis() + 1000;
     if (buttonPressed) {
-      Console.println(F("buttonPressed"));
+      //Console.print(F("Button Pressed counter : "));
+      //Console.println(buttonCounter);
       // ON/OFF button pressed
-      setBeeper(100, 50, 50, 200, 0 );//
+      setBeeper(50, 50, 0, 200, 0 );//
       buttonCounter++;
-      resetIdleTime();
+      if(buttonCounter>=3) buttonCounter=3;
+      //resetIdleTime();
     }
-    else {
+    else
+    {
       // ON/OFF button released
-
-      if  ( ((stateCurr != STATE_OFF) || (stateCurr == STATE_ERROR)) && (stateCurr != STATE_STATION) )
-      {
+      //Console.print(F("Button Release counter : "));
+      //Console.println(buttonCounter);
+      if ((statusCurr == NORMAL_MOWING) || (stateCurr == STATE_ERROR) || (statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START)) {
+        Console.println(F("ButtonPressed Stop Mowing and Reset Error"));
         motorMowEnable = false;
+        buttonCounter = 0;
         setNextState(STATE_OFF, 0);
-      } else if (buttonCounter == 1) {
-        // start normal with mowing in lanes
-        motorMowEnable = true;
-        mowPatternCurr = MOW_LANES;
-        setNextState(STATE_ACCEL_FRWRD, 0);
-      } else if (buttonCounter == 2) {
-        areaToGo = 1;
-        setNextState(STATE_PERI_FIND, 0);
+        return;
       }
-      else
-      { // start normal with mowing
-        motorMowEnable = true;
-        mowPatternCurr = MOW_RANDOM;
-        setNextState(STATE_ACCEL_FRWRD, 0);
+      if  ((stateCurr == STATE_OFF) || (stateCurr == STATE_STATION)) {
+        if (buttonCounter == 1) {
+          // start normal with mowing in lanes
+          motorMowEnable = true;
+          statusCurr = NORMAL_MOWING;
+          mowPatternCurr = MOW_LANES;
+          buttonCounter = 0;
+          setNextState(STATE_ACCEL_FRWRD, 0);
+          return;
+        }
+        else if (buttonCounter == 2) {
+          // start normal with random mowing
+          motorMowEnable = true;
+          statusCurr = NORMAL_MOWING;
+          mowPatternCurr = MOW_RANDOM;
+          buttonCounter = 0;
+          setNextState(STATE_ACCEL_FRWRD, 0);
+          return;
+        }
+        else if (buttonCounter == 3) {
+          if (stateCurr == STATE_STATION) return;
+          //go to station
+          periFindDriveHeading = scalePI(imu.ypr.yaw);
+          areaToGo = 1;
+          whereToStart = 99999;
+          nextTimeTimer = millis() + 3600000; //avoid the mower start again if timer activate.
+          statusCurr = BACK_TO_STATION;
+          buttonCounter = 0;
+          setNextState(STATE_PERI_FIND, 0);
+          return;
+        }
       }
-
       buttonCounter = 0;
     }
+
   }
+  
 }
 void Robot::newTagFind() {
   if (millis() >= nextTimeSendTagToPi) {
@@ -2974,7 +2999,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_STOP_TOTRACK:
-    //bber100 err here
+      //bber100 err here
       if (statusCurr != TRACK_TO_START) {
         statusCurr = BACK_TO_STATION;
         if (RaspberryPIUse) MyRpi.SendStatusToPi();
@@ -4661,7 +4686,8 @@ void Robot::loop()  {
   checkPerimeterBoundary();
   calcOdometry();
   //checkOdometryFaults();
-  if  (stateCurr == STATE_OFF)  checkButton(); //read only when needed
+  //if  (stateCurr == STATE_OFF)  checkButton(); //read only when needed
+  checkButton();
   motorMowControl();
   checkTilt();
   if ((stateCurr == STATE_PERI_OUT_STOP) && (statusCurr == NORMAL_MOWING)) { //read only timer here for fast processing on odo
@@ -4721,7 +4747,7 @@ void Robot::loop()  {
 
 
     */
-    
+
 
     if ((millis() - nextTimeInfo > 250)) {
       if (developerActive) {
@@ -5336,7 +5362,7 @@ void Robot::loop()  {
       break;
 
     case STATE_PERI_FIND:
-      // find perimeter see 
+      // find perimeter see
       if (!perimeterInside) {
         Console.println("Not inside so start to track the wire");
         setNextState(STATE_PERI_STOP_TOTRACK, 0);
