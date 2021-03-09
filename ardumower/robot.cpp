@@ -2410,7 +2410,7 @@ void Robot::checkButton() {
       // ON/OFF button pressed
       setBeeper(50, 50, 0, 200, 0 );//
       buttonCounter++;
-      if(buttonCounter>=3) buttonCounter=3;
+      if (buttonCounter >= 3) buttonCounter = 3;
       //resetIdleTime();
     }
     else
@@ -2418,7 +2418,7 @@ void Robot::checkButton() {
       // ON/OFF button released
       //Console.print(F("Button Release counter : "));
       //Console.println(buttonCounter);
-      if ((statusCurr == NORMAL_MOWING) || (stateCurr == STATE_ERROR) || (statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START)) {
+      if ((statusCurr == NORMAL_MOWING) || (stateCurr == STATE_ERROR) || (statusCurr == WIRE_MOWING)|| (statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START)) {
         Console.println(F("ButtonPressed Stop Mowing and Reset Error"));
         motorMowEnable = false;
         buttonCounter = 0;
@@ -2461,7 +2461,7 @@ void Robot::checkButton() {
     }
 
   }
-  
+
 }
 void Robot::newTagFind() {
   if (millis() >= nextTimeSendTagToPi) {
@@ -2906,7 +2906,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5;
       stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * DistPeriObstacleAvoid);
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * DistPeriObstacleAvoid);
-
+      
+      
       OdoRampCompute();
 
 
@@ -2999,20 +3000,23 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_STOP_TOTRACK:
+
       //bber100 err here
-      if (statusCurr != TRACK_TO_START) {
-        statusCurr = BACK_TO_STATION;
-        if (RaspberryPIUse) MyRpi.SendStatusToPi();
-      }
-      else
-      {
+      if (statusCurr == TRACK_TO_START) {
         if (mowPatternCurr == MOW_WIRE) {
           motorMowEnable = true; //time to start the blade
-          //ignoreRfidTag = true; // do not read Rfid for mowing all the wire
           statusCurr = WIRE_MOWING;
           if (RaspberryPIUse) MyRpi.SendStatusToPi();
         }
       }
+      else if (statusCurr == WIRE_MOWING) {
+        motorMowEnable = true; //time to start the blade
+      }
+      else {
+        statusCurr = BACK_TO_STATION;
+        if (RaspberryPIUse) MyRpi.SendStatusToPi();
+      }
+
 
       UseAccelLeft = 0;
       UseBrakeLeft = 1;
@@ -5012,9 +5016,20 @@ void Robot::loop()  {
 
 
     case STATE_PERI_OBSTACLE_AVOID:
+    //bber100 
+    /*
+        Console.print(millis());
+        Console.print(" Right : ");
+        Console.println(stateEndOdometryRight-odometryRight);
+        Console.print(motorSpeedMaxRpm);
+        Console.print("Left : ");
+        Console.println(stateEndOdometryLeft-odometryLeft);
+*/
       //circle arc
       motorControlOdo();
       if ((odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft)) {
+       
+        
         setNextState(STATE_PERI_FIND, 0);
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
