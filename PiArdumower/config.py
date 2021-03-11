@@ -43,12 +43,11 @@ if (os.name=='posix'):
     #delay in second between 2 sends of the DUE loops/sec over mqtt
     Mqtt_IdleFreqency = 1
     # Always first letter uppercase and set the yaml file according Mower is the defaut name
-    Mqtt_MowerName = "Mower"
+    Mqtt_MowerName = "RL2000"
 
     #Setting for Vision
-    personDetectNewHeading = 30
-    personDetectNewHeadingDuration = 2
-    personDetectMinScore = 78
+    useVision=True
+    visionDetectMinScore = 78
     
 
 
