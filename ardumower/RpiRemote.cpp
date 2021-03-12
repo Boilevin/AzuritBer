@@ -1163,6 +1163,17 @@ void RpiRemote::readWrite_var() {  //can be use to change the value of 4 variabl
       if (strncmp(variable_name[i], "statusCurr", 20) == 0)  robot->statusCurr = atoi(received_value[i]);
       if (strncmp(variable_name[i], "nextTimeTimer", 20) == 0)  robot->nextTimeTimer = atoi(received_value[i]);
 
+      //bber90 use by vision to stop and reverse
+      if (strncmp(variable_name[i], "bumperLeft", 20) == 0) {
+        robot->bumperLeft = atoi(received_value[i]);
+        robot->checkBumpers();
+      }
+      if (strncmp(variable_name[i], "bumperRight", 20) == 0) {
+        robot->bumperRight = atoi(received_value[i]);
+        robot->checkBumpers();
+      }
+
+      
       //bber50
       if (strncmp(variable_name[i], "newtagDistance1", 20) == 0)
       {

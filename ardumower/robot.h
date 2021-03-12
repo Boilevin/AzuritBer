@@ -789,6 +789,7 @@ class Robot
     
     virtual void receivePiPfodCommand (String RpiCmd,float v1,float v2,float v3);
     virtual void printSettingSerial();
+    virtual void checkBumpers();
     char* mowPatternNameList(byte mowPatternIndex);
     
   protected:
@@ -812,7 +813,7 @@ class Robot
     virtual void checkBattery();
     virtual void checkTimer();
     virtual void checkCurrent();
-    virtual void checkBumpers();
+    
     virtual void checkDrop();                                                                                                             // Dropsensor - Absturzsensor
     virtual void checkBumpersPerimeter();
     virtual void checkPerimeterBoundary();
