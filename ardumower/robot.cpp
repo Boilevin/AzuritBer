@@ -5462,7 +5462,7 @@ void Robot::loop()  {
       if (batMonitor) {
         if ((chgCurrent < batFullCurrent) && (millis() - stateStartTime > 2000)) {
           if (autoResetActive) {
-            Console.println("Time to Restart PI and Due");
+            Console.println("End of charge by batfullcurrent Time to Restart PI and Due");
             autoReboot();
           }
           setNextState(STATE_STATION, 0);

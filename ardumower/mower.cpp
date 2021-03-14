@@ -207,7 +207,7 @@ Mower::Mower() {
   batChargingCurrentMax = 2; // maximum current your charger can devliver
   batFullCurrent  = 0.1;      // current flowing when battery is fully charged
   startChargingIfBelow = 26.0; // start charging if battery Voltage is below
-  chargingTimeout = 18000000; // safety timer for charging (ms)  5 hrs
+  chargingTimeout = 25200000; // safety timer for charging (ms)  7 hrs
   chgSenseZero    = 511;        // charge current sense zero point
   batSenseFactor  = 1.11;         // charge current conversion factor   - Empfindlichkeit nimmt mit ca. 39/V Vcc ab
   chgSense        = 185.0;      // mV/A empfindlichkeit des Ladestromsensors in mV/A (FÃ¼r ACS712 5A = 185)
