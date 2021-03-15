@@ -2293,7 +2293,7 @@ void Robot::checkButton() {
       // ON/OFF button released
       //Console.print(F("Button Release counter : "));
       //Console.println(buttonCounter);
-      if ((statusCurr == NORMAL_MOWING) || (stateCurr == STATE_ERROR) || (statusCurr == WIRE_MOWING) || (statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START)) {
+      if ((statusCurr == NORMAL_MOWING) || (statusCurr == SPIRALE_MOWING) || (stateCurr == STATE_ERROR) || (statusCurr == WIRE_MOWING) || (statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START)) {
         Console.println(F("ButtonPressed Stop Mowing and Reset Error"));
         motorMowEnable = false;
         buttonCounter = 0;
@@ -4547,7 +4547,7 @@ void Robot::loop()  {
   checkPerimeterBoundary();
   calcOdometry();
   //checkOdometryFaults();
-  if  (stateCurr == STATE_OFF)  checkButton(); //read only when needed
+  checkButton(); 
   motorMowControl();
   checkTilt();
   if ((stateCurr == STATE_PERI_OUT_STOP) && (statusCurr == NORMAL_MOWING)) { //read only timer here for fast processing on odo
