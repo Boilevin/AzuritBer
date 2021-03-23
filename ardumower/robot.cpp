@@ -2418,7 +2418,7 @@ void Robot::checkButton() {
       // ON/OFF button released
       //Console.print(F("Button Release counter : "));
       //Console.println(buttonCounter);
-      if ((statusCurr == NORMAL_MOWING) || (stateCurr == STATE_ERROR) || (statusCurr == WIRE_MOWING)|| (statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START)) {
+      if ((statusCurr == NORMAL_MOWING) || (stateCurr == STATE_ERROR) || (statusCurr == WIRE_MOWING) || (statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START)) {
         Console.println(F("ButtonPressed Stop Mowing and Reset Error"));
         motorMowEnable = false;
         buttonCounter = 0;
@@ -2751,9 +2751,9 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_ESCAPE_LANE:
-      Console.println("Mowing in Half lane width");
+      Console.println("Mowing in Half lane width  normaly not used");
       //it's approximation try to go into a parcel already mowed little on left or right
-      halfLaneNb = halfLaneNb + 1; //to avoid repetition the state is lauch only if halfLaneNb=0
+      halfLaneNb = halfLaneNb - 1; //to avoid repetition the state is lauch only if halfLaneNb=0
       UseAccelLeft = 0;
       UseBrakeLeft = 0;
       UseAccelRight = 0;
@@ -2906,8 +2906,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5;
       stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * DistPeriObstacleAvoid);
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * DistPeriObstacleAvoid);
-      
-      
+
+
       OdoRampCompute();
 
 
@@ -3247,6 +3247,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_STOP_BEFORE_SPIRALE:
       statusCurr = SPIRALE_MOWING;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
+      spiraleNbTurn = 0;
       UseAccelLeft = 0;
       UseBrakeLeft = 1;
       UseAccelRight = 0;
@@ -3263,8 +3264,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5 ;
-      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5 ;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm * 0.8 ;
+      motorRightSpeedRpmSet = -motorSpeedMaxRpm * 0.8 ;
       stateEndOdometryRight = odometryRight - (int)36000 * (odometryTicksPerCm * PI * odometryWheelBaseCm / 36000);
       stateEndOdometryLeft = odometryLeft + (int)36000 * (odometryTicksPerCm * PI * odometryWheelBaseCm / 36000);
       OdoRampCompute();
@@ -3274,7 +3275,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       if (spiraleNbTurn == 0) {
         UseAccelLeft = 1;
         UseAccelRight = 1;
-        motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5 ; ///adjust to change the access to next arc
+        motorLeftSpeedRpmSet = motorSpeedMaxRpm  ; ///adjust to change the access to next arc
         motorRightSpeedRpmSet = motorSpeedMaxRpm ;
       }
       else {
@@ -3563,9 +3564,9 @@ void Robot::setNextState(byte stateNew, byte dir) {
       motorLeftSpeedRpmSet = motorRightSpeedRpmSet = motorSpeedMaxRpm;
 
       //************************************same as spirale in by lane mowing*******************************
-      if (highGrassDetect) {
+      if (halfLaneNb!=0) {
         Tempovar = DistBetweenLane / 2;
-        halfLaneNb++; //count the nb of mowing lane in half lenght same as spirale into lane mowing
+        halfLaneNb--; //count the nb of mowing lane in half lenght same as spirale into lane mowing
         Console.print("Hight grass detected actual halfLaneNb ");
         Console.println(halfLaneNb);
       }
@@ -4039,15 +4040,14 @@ void Robot::checkCurrent() {
   if (statusCurr == NORMAL_MOWING) {  //do not start the spirale if in tracking and motor detect high grass
     if (motorMowPower >= 0.8 * motorMowPowerMax) {
       spiraleNbTurn = 0;
-      halfLaneNb = 0;
+      halfLaneNb = 3;
       highGrassDetect = true;
       Console.println("Warning  motorMowPower >= 0.8 * motorMowPowerMax ");
       ////  http://forums.parallax.com/discussion/comment/1326585#Comment_1326585
     }
     else {
-      if ((spiraleNbTurn >= 8) || (halfLaneNb >= 8)) {
+      if (spiraleNbTurn >= 8) {
         spiraleNbTurn = 0;
-        halfLaneNb = 0;
         highGrassDetect = false; //stop the spirale
       }
     }
@@ -4295,7 +4295,6 @@ void Robot::checkPerimeterBoundary() {
         Console.println(millis());
         //reinit spirale mowing
         spiraleNbTurn = 0;
-        halfLaneNb = 0;
         highGrassDetect = false; //stop the spirale
         setNextState(STATE_PERI_OUT_STOP, rollDir);
         return;
@@ -4428,7 +4427,7 @@ void Robot::checkSonar() {
 
     //**************************if sonar during spirale reinit spirale variable*****************
     spiraleNbTurn = 0;
-    halfLaneNb = 0;
+   
     highGrassDetect = false; //stop the spirale
     //*********************************************************************************
     if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
@@ -5016,20 +5015,20 @@ void Robot::loop()  {
 
 
     case STATE_PERI_OBSTACLE_AVOID:
-    //bber100 
-    /*
-        Console.print(millis());
-        Console.print(" Right : ");
-        Console.println(stateEndOdometryRight-odometryRight);
-        Console.print(motorSpeedMaxRpm);
-        Console.print("Left : ");
-        Console.println(stateEndOdometryLeft-odometryLeft);
-*/
+      //bber100
+      /*
+          Console.print(millis());
+          Console.print(" Right : ");
+          Console.println(stateEndOdometryRight-odometryRight);
+          Console.print(motorSpeedMaxRpm);
+          Console.print("Left : ");
+          Console.println(stateEndOdometryLeft-odometryLeft);
+      */
       //circle arc
       motorControlOdo();
       if ((odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft)) {
-       
-        
+
+
         setNextState(STATE_PERI_FIND, 0);
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
@@ -5729,14 +5728,32 @@ void Robot::loop()  {
       checkCurrent();
       if ((odometryRight <= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft) ) {
         if (motorLeftPWMCurr == 0 && motorRightPWMCurr == 0)  { //wait until the 2 motors completly stop because rotation is inverted
-          setNextState(STATE_MOW_SPIRALE, rollDir);
+          //into bylane mowing spirale is stop after only one rev to avoid lost direction and mowing in halflane for the next 8 lane
+          if ((mowPatternCurr == MOW_LANES)) {
+            spiraleNbTurn = 0;
+            highGrassDetect = false;
+            Console.println ("Half lane mowing start ");
+            setNextState(STATE_ACCEL_FRWRD, rollDir);
+            return;
+          }
+          else {
+            setNextState(STATE_MOW_SPIRALE, rollDir);
+            return;
+          }
         }
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         if (developerActive) {
           Console.println ("Warning can t  stop before rotate right 360 in time ");
         }
-        setNextState(STATE_MOW_SPIRALE, rollDir);//if the motor can't rech the odocible in slope
+        if ((mowPatternCurr == MOW_LANES)) {
+          setNextState(STATE_ACCEL_FRWRD, rollDir);
+          return;
+        }
+        else {
+          setNextState(STATE_MOW_SPIRALE, rollDir);
+          return;
+        }
       }
 
       break;
