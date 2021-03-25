@@ -228,7 +228,6 @@ Mower::Mower() {
   odometryTicksPerRevolution = 720;   // encoder ticks per one full resolution
   odometryTicksPerCm = 9.0;  // encoder ticks per cm
   odometryWheelBaseCm = 41.2;    // wheel-to-wheel distance (cm)
-  odometryRightSwapDir = 0;       // inverse right encoder direction?
   
   // ----- GPS -------------------------------------------
   gpsUse            = 0;       // use GPS?

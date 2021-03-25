@@ -559,6 +559,8 @@ void RemoteControl::sendSonarMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Sonar`1000"));
   serialPort->print(F("|d00~Use "));
   sendYesNo(robot->sonarUse);
+  serialPort->print(F("|d01~Like Bumper "));
+  sendYesNo(robot->sonarLikeBumper);
   serialPort->print(F("|d04~Use left "));
   sendYesNo(robot->sonarLeftUse);
   serialPort->print(F("|d05~Use center "));
@@ -581,6 +583,7 @@ void RemoteControl::sendSonarMenu(boolean update) {
 
 void RemoteControl::processSonarMenu(String pfodCmd) {
   if (pfodCmd == "d00") robot->sonarUse = !robot->sonarUse;
+  else if (pfodCmd == "d01") robot->sonarLikeBumper = !robot->sonarLikeBumper;
   else if (pfodCmd.startsWith ("d03")) processSlider(pfodCmd, robot->sonarTriggerBelow, 1);
   else if (pfodCmd == "d04") robot->sonarLeftUse = !robot->sonarLeftUse;
   else if (pfodCmd == "d05") robot->sonarCenterUse = !robot->sonarCenterUse;
@@ -1233,7 +1236,7 @@ void RemoteControl::sendInfoMenu(boolean update) {
   serialPort->print(robot->statsBatteryChargingCapacityTotal / 1000);
   serialPort->print(F("|v08~Battery recharged capacity average (mAh)"));
   serialPort->print(robot->statsBatteryChargingCapacityAverage);
-  //serialPort->print("|d01~Perimeter v");
+  
   //serialPort->print(verToString(readPerimeterVer()));
   //serialPort->print("|d02~IMU v");
   //serialPort->print(verToString(readIMUver()));

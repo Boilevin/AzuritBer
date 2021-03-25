@@ -173,6 +173,7 @@ Robot::Robot() {
   sonarDistCenter = sonarDistRight = sonarDistLeft = 0;
   sonarObstacleTimeout = 0;
   distToObstacle = 0;
+  sonarSpeedCoeff = 1;
 
   batVoltage = 0;
   batRefFactor = 0;
@@ -408,7 +409,8 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, odometryTicksPerCm);
   eereadwrite(readflag, addr, odometryWheelBaseCm);
   eereadwrite(readflag, addr, autoResetActive);
-  eereadwrite(readflag, addr, odometryRightSwapDir);     // bool adress free for something else
+  //bber200
+  eereadwrite(readflag, addr, sonarLikeBumper);     //old value was odometryRightSwapDir need to adjust piardu
   eereadwrite(readflag, addr, twoWayOdometrySensorUse);   // char YES NO adress free for something else
   eereadwrite(readflag, addr, buttonUse);
   eereadwrite(readflag, addr, userSwitch1);
@@ -610,6 +612,8 @@ void Robot::printSettingSerial() {
   Console.println(F("---------- sonar ---------------------------------------------"));
   Console.print  (F("sonarUse                                   : "));
   Console.println(sonarUse, 1);
+  Console.print  (F("sonarLikeBumper                            : "));
+  Console.println(sonarLikeBumper, 1);
   Console.print  (F("sonarLeftUse                               : "));
   Console.println(sonarLeftUse, 1);
   Console.print  (F("sonarRightUse                              : "));
@@ -786,9 +790,7 @@ void Robot::printSettingSerial() {
   Console.println( odometryTicksPerCm);
   Console.print  (F("odometryWheelBaseCm                        : "));
   Console.println( odometryWheelBaseCm);
-  Console.print  (F("odometryRightSwapDir                       : "));
-  Console.println(odometryRightSwapDir);
-
+  
   watchdogReset();
 
   // ----- GPS ----------------------------------------------------------------------
@@ -1481,6 +1483,12 @@ void Robot::motorControlOdo() {
         }
       }
     }
+
+    //bber200
+    rightSpeed = rightSpeed * sonarSpeedCoeff;
+    leftSpeed = leftSpeed * sonarSpeedCoeff;
+
+
 
     if (rightSpeed > 255) rightSpeed = 255;
     if (leftSpeed > 255) leftSpeed = 255;
@@ -3564,7 +3572,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       motorLeftSpeedRpmSet = motorRightSpeedRpmSet = motorSpeedMaxRpm;
 
       //************************************same as spirale in by lane mowing*******************************
-      if (halfLaneNb!=0) {
+      if (halfLaneNb != 0) {
         Tempovar = DistBetweenLane / 2;
         halfLaneNb--; //count the nb of mowing lane in half lenght same as spirale into lane mowing
         Console.print("Hight grass detected actual halfLaneNb ");
@@ -4407,7 +4415,7 @@ void Robot::checkSonar() {
   if (!sonarUse) return;
   if (millis() < nextTimeCheckSonar) return;
   nextTimeCheckSonar = millis() + 100;
-
+  sonarSpeedCoeff = 1;
   if (sonarRightUse) sonarDistRight = readSensor(SEN_SONAR_RIGHT);
   else sonarDistRight = NO_ECHO;
   if (sonarLeftUse) sonarDistLeft = readSensor(SEN_SONAR_LEFT);
@@ -4427,33 +4435,56 @@ void Robot::checkSonar() {
 
     //**************************if sonar during spirale reinit spirale variable*****************
     spiraleNbTurn = 0;
-   
+
     highGrassDetect = false; //stop the spirale
     //*********************************************************************************
     if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
       //avoid the mower move when testing
       if ((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow)) {  //center
-        distToObstacle =  sonarDistCenter;
-        Console.print("Sonar Center Trigger at cm : ");
-        Console.println (distToObstacle);
-        setNextState(STATE_SONAR_TRIG, rollDir);  //don't change the rotation if center
-        return;
+        //bber200
+        if (!sonarLikeBumper) {
+          sonarSpeedCoeff = 0.70;
+          nextTimeCheckSonar = millis() + 3000;
+        }
+        else {
+          
+          distToObstacle =  sonarDistCenter;
+          Console.print("Sonar Center Trigger at cm : ");
+          Console.println (distToObstacle);
+          setNextState(STATE_SONAR_TRIG, rollDir);  //don't change the rotation if center
+          return;
+        }
+
       }
       if ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) {  //right
-        distToObstacle =  sonarDistRight;
-        Console.print("Sonar Right Trigger at cm : ");
-        Console.println (distToObstacle);
-        if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
-        else setNextState(STATE_SONAR_TRIG, LEFT);
-        return;
+        if (!sonarLikeBumper) {
+          sonarSpeedCoeff = 0.70;
+          nextTimeCheckSonar = millis() + 3000;
+        }
+        else {
+          distToObstacle =  sonarDistRight;
+          Console.print("Sonar Right Trigger at cm : ");
+          Console.println (distToObstacle);
+          if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
+          else setNextState(STATE_SONAR_TRIG, LEFT);
+          return;
+        }
+
       }
       if ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow)) {  //LEFT
-        distToObstacle =  sonarDistLeft;
-        Console.print("Sonar Left Trigger at cm : ");
-        Console.println (distToObstacle);
-        if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
-        else setNextState(STATE_SONAR_TRIG, RIGHT);
-        return;
+        if (!sonarLikeBumper) {
+          sonarSpeedCoeff = 0.70;
+          nextTimeCheckSonar = millis() + 3000;
+        }
+        else {
+          distToObstacle =  sonarDistLeft;
+          Console.print("Sonar Left Trigger at cm : ");
+          Console.println (distToObstacle);
+          if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
+          else setNextState(STATE_SONAR_TRIG, RIGHT);
+          return;
+        }
+
       }
     }
   }

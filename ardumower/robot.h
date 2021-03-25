@@ -275,7 +275,7 @@ class Robot
     int odometryTicksPerRevolution ;   // encoder ticks per one full resolution
     float odometryTicksPerCm ;  // encoder ticks per cm
     float odometryWheelBaseCm ;    // wheel-to-wheel distance (cm)
-    boolean odometryRightSwapDir;       // inverse right encoder direction?
+    
     int odometryLeft ;   // left wheel counter
     int odometryRight ;  // right wheel counter
     boolean odometryLeftLastState;
@@ -617,6 +617,7 @@ class Robot
     // --------- sonar ----------------------------------
     // ultra sonic sensor distance-to-obstacle (cm)
     boolean sonarUse          ;      // use ultra sonic sensor?
+    boolean sonarLikeBumper   ;      // sonar behaviour is the same as bumper
     boolean sonarLeftUse;
     boolean sonarRightUse;
     boolean sonarCenterUse;
@@ -632,6 +633,8 @@ class Robot
     unsigned long nextTimeCheckSonar ;
     byte distToObstacle; //min distance to obstacle in CM of the 3 sonars
     byte sonarToFrontDist;
+    float sonarSpeedCoeff; // coeff to reduce speed when sonar detect something
+    
     //boolean sonarReduceSpeed ; // if true the mower reduce speed
 
 
