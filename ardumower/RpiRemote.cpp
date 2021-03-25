@@ -345,7 +345,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->perimeterTrackRollTime;  //9
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterTrackRevTime; //0
+    lineToSend = lineToSend + robot->sonarLikeBumper; //0
     lineToSend = lineToSend + ",";
     writePi(lineToSend);
 
@@ -453,7 +453,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->autoResetActive;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->sonarLikeBumper;
+    lineToSend = lineToSend + robot->autoResetActive; //bber200 need to adjust to compassuse ??
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->twoWayOdometrySensorUse;
     lineToSend = lineToSend + ",";
@@ -592,11 +592,11 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->RaspberryPIUse;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->sonarToFrontDist;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->UseBumperDock;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->dockingSpeed; //8
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + "0";
     lineToSend = lineToSend + ",";
@@ -1384,7 +1384,7 @@ void RpiRemote::readWrite_setting()
         robot->motorTickPerSecond = val[6];
         robot->perimeterOutRevTime = val[7];
         robot->perimeterTrackRollTime = val[8];
-        robot->perimeterTrackRevTime = val[9];
+        robot->sonarLikeBumper = val[9];
       }
       if (nr_page == 5) {
         robot->perimeterPID.Kp = val[0];
@@ -1429,7 +1429,7 @@ void RpiRemote::readWrite_setting()
         robot->odometryTicksPerCm = val[3];
         robot->odometryWheelBaseCm = val[4];
         robot->autoResetActive = val[5];
-        robot->sonarLikeBumper = val[6];
+        //robot->sonarLikeBumper = val[6];
         robot->twoWayOdometrySensorUse = val[7];
         robot->buttonUse = val[8];
         robot->userSwitch1 = val[9];
@@ -1488,6 +1488,12 @@ void RpiRemote::readWrite_setting()
         robot->DistPeriOutStop = val[2];
         robot->DHT22Use = val[3];
         robot->RaspberryPIUse = val[4];
+        robot->sonarToFrontDist = val[5];
+        robot->UseBumperDock = val[6];
+        robot->dockingSpeed = val[7];
+        
+
+        
       }
 
     }

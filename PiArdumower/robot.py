@@ -59,6 +59,7 @@ class robot:
         
         #sonar
         self.sonarUse=0
+        self.sonarLikeBumper=0
         self.sonarCenterUse=0
         self.sonarLeftUse=0
         self.sonarRightUse=0

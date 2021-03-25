@@ -372,7 +372,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, motorTickPerSecond);
   eereadwrite(readflag, addr, perimeterOutRevTime);
   eereadwrite(readflag, addr, perimeterTrackRollTime );
-  eereadwrite(readflag, addr, perimeterTrackRevTime);
+  eereadwrite(readflag, addr, perimeterTrackRevTime);   // int not use free for something else
   eereadwrite(readflag, addr, perimeterPID.Kp);
   eereadwrite(readflag, addr, perimeterPID.Ki);
   eereadwrite(readflag, addr, perimeterPID.Kd);
@@ -637,8 +637,8 @@ void Robot::printSettingSerial() {
   Console.println(MaxSpeedperiPwm);
   Console.print  (F("perimeterTrackRollTime                     : "));
   Console.println(perimeterTrackRollTime);
-  Console.print  (F("perimeterTrackRevTime                      : "));
-  Console.println(perimeterTrackRevTime);
+  //Console.print  (F("perimeterTrackRevTime                      : "));
+  //Console.println(perimeterTrackRevTime);
   Console.print  (F("perimeterPID.Kp                            : "));
   Console.println(perimeterPID.Kp);
   Console.print  (F("perimeterPID.Ki                            : "));
