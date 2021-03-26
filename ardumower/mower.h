@@ -137,6 +137,8 @@
 
 #define Enable_DueWatchdog true
 
+#define autoBylaneToRandom true
+
 #define RaspberryPIPort SerialUSB  //The PI is connected on NATIVE USB port over USB cable
 
 #define ESP8266port Serial1  //not use WIFI module

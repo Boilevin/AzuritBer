@@ -790,7 +790,7 @@ void Robot::printSettingSerial() {
   Console.println( odometryTicksPerCm);
   Console.print  (F("odometryWheelBaseCm                        : "));
   Console.println( odometryWheelBaseCm);
-  
+
   watchdogReset();
 
   // ----- GPS ----------------------------------------------------------------------
@@ -3442,6 +3442,12 @@ void Robot::setNextState(byte stateNew, byte dir) {
       }
 
       if (mowPatternCurr == MOW_LANES) {
+        //bber201
+        if (autoBylaneToRandom) {
+          mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
+          Console.println("We are in a corner mowPatternCurr change to Random for the next 3 minutes ");
+          mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
+        }
         laneUseNr = laneUseNr + 1;
         findedYaw = 999;
         justChangeLaneDir = true;
@@ -4447,7 +4453,7 @@ void Robot::checkSonar() {
           nextTimeCheckSonar = millis() + 3000;
         }
         else {
-          
+
           distToObstacle =  sonarDistCenter;
           Console.print("Sonar Center Trigger at cm : ");
           Console.println (distToObstacle);
