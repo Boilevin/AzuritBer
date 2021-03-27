@@ -527,6 +527,7 @@ void Robot::printSettingSerial() {
   Console.println(motorRollDegMin);
   Console.print  (F("DistPeriOutRev                             : "));
   Console.println(DistPeriOutRev);
+   watchdogReset();
   Console.print  (F("DistPeriOutStop                            : "));
   Console.println(DistPeriOutStop);
   Console.print  (F("motorForwTimeMax                           : "));
@@ -649,6 +650,7 @@ void Robot::printSettingSerial() {
   Console.println(perimeterPID.Kp);
   Console.print  (F("perimeterPID.Ki                            : "));
   Console.println( perimeterPID.Ki);
+   watchdogReset();
   Console.print  (F("perimeterPID.Kd                            : "));
   Console.println(perimeterPID.Kd);
   Console.print  (F("trackingPerimeterTransitionTimeOut         : "));
@@ -692,6 +694,7 @@ void Robot::printSettingSerial() {
   Console.println(yawOppositeLane3RollRight);
   Console.print  (F("yawOppositeLane1RollLeft                  : "));
   Console.println(yawOppositeLane1RollLeft);
+   watchdogReset();
   Console.print  (F("yawOppositeLane2RollLeft                  : "));
   Console.println(yawOppositeLane2RollLeft);
   Console.print  (F("yawOppositeLane3RollLeft                  : "));
@@ -720,6 +723,7 @@ void Robot::printSettingSerial() {
   Console.println(imuDirPID.Ki);
   Console.print  (F("imuDirPID.Kd                               : "));
   Console.println( imuDirPID.Kd);
+   watchdogReset();
   Console.print  (F("maxDriftPerSecond                          : "));
   Console.println(maxDriftPerSecond);
   Console.print  (F("delayBetweenTwoDmpAutocalib                : "));
@@ -751,6 +755,7 @@ void Robot::printSettingSerial() {
   Console.println( batChgFactor);
   Console.print  (F("batFull                                    : "));
   Console.println( batFull);
+  watchdogReset();
   Console.print  (F("batChargingCurrentMax                      : "));
   Console.println(batChargingCurrentMax);
   Console.print  (F("batFullCurrent                             : "));
@@ -818,7 +823,7 @@ void Robot::printSettingSerial() {
   Console.println(F("---------- RFID -----------------------------------------------"));
   Console.print  (F("rfidUse                                     : "));
   Console.println(rfidUse, 1);
-
+  watchdogReset();
   // ----- RASPBERRY PI ----------------------------------------------------------------------
   Console.println(F("---------- RASPBERRY PI-----------------------------------------"));
   Console.print  (F("RaspberryPIUse                              : "));
@@ -841,7 +846,7 @@ void Robot::printSettingSerial() {
   Console.println(userSwitch2, 1);
   Console.print  (F("userSwitch3                                : "));
   Console.println(userSwitch3, 1);
-
+  watchdogReset();
   // ----- timer --------------------------------------------------------------------
   Console.println(F("---------- timer ---------------------------------------------"));
   Console.print  (F("timerUse                                   : "));
@@ -858,7 +863,7 @@ void Robot::printSettingSerial() {
   Console.println(esp8266Use, 1);
   Console.print  (F("esp8266ConfigString                        : "));
   Console.println(esp8266ConfigString);
-
+  watchdogReset();
   // -------robot stats--------------------------------------------------------------
   Console.println(F("---------- robot stats ---------------------------------------"));
   Console.print  (F("statsMowTimeMinutesTrip                    : "));
@@ -1987,8 +1992,8 @@ void Robot::setup()  {
 
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
-    Console.println ("Watchdog is enable and set to 2 secondes");
-    watchdogEnable(2000);// Watchdog trigger after  2 sec if not reseted.
+    Console.println ("Watchdog is enable and set to 3 secondes");
+    watchdogEnable(3000);// Watchdog trigger after  3 sec if not reseted.
 
   }
   else
@@ -2420,6 +2425,7 @@ void Robot::checkButton() {
           statusCurr = NORMAL_MOWING;
           mowPatternCurr = MOW_LANES;
           buttonCounter = 0;
+          if (RaspberryPIUse) MyRpi.SendStatusToPi();
           setNextState(STATE_ACCEL_FRWRD, 0);
           return;
         }
@@ -2429,6 +2435,7 @@ void Robot::checkButton() {
           statusCurr = NORMAL_MOWING;
           mowPatternCurr = MOW_RANDOM;
           buttonCounter = 0;
+          if (RaspberryPIUse) MyRpi.SendStatusToPi();
           setNextState(STATE_ACCEL_FRWRD, 0);
           return;
         }
@@ -2441,6 +2448,7 @@ void Robot::checkButton() {
           nextTimeTimer = millis() + 3600000; //avoid the mower start again if timer activate.
           statusCurr = BACK_TO_STATION;
           buttonCounter = 0;
+          if (RaspberryPIUse) MyRpi.SendStatusToPi();
           setNextState(STATE_PERI_FIND, 0);
           return;
         }
@@ -4686,7 +4694,7 @@ void Robot::loop()  {
   checkPerimeterBoundary();
   calcOdometry();
   //checkOdometryFaults();
-  if  (stateCurr == STATE_OFF)  checkButton(); //read only when needed
+  checkButton(); 
   motorMowControl();
   checkTilt();
   if ((stateCurr == STATE_PERI_OUT_STOP) && (statusCurr == NORMAL_MOWING)) { //read only timer here for fast processing on odo
@@ -6153,6 +6161,7 @@ void Robot::loop()  {
 
     //bber50
     case STATE_ACCEL_FRWRD:
+    //bber202 reverse on start
       motorControlOdo();
       if (!perimeterInside) {
         setNextState(STATE_PERI_OUT_STOP, rollDir);
