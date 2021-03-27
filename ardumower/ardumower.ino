@@ -1,7 +1,11 @@
 /*      
  *      DUE and ODOMETRY MANDATORY VERSION 
  *      PCB1.3 
- *      OPTIONAL IMU GY-88  
+ *      COMPATIBLE WITH THIS IMU 
+ *      GY-88 
+ *      GY-521 with compass deactivate
+ *      GY-521 + GY-273 with compass activate
+ *      SO IT'S MPU6050 and HMC5883L
  *      
  *      Connect DUE programming port to PC for programming and PC console
  *      Connect DUE Native USB port to Raspberry Pi 

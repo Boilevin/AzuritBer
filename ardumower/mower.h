@@ -135,6 +135,8 @@
 #define Enable_DueWatchdog true
 //#define Enable_DueWatchdog false
 
+#define autoBylaneToRandom true
+
 #define RaspberryPIPort SerialUSB  //The PI is connected on NATIVE USB port over USB cable
 
 #define ESP8266port Serial3  //not use and exchange with GPS to avoid workarround (but no issue for me ????????)

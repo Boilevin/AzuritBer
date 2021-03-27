@@ -2992,18 +2992,20 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_STOP_TOTRACK:
-      if (statusCurr != TRACK_TO_START) {
-        statusCurr = BACK_TO_STATION;
-        if (RaspberryPIUse) MyRpi.SendStatusToPi();
-      }
-      else
-      {
+      //bber100 err here
+      if (statusCurr == TRACK_TO_START) {
         if (mowPatternCurr == MOW_WIRE) {
           motorMowEnable = true; //time to start the blade
-          //ignoreRfidTag = true; // do not read Rfid for mowing all the wire
           statusCurr = WIRE_MOWING;
           if (RaspberryPIUse) MyRpi.SendStatusToPi();
         }
+      }
+      else if (statusCurr == WIRE_MOWING) {
+        motorMowEnable = true; //time to start the blade
+      }
+      else {
+        statusCurr = BACK_TO_STATION;
+        if (RaspberryPIUse) MyRpi.SendStatusToPi();
       }
 
       UseAccelLeft = 0;
@@ -3423,6 +3425,13 @@ void Robot::setNextState(byte stateNew, byte dir) {
       }
 
       if (mowPatternCurr == MOW_LANES) {
+        //bber201
+        if (autoBylaneToRandom) {
+          mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
+          Console.println("We are in a corner mowPatternCurr change to Random for the next 3 minutes ");
+          mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
+        }
+        
         laneUseNr = laneUseNr + 1;
         findedYaw = 999;
         justChangeLaneDir = true;
@@ -5434,7 +5443,7 @@ void Robot::loop()  {
       if (batMonitor) {
         if ((chgCurrent < batFullCurrent) && (millis() - stateStartTime > 2000)) {
           if ((autoResetActive) && (millis() - stateStartTime > 3600000)) { // only reboot if the mower is charging for more 1 hour
-            Console.println("Battery full Time to Reboot PI and Due");
+            Console.println("End of charge by batfullcurrent Time to Restart PI and Due");
             autoReboot();
           }
           setNextState(STATE_STATION, 0);
