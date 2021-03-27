@@ -2,10 +2,10 @@
   WIFI Communicating sender with 2 possible loop
   Adjust IP according to your ESP32 value 10.0.0.150 in this example
   On your browser send :
-  http://10.0.0.150/A0   *********** to stop the sender  wire connected on output A
-  http://10.0.0.150/A1   *********** to start the sender  wire connected on output A
-  http://10.0.0.150/B0   *********** to stop the sender  wire connected on output B
-  http://10.0.0.150/B1   *********** to start the sender  wire connected on output B
+  http://10.0.0.150/A0   *********** to stop the sender on wire connected on output A
+  http://10.0.0.150/A1   *********** to start the sender on wire connected on output A
+  http://10.0.0.150/B0   *********** to stop the sender on wire connected on output B
+  http://10.0.0.150/B1   *********** to start the sender on wire connected on output B
 
   http://10.0.0.150/sigCode/2 ******* to change the sigcode in use possible value are 0,1,2,3,4 ,see sigcode list
   http://10.0.0.150/?   *********** to see the state of the sender
@@ -32,7 +32,6 @@ IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
 
-#define USE_WIFI     1 // you can use sender without WIFI ,start and stop according mower in station or not
 #define USE_STATION     0 // a station is connected and is used to charge the mower
 #define USE_PERI_CURRENT      1     // use Feedback for perimeter current measurements? (set to '0' if not connected!)
 #define USE_BUTTON      1     // use button to start mowing or send mower to station not finish to dev
@@ -46,7 +45,7 @@ IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
 #define I2C_SCL 15
 #define PERI_CURRENT_CHANNEL 1
 #define MOWER_STATION_CHANNEL 2
-#define BOARD_LED 2
+
 
 byte sigCodeInUse = 1;  //1 is the original ardumower sigcode
 int sigDuration = 104;  // send the bits each 104 microsecond (Also possible 50)
@@ -73,10 +72,10 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 
 // code version
-#define VER "ESP32 2.2"
+#define VER "ESP32 2.1"
 
 volatile int step = 0;
-boolean enableSenderA = false; //OFF on start to autorise the WIFI lost auto reset
+boolean enableSenderA = false; //OFF on start to autorise the reset
 boolean enableSenderB = false; //OFF on start to autorise the reset
 //boolean WiffiRequestOn = true;
 
@@ -90,10 +89,7 @@ int workTimeMins = 0;
 boolean StartButtonProcess = false;
 
 int Button_pressed = 0;
-int led_count;
-boolean led_level;
-boolean mowerInStation;
-boolean mowerCharging;
+
 
 float PeriCurrent = 0;
 float ChargeCurrent = 0;
@@ -233,7 +229,7 @@ void changeArea(byte areaInMowing) {  // not finish to dev
 
 void setup()
 {
-
+  Wire.begin(I2C_SDA, I2C_SCL);
   //------------------------  Signal parts  ----------------------------------------
   Serial.begin(115200);
   timer = timerBegin(0, 80, true);
@@ -264,16 +260,13 @@ void setup()
     digitalWrite(pinEnableB, HIGH);
   }
   //------------------------  WIFI parts  ----------------------------------------
-  if (USE_WIFI) {
-    // Set WiFi to station mode and disconnect from an AP if it was previously connected
-    if (WiFi.config(staticIP, gateway, subnet, dns, dns) == false) {
-      Serial.println("WIFI Configuration failed.");
-    }
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
+  // Set WiFi to station mode and disconnect from an AP if it was previously connected
+  if (WiFi.config(staticIP, gateway, subnet, dns, dns) == false) {
+    Serial.println("WIFI Configuration failed.");
   }
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
   delay(100);
-  Wire.begin(I2C_SDA, I2C_SCL);
   //------------------------  SCREEN parts  ----------------------------------------
   oled.init();    // Initialze SSD1306 OLED display
   delay(500);
@@ -329,7 +322,6 @@ void connection()
     server.begin();
   }
 }
-
 static void ScanNetwork()
 {
   oled.clearDisplay();
@@ -449,7 +441,7 @@ void loop()
       PeriCurrent = PeriCurrent - 100.0; //the DC/DC,ESP32,LN298N drain 100 ma when nothing is ON and a wifi access point is found (To confirm ????)
       if (PeriCurrent <= 5) PeriCurrent = 0; //
       PeriCurrent = PeriCurrent * busvoltage1 / DcDcOutVoltage; // it's 3.2666 = 29.4/9.0 the power is read before the DC/DC converter so the current change according : 29.4V is the Power supply 9.0V is the DC/DC output voltage (Change according your setting)
-
+     
 
       if ((enableSenderA) && (PeriCurrent < PERI_CURRENT_MIN)) {
         oled.setTextXY(5, 0);
@@ -466,7 +458,7 @@ void loop()
       }
     }
 
-    if ( (USE_WIFI) && (WiFi.status() != WL_CONNECTED)) ScanNetwork();
+    if ( (WiFi.status() != WL_CONNECTED)) ScanNetwork();
     if  ( workTimeMins >= WORKING_TIMEOUT_MINS ) {
       // switch off perimeter
       enableSenderA = false;
@@ -510,16 +502,12 @@ void loop()
       oled.setTextXY(6, 10);
       oled.putFloat(ChargeCurrent, 0);
 
-      mowerInStation = false;
       if (ChargeCurrent > 200) { //mower is into the station ,in my test 410 ma are drained so possible to stop sender
-        mowerCharging=false;
-        if (ChargeCurrent > 400){
-          mowerCharging=true;
-        }
-        mowerInStation = true;
+
+
         enableSenderA = false;
         enableSenderB = false;
-        
+
         workTimeMins = 0;
         digitalWrite(pinEnableA, LOW);
         digitalWrite(pinIN1, LOW);
@@ -554,7 +542,6 @@ void loop()
     if (((enableSenderA) || (enableSenderB)) && (timeSeconds >= 60)) {
       if (workTimeMins < 1440) workTimeMins++;
       timeSeconds = 0;
-
     }
 
     if ((enableSenderA) || (enableSenderB)) {
@@ -580,212 +567,196 @@ void loop()
   if (millis() >= nextTimeInfo) {
     nextTimeInfo = millis() + 500;
     float v = 0;
-    if (mowerInStation) {
-      if (mowerCharging) {
-        led_count++;
-        if (led_count > 5) {
-          led_level = !led_level;
-          digitalWrite(BOARD_LED, led_level);
-          led_count = 0;
-        }
-
-      }
-      else
-      {
-        led_count++;
-        if (led_count >= 1) {
-          led_level = !led_level;
-          digitalWrite(BOARD_LED, led_level);
-          led_count = 0;
-        }
-      }
-      
-
-    }
   }
-
-
-
   // Check if a client has connected
-  if (USE_WIFI) {
-    WiFiClient client = server.available();
-    if (client) {
-      // Read the first line of the request
-      String req = client.readStringUntil('\r');
-      if (req == "") return;
-      Serial.print("Client say  ");
-      Serial.println(req);
-      Serial.println("------------------------ - ");
-      //client.flush();
-      // Match the request
-      if (req.indexOf("GET /A0") != -1) {
-        // WiffiRequestOn = false;
-        enableSenderA = false;
-        workTimeMins = 0;
-        digitalWrite(pinEnableA, LOW);
-        digitalWrite(pinIN1, LOW);
-        digitalWrite(pinIN2, LOW);
-        String sResponse;
-        sResponse = "SENDER A IS OFF";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /B0") != -1) {
-        // WiffiRequestOn = false;
-        enableSenderB = false;
-        workTimeMins = 0;
-        digitalWrite(pinEnableB, LOW);
-        digitalWrite(pinIN3, LOW);
-        digitalWrite(pinIN4, LOW);
-        String sResponse;
-        sResponse = "SENDER B IS OFF";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /A1") != -1) {
-        //WiffiRequestOn = 1;
-        workTimeMins = 0;
-        enableSenderA = true;
-        digitalWrite(pinEnableA, HIGH);
-        digitalWrite(pinIN1, LOW);
-        digitalWrite(pinIN2, LOW);
-        // Prepare the response
-        String sResponse;
-        sResponse = "SENDER A IS ON";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /B1") != -1) {
-        //WiffiRequestOn = 1;
-        workTimeMins = 0;
-        enableSenderB = true;
-        digitalWrite(pinEnableB, HIGH);
-        digitalWrite(pinIN3, LOW);
-        digitalWrite(pinIN4, LOW);
-        // Prepare the response
-        String sResponse;
-        sResponse = "SENDER B IS ON";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /?") != -1) {
-        String sResponse, sHeader;
-        sResponse = "MAC ADRESS = ";
-        sResponse += WiFi.macAddress() ;
-        sResponse += " WORKING DURATION= ";
-        sResponse += workTimeMins ;
-        sResponse += " PERI CURRENT Milli Amps= ";
-        sResponse += PeriCurrent  ;
-        sResponse += " sigDuration= ";
-        sResponse += sigDuration ;
-        sResponse += " sigCodeInUse= ";
-        sResponse += sigCodeInUse ;
-        sResponse += " sender A : ";
-        sResponse += enableSenderA ;
-        sResponse += " sender B : ";
-        sResponse += enableSenderB ;
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /sigCode/0") != -1) {
-        sigCodeInUse = 0;
-        changeArea(sigCodeInUse);
-        // Prepare the response
-        String sResponse;
-        sResponse = "NOW Send Signal 0";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /sigCode/1") != -1) {
-        sigCodeInUse = 1;
-        changeArea(sigCodeInUse);
-        // Prepare the response
-        String sResponse;
-        sResponse = "NOW Send Signal 1";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /sigCode/2") != -1) {
-        sigCodeInUse = 2;
-        changeArea(sigCodeInUse);
-        // Prepare the response
-        String sResponse;
-        sResponse = "NOW Send Signal 2";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /sigCode/3") != -1) {
-        sigCodeInUse = 3;
-        changeArea(sigCodeInUse);
-        // Prepare the response
-        String sResponse;
-        sResponse = "NOW Send Signal 3";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /sigCode/4") != -1) {
-        sigCodeInUse = 4;
-        changeArea(sigCodeInUse);
-        // Prepare the response
-        String sResponse;
-        sResponse = "NOW Send Signal 4";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /sigDuration/104") != -1) {
-        sigDuration = 104;
-        timerAlarmWrite(timer, 104, true);
-        // Prepare the response
-        String sResponse;
-        sResponse = "NOW 104 microsecond signal duration";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
-
-      if (req.indexOf("GET /sigDuration/50") != -1) {
-        sigDuration = 50;
-        timerAlarmWrite(timer, 50, true);
-        // Prepare the response
-        String sResponse;
-        sResponse = "NOW 50 microsecond signal duration";
-        // Send the response to the client
-        Serial.println(sResponse);
-        client.print(sResponse);
-        client.flush();
-      }
+  WiFiClient client = server.available();
+  if (client) {
+    // Read the first line of the request
+    String req = client.readStringUntil('\r');
+    if (req == "") return;
+    Serial.print("Client say  ");
+    Serial.println(req);
+    Serial.println("------------------------ - ");
+    //client.flush();
+    // Match the request
+    if (req.indexOf("GET /A0") != -1) {
+      // WiffiRequestOn = false;
+      enableSenderA = false;
+      workTimeMins = 0;
+      digitalWrite(pinEnableA, LOW);
+      digitalWrite(pinIN1, LOW);
+      digitalWrite(pinIN2, LOW);
+      String sResponse;
+      sResponse = "SENDER A IS OFF";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
     }
+    if (req.indexOf("GET /B0") != -1) {
+      // WiffiRequestOn = false;
+      enableSenderB = false;
+      workTimeMins = 0;
+      digitalWrite(pinEnableB, LOW);
+      digitalWrite(pinIN3, LOW);
+      digitalWrite(pinIN4, LOW);
+      String sResponse;
+      sResponse = "SENDER B IS OFF";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+    }
+    if (req.indexOf("GET /A1") != -1) {
+      //WiffiRequestOn = 1;
+      workTimeMins = 0;
+      enableSenderA = true;
+      digitalWrite(pinEnableA, HIGH);
+      digitalWrite(pinIN1, LOW);
+      digitalWrite(pinIN2, LOW);
+      // Prepare the response
+      String sResponse;
+      sResponse = "SENDER A IS ON";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+    }
+    if (req.indexOf("GET /B1") != -1) {
+      //WiffiRequestOn = 1;
+      workTimeMins = 0;
+      enableSenderB = true;
+      digitalWrite(pinEnableB, HIGH);
+      digitalWrite(pinIN3, LOW);
+      digitalWrite(pinIN4, LOW);
+      // Prepare the response
+      String sResponse;
+      sResponse = "SENDER B IS ON";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+    }
+
+    if (req.indexOf("GET /?") != -1) {
+      String sResponse, sHeader;
+      sResponse = "MAC ADRESS = ";
+      sResponse += WiFi.macAddress() ;
+      sResponse += " WORKING DURATION= ";
+      sResponse += workTimeMins ;
+      sResponse += " PERI CURRENT Milli Amps= ";
+      sResponse += PeriCurrent  ;
+      sResponse += " sigDuration= ";
+      sResponse += sigDuration ;
+      sResponse += " sigCodeInUse= ";
+      sResponse += sigCodeInUse ;
+      sResponse += " sender A : ";
+      sResponse += enableSenderA ;
+      sResponse += " sender B : ";
+      sResponse += enableSenderB ;
+
+
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+    }
+
+
+
+
+    if (req.indexOf("GET /sigCode/0") != -1) {
+      sigCodeInUse = 0;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 0";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+    if (req.indexOf("GET /sigCode/1") != -1) {
+      sigCodeInUse = 1;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 1";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+    if (req.indexOf("GET /sigCode/2") != -1) {
+      sigCodeInUse = 2;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 2";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+    if (req.indexOf("GET /sigCode/3") != -1) {
+      sigCodeInUse = 3;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 3";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+    if (req.indexOf("GET /sigCode/4") != -1) {
+      sigCodeInUse = 4;
+      changeArea(sigCodeInUse);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW Send Signal 4";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+    if (req.indexOf("GET /sigDuration/104") != -1) {
+      sigDuration = 104;
+      timerAlarmWrite(timer, 104, true);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW 104 microsecond signal duration";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+    if (req.indexOf("GET /sigDuration/50") != -1) {
+      sigDuration = 50;
+      timerAlarmWrite(timer, 50, true);
+      // Prepare the response
+      String sResponse;
+      sResponse = "NOW 50 microsecond signal duration";
+      // Send the response to the client
+      Serial.println(sResponse);
+      client.print(sResponse);
+      client.flush();
+
+    }
+
+
+
   }
+
   if ((USE_BUTTON) && (millis() > nextTimeCheckButton)) {
     nextTimeCheckButton = millis() + 100;
     if (StartButtonProcess) {
@@ -802,12 +773,16 @@ void loop()
       digitalWrite(pinEnableA, HIGH);
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, LOW);
+      if (client) {
+        String sResponse, sHeader;
+        sResponse = "BUTTON PRESSED";
+        client.print(sResponse);
+        client.flush();
+      }
       nextTimeCheckButton = millis() + 1000;
       StartButtonProcess = true;
       nextTimeControl = millis() + 3000;
     }
   }
-
-
 
 }
