@@ -127,6 +127,7 @@ Mower::Mower() {
   sonarCenterUse             = 0;
   sonarTriggerBelow          = 87;       // ultrasonic sensor trigger distance in cm (0=off)
   sonarToFrontDist           = 30;        // ultrasonic sensor distance to front mower in cm
+  sonarLikeBumper            = false;      //ultrasonic reduce speed vs bumper like
 
 
 
