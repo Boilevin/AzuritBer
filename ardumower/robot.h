@@ -610,6 +610,8 @@ class Robot
     // --------- sonar ----------------------------------
     // ultra sonic sensor distance-to-obstacle (cm)
     boolean sonarUse          ;      // use ultra sonic sensor?
+    boolean sonarLikeBumper   ;      // sonar behaviour is the same as bumper
+  
     boolean sonarLeftUse;
     boolean sonarRightUse;
     boolean sonarCenterUse;
@@ -625,8 +627,7 @@ class Robot
     unsigned long nextTimeCheckSonar ;
     byte distToObstacle; //min distance to obstacle in CM of the 3 sonars
     byte sonarToFrontDist;
-    //boolean sonarReduceSpeed ; // if true the mower reduce speed
-
+    float sonarSpeedCoeff; // coeff to reduce speed when sonar detect something
 
     // --------- pfodApp ----------------------------------
     RemoteControl rc; // pfodApp

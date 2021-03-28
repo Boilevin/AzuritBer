@@ -178,6 +178,7 @@ Robot::Robot() {
   sonarDistCenter = sonarDistRight = sonarDistLeft = 0;
   sonarObstacleTimeout = 0;
   distToObstacle = 0;
+  sonarSpeedCoeff = 1;
 
   batVoltage = 0;
   batRefFactor = 0;
@@ -527,7 +528,7 @@ void Robot::printSettingSerial() {
   Console.println(motorRollDegMin);
   Console.print  (F("DistPeriOutRev                             : "));
   Console.println(DistPeriOutRev);
-   watchdogReset();
+  watchdogReset();
   Console.print  (F("DistPeriOutStop                            : "));
   Console.println(DistPeriOutStop);
   Console.print  (F("motorForwTimeMax                           : "));
@@ -621,6 +622,8 @@ void Robot::printSettingSerial() {
   Console.println(F("---------- sonar ---------------------------------------------"));
   Console.print  (F("sonarUse                                   : "));
   Console.println(sonarUse, 1);
+  Console.print  (F("sonarLikeBumper                            : "));
+  Console.println(sonarLikeBumper, 1);
   Console.print  (F("sonarLeftUse                               : "));
   Console.println(sonarLeftUse, 1);
   Console.print  (F("sonarRightUse                              : "));
@@ -650,7 +653,7 @@ void Robot::printSettingSerial() {
   Console.println(perimeterPID.Kp);
   Console.print  (F("perimeterPID.Ki                            : "));
   Console.println( perimeterPID.Ki);
-   watchdogReset();
+  watchdogReset();
   Console.print  (F("perimeterPID.Kd                            : "));
   Console.println(perimeterPID.Kd);
   Console.print  (F("trackingPerimeterTransitionTimeOut         : "));
@@ -694,7 +697,7 @@ void Robot::printSettingSerial() {
   Console.println(yawOppositeLane3RollRight);
   Console.print  (F("yawOppositeLane1RollLeft                  : "));
   Console.println(yawOppositeLane1RollLeft);
-   watchdogReset();
+  watchdogReset();
   Console.print  (F("yawOppositeLane2RollLeft                  : "));
   Console.println(yawOppositeLane2RollLeft);
   Console.print  (F("yawOppositeLane3RollLeft                  : "));
@@ -723,7 +726,7 @@ void Robot::printSettingSerial() {
   Console.println(imuDirPID.Ki);
   Console.print  (F("imuDirPID.Kd                               : "));
   Console.println( imuDirPID.Kd);
-   watchdogReset();
+  watchdogReset();
   Console.print  (F("maxDriftPerSecond                          : "));
   Console.println(maxDriftPerSecond);
   Console.print  (F("delayBetweenTwoDmpAutocalib                : "));
@@ -1508,6 +1511,11 @@ void Robot::motorControlOdo() {
         }
       }
     }
+
+    //bber200
+    rightSpeed = rightSpeed * sonarSpeedCoeff;
+    leftSpeed = leftSpeed * sonarSpeedCoeff;
+
 
     if (rightSpeed > 255) rightSpeed = 255;
     if (leftSpeed > 255) leftSpeed = 255;
@@ -3431,7 +3439,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
           Console.println("We are in a corner mowPatternCurr change to Random for the next 3 minutes ");
           mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
         }
-        
+
         laneUseNr = laneUseNr + 1;
         findedYaw = 999;
         justChangeLaneDir = true;
@@ -4409,7 +4417,7 @@ void Robot::checkSonar() {
   if (!sonarUse) return;
   if (millis() < nextTimeCheckSonar) return;
   nextTimeCheckSonar = millis() + 100;
-
+  sonarSpeedCoeff = 1;
   if (sonarRightUse) sonarDistRight = readSensor(SEN_SONAR_RIGHT);
   else sonarDistRight = NO_ECHO;
   if (sonarLeftUse) sonarDistLeft = readSensor(SEN_SONAR_LEFT);
@@ -4435,27 +4443,47 @@ void Robot::checkSonar() {
     if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
       //avoid the mower move when testing
       if ((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow)) {  //center
-        distToObstacle =  sonarDistCenter;
-        Console.print("Sonar Center Trigger at cm : ");
-        Console.println (distToObstacle);
-        setNextState(STATE_SONAR_TRIG, rollDir);  //don't change the rotation if center
-        return;
+        //bber200
+        if (!sonarLikeBumper) {
+          sonarSpeedCoeff = 0.70;
+          nextTimeCheckSonar = millis() + 3000;
+        }
+        else {
+
+          distToObstacle =  sonarDistCenter;
+          Console.print("Sonar Center Trigger at cm : ");
+          Console.println (distToObstacle);
+          setNextState(STATE_SONAR_TRIG, rollDir);  //don't change the rotation if center
+          return;
+        }
       }
       if ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) {  //right
-        distToObstacle =  sonarDistRight;
-        Console.print("Sonar Right Trigger at cm : ");
-        Console.println (distToObstacle);
-        if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
-        else setNextState(STATE_SONAR_TRIG, LEFT);
-        return;
+        if (!sonarLikeBumper) {
+          sonarSpeedCoeff = 0.70;
+          nextTimeCheckSonar = millis() + 3000;
+        }
+        else {
+          distToObstacle =  sonarDistRight;
+          Console.print("Sonar Right Trigger at cm : ");
+          Console.println (distToObstacle);
+          if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
+          else setNextState(STATE_SONAR_TRIG, LEFT);
+          return;
+        }
       }
       if ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow)) {  //LEFT
-        distToObstacle =  sonarDistLeft;
-        Console.print("Sonar Left Trigger at cm : ");
-        Console.println (distToObstacle);
-        if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
-        else setNextState(STATE_SONAR_TRIG, RIGHT);
-        return;
+         if (!sonarLikeBumper) {
+          sonarSpeedCoeff = 0.70;
+          nextTimeCheckSonar = millis() + 3000;
+        }
+        else {
+          distToObstacle =  sonarDistLeft;
+          Console.print("Sonar Left Trigger at cm : ");
+          Console.println (distToObstacle);
+          if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
+          else setNextState(STATE_SONAR_TRIG, RIGHT);
+          return;
+        }
       }
     }
   }
@@ -4703,7 +4731,7 @@ void Robot::loop()  {
   checkPerimeterBoundary();
   calcOdometry();
   //checkOdometryFaults();
-  checkButton(); 
+  checkButton();
   motorMowControl();
   checkTilt();
   if ((stateCurr == STATE_PERI_OUT_STOP) && (statusCurr == NORMAL_MOWING)) { //read only timer here for fast processing on odo
@@ -6170,7 +6198,7 @@ void Robot::loop()  {
 
     //bber50
     case STATE_ACCEL_FRWRD:
-    //bber202 reverse on start
+      //bber202 reverse on start
       motorControlOdo();
       if (!perimeterInside) {
         setNextState(STATE_PERI_OUT_STOP, rollDir);
