@@ -11,7 +11,7 @@
  *      Connect DUE Native USB port to Raspberry Pi 
  *      
  *      During all test and dev set Enable_DueWatchdog to false
- *      or increase the delay in robot.cpp line : watchdogEnable(2000);// Watchdog trigger after  2 sec if not reseted.
+ *      or increase the delay in robot.cpp line : watchdogEnable(3000);// Watchdog trigger after  3 sec if not reseted.
  *      
  *      --------------------------------- GPS ----------------------------------------------------
  *      GPS You need to change speed into pfod setting according to your module and connected to P44

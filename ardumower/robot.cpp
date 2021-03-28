@@ -2924,7 +2924,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorRightSpeedRpmSet = -motorSpeedMaxRpm / 2;
+      motorLeftSpeedRpmSet = motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
       stateEndOdometryRight = odometryRight - 1440;
       stateEndOdometryLeft = odometryLeft - 1440;
       OdoRampCompute();
@@ -3474,8 +3474,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 2;
-      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 2;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5;
+      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
       stateEndOdometryRight = odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
       stateEndOdometryLeft = odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
 
@@ -3483,13 +3483,13 @@ void Robot::setNextState(byte stateNew, byte dir) {
       OdoRampCompute();
       break;
 
-    case STATE_PERI_OUT_STOP_ROLL_TOTRACK:  //stop roll right in normal mode when find wire
+    case STATE_PERI_OUT_STOP_ROLL_TOTRACK:  //roll right in normal mode when find wire
       UseAccelLeft = 0;
       UseBrakeLeft = 1;
       UseAccelRight = 0;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 2;
-      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 2;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5;
+      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
       stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm * 5); //stop on 5 cm
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 5);
 
