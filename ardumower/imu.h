@@ -205,8 +205,11 @@ float nextTimeAdjustYaw;
    
    void printCalib();
    //void initAccelerationADXL345B();
-   void initCompassHMC5833L();
-   void readHMC5883L();   
+   //void initCompassHMC5833L();
+   
+   void readHMC5883L(); 
+   void readQMC5883L(); 
+     
 };
 
 

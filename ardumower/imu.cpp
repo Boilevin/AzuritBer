@@ -43,6 +43,7 @@ MPU6050 mpu(0x69);
 
 boolean blinkState = false;
 float nextTimeLoop;
+float nextSendPitchRollError;
 // MPU control/status vars
 boolean dmpReady = false;  // set true if DMP init was successful
 uint8_t mpuIntStatus;   // holds actual interrupt status byte from MPU
@@ -71,28 +72,53 @@ float yprtest[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and
 #define ADDR 600
 #define MAGIC 6
 #define HMC5883L (0x1E)          // HMC5883L compass sensor (GY-80 PCB)
+#define QMC5883L (0x0D)          // HMC5883L compass sensor (GY-80 PCB)
 
 void IMUClass::begin() {
   if (!robot.imuUse) return;
-  Console.println(F("--------------------------------- IMU INITIALISATION -------------------"));
-  //initialisation of CompassHMC5833L
+
+  //initialisation of Compass
   if (robot.CompassUse) {
-    Console.println(F("--------------------------------- COMPASS INITIALISATION ---------------"));
-    uint8_t data = 0;
-    //while (true) {
-    I2CreadFrom(HMC5883L, 10, 1, &data, 1);
-    Console.print(F("COMPASS HMC5883L ID NEED TO BE 72 IF ALL IS OK ------>  ID="));
-    Console.println(data);
-    if (data != 72) Console.println(F("COMPASS HMC5883L FAIL"));
-    delay(1000);
-    //}
-    comOfs.x = comOfs.y = comOfs.z = 0;
-    comScale.x = comScale.y = comScale.z = 2;
-    useComCalibration = true;
-    I2CwriteTo(HMC5883L, 0x00, 0x70);  // config A:  8 samples averaged, 75Hz frequency, no artificial bias.
-    I2CwriteTo(HMC5883L, 0x01, 0x20);  // config B: gain
-    I2CwriteTo(HMC5883L, 0x02, 00);  // mode: continuous
-    delay(2000); //    wait 2 second before doing the first reading
+
+    if (COMPASS_IS == HMC5883L) {
+      Console.println(F("--------------------------------- COMPASS HMC5883L INITIALISATION ---------------"));
+      uint8_t data = 0;
+      //while (true) {
+      I2CreadFrom(HMC5883L, 10, 1, &data, 1);
+      Console.print(F("COMPASS HMC5883L ID NEED TO BE 72 IF ALL IS OK ------>  ID="));
+      Console.println(data);
+      if (data != 72) Console.println(F("COMPASS HMC5883L FAIL"));
+      delay(1000);
+      //}
+      comOfs.x = comOfs.y = comOfs.z = 0;
+      comScale.x = comScale.y = comScale.z = 2;
+      useComCalibration = true;
+      I2CwriteTo(HMC5883L, 0x00, 0x70);  // config A:  8 samples averaged, 75Hz frequency, no artificial bias.
+      I2CwriteTo(HMC5883L, 0x01, 0x20);  // config B: gain
+      I2CwriteTo(HMC5883L, 0x02, 00);  // mode: continuous
+      delay(2000); //    wait 2 second before doing the first reading
+    }
+
+    if (COMPASS_IS == QMC5883L) {
+      Console.println(F("--------------------------------- COMPASS QMC5883L INITIALISATION ---------------"));
+
+      comOfs.x = comOfs.y = comOfs.z = 0;
+      comScale.x = comScale.y = comScale.z = 2;
+      useComCalibration = true;
+      /*
+        Define
+        OSR = 512
+        Full Scale Range = 8G(Gauss)
+        ODR = 500HZ
+        set continuous measurement mode
+        so it's  00010101 = 15 
+      */
+
+      I2CwriteTo(QMC5883L, 0x09, 0x15);  // Mode_Continuous,ODR_500Hz,RNG_8G,OSR_512.
+     
+      delay(2000); //    wait 2 second before doing the first reading
+    }
+
 
   }
 
@@ -103,6 +129,7 @@ void IMUClass::begin() {
   Console.println(F("--------------------------------- GYRO ACCEL INITIALISATION ---------------"));
   mpu.initialize();
   Console.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+  Console.println(mpu.getDeviceID());
   Console.println(F("Initializing DMP..."));
   devStatus = mpu.dmpInitialize();
 
@@ -139,6 +166,7 @@ void IMUClass::begin() {
   run();
   Console.print(F("AccelGyro Yaw: "));
   Console.print(ypr.yaw);
+
   if (robot.CompassUse) {
     Console.print(F("  Compass Yaw: "));
     Console.print(comYaw);
@@ -238,7 +266,20 @@ void IMUClass::calibration() {
     watchdogReset();
     meansensors();
     watchdogReset();
-    Console.println("Wait ...");
+    Console.print("Wait until accel 3 val are < 8 : ");
+    Console.print(abs(mean_ax));
+    Console.print(" ");
+    Console.print(abs(mean_ay));
+    Console.print(" ");
+    Console.print(abs(16384 - mean_az));
+    Console.print(" and Gyro 3 val are < 1 : ");
+    Console.print(abs(mean_gx));
+    Console.print(" ");
+    Console.print(abs(mean_gy));
+    Console.print(" ");
+    Console.print(abs(mean_gz));
+    Console.println(" ");
+
 
     if (abs(mean_ax) <= acel_deadzone) ready++;
     else ax_offset = ax_offset - mean_ax / acel_deadzone;
@@ -317,7 +358,7 @@ void IMUClass::run() {
   }
 
   if (fifoCount != 0) {
-    //Console.println("////// the DMP fill the fifo during the reading IMU value are skip //////////////");
+    Console.println("////// the DMP fill the fifo during the reading IMU value are skip //////////////");
     return;  ///the DMP fill the fifo during the reading , all the value are false but without interrupt it's the only way i have find to make it work ???certainly i am wrong
   }
 
@@ -326,23 +367,26 @@ void IMUClass::run() {
   mpu.dmpGetYawPitchRoll(yprtest, &q, &gravity);
 
   //bber4
-  //filter to avoid bad reading
+  //filter to avoid bad reading, not a low pass one because error are only one on 1000 reading and need fast react on blade safety
 
-  if ((abs(yprtest[1]) - abs(ypr.pitch)) > 0.3490)
+  if (((abs(yprtest[1]) - abs(ypr.pitch)) > 0.3490) && useComCalibration && millis() > nextSendPitchRollError) //check only after startup finish , avoid trouble if iMU not calibrate
   {
+    nextSendPitchRollError=millis()+2000;
     Console.print("Last pitch : ");
     Console.print(ypr.pitch / PI * 180);
     Console.print(" Actual pitch : ");
     Console.println(yprtest[1] / PI * 180);
     Console.println("pitch change 20 deg in less than 50 ms ????????? value is skip");
+
   }
   else
   {
     ypr.pitch = yprtest[1];
   }
 
-  if ((abs(yprtest[2]) - abs(ypr.roll)) > 0.3490)
+  if (((abs(yprtest[2]) - abs(ypr.roll)) > 0.3490) && useComCalibration && millis() > nextSendPitchRollError) //check only after startup finish , avoid trouble if iMU not calibrate
   {
+    nextSendPitchRollError=millis()+2000;
     Console.print("Last roll : ");
     Console.print(ypr.roll / PI * 180);
     Console.print(" Actual roll : ");
@@ -358,7 +402,9 @@ void IMUClass::run() {
 
   if (robot.CompassUse) {
     // ------------------put the CompassHMC5883 value into comYaw-------------------------------------
-    readHMC5883L();
+    if (COMPASS_IS == HMC5883L) readHMC5883L();
+    if (COMPASS_IS == QMC5883L) readQMC5883L();
+
     //tilt compensed yaw ????????????
     comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
     comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
@@ -375,6 +421,35 @@ void IMUClass::run() {
 
 }
 
+void IMUClass::readQMC5883L() {
+
+  uint8_t buf[6];
+  if (I2CreadFrom(QMC5883L, 0x00, 6, (uint8_t*)buf) != 6) {
+    //errorCounter++;
+    return;
+  }
+  // scale +1.3Gauss..-1.3Gauss  (*0.00092)
+  float x = (int16_t) (((uint16_t)buf[0]) << 8 | buf[1]);
+  float y = (int16_t) (((uint16_t)buf[4]) << 8 | buf[5]);
+  float z = (int16_t) (((uint16_t)buf[2]) << 8 | buf[3]);
+  if (useComCalibration) {
+
+    x -= comOfs.x;
+    y -= comOfs.y;
+    z -= comOfs.z;
+    x /= comScale.x * 0.5;
+    y /= comScale.y * 0.5;
+    z /= comScale.z * 0.5;
+    com.x = x;
+    com.y = y;
+    com.z = z;
+  } else {
+    com.x = x;
+    com.y = y;
+    com.z = z;
+  }
+
+}
 void IMUClass::readHMC5883L() {
   uint8_t buf[6];
   if (I2CreadFrom(HMC5883L, 0x03, 6, (uint8_t*)buf) != 6) {
@@ -534,7 +609,7 @@ void IMUClass::calibGyro() {
   watchdogReset();
   meansensors();
   watchdogReset();
-  Console.print("FINISHED reading Value with new offset,If all is OK need to be close 0 exept the az close to 16384");
+  Console.println("FINISHED reading Value with new offset,If all is OK need to be close 0 exept the az close to 16384");
   Console.print(" New reading ax: ");
   Console.print(mean_ax);
   Console.print(" ay: ");
@@ -600,14 +675,21 @@ void IMUClass::calibComStartStop() {
     foundNewMinMax = false;
     useComCalibration = false;
     state = IMU_CAL_COM;
-    comMin.x = comMin.y = comMin.z = 9999;
-    comMax.x = comMax.y = comMax.z = -9999;
+    comMin.x = comMin.y = comMin.z = 99999;
+    comMax.x = comMax.y = comMax.z = -99999;
   }
 }
 void IMUClass::calibComUpdate() {
   comLast = com;
   delay(20);
-  readHMC5883L();
+  if (COMPASS_IS == HMC5883L) readHMC5883L();
+  if (COMPASS_IS == QMC5883L) readQMC5883L();
+  /*
+  Console.print(" Last ");
+  Console.print(comLast.x);
+  Console.print(" Actual ");
+  Console.println(com.x);
+  */
   watchdogReset();
   boolean newfound = false;
   if ( (abs(com.x - comLast.x) < 10) &&  (abs(com.y - comLast.y) < 10) &&  (abs(com.z - comLast.z) < 10) ) {

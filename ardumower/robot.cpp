@@ -2110,8 +2110,8 @@ void Robot::printMenu() {
   Console.println(F("1=test motors"));
   Console.println(F("To test odometry --> use Arduremote"));
   Console.println(F("3=communications menu"));
-  Console.println(F("To calibrate GYRO --> use Arduremote Do not move IMU during the Calib"));
-  Console.println(F("To calibrate Compass --> use Arduremote start/stop"));
+  Console.println(F("5=Deactivate and Delete GYRO calibration : To calibrate GYRO --> use Arduremote Do not move IMU during the Calib"));
+  Console.println(F("6=Deactivate and Delete Compass calibration : To calibrate Compass --> use Arduremote start/stop"));
   Console.println(F("9=save user settings"));
   Console.println(F("l=load factory settings: Do not save setting before restart the mower"));
   Console.println(F("r=delete robot stats"));
@@ -2211,11 +2211,14 @@ void Robot::menu() {
           printMenu();
           break;
         case '5':
-          //imu.calibGyro();
+          imu.deleteAccelGyroCalib();
+          imuUse=false;
           printMenu();
           break;
         case '6':
-          //imu.calibComStartStop();
+          imu.deleteCompassCalib();
+          CompassUse=false;
+          printMenu();
           break;
         case '7':
           // imu.deleteCalib();
