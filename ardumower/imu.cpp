@@ -111,11 +111,11 @@ void IMUClass::begin() {
         Full Scale Range = 8G(Gauss)
         ODR = 500HZ
         set continuous measurement mode
-        so it's  00010101 = 15 
+        so it's  00010101 = 15
       */
 
       I2CwriteTo(QMC5883L, 0x09, 0x15);  // Mode_Continuous,ODR_500Hz,RNG_8G,OSR_512.
-     
+
       delay(2000); //    wait 2 second before doing the first reading
     }
 
@@ -358,7 +358,7 @@ void IMUClass::run() {
   }
 
   if (fifoCount != 0) {
-    Console.println("////// the DMP fill the fifo during the reading IMU value are skip //////////////");
+    //Console.println("//////MPU6050 DMP fill the fifo during the reading IMU value are skip //////////////");
     return;  ///the DMP fill the fifo during the reading , all the value are false but without interrupt it's the only way i have find to make it work ???certainly i am wrong
   }
 
@@ -371,7 +371,7 @@ void IMUClass::run() {
 
   if (((abs(yprtest[1]) - abs(ypr.pitch)) > 0.3490) && useComCalibration && millis() > nextSendPitchRollError) //check only after startup finish , avoid trouble if iMU not calibrate
   {
-    nextSendPitchRollError=millis()+2000;
+    nextSendPitchRollError = millis() + 2000;
     Console.print("Last pitch : ");
     Console.print(ypr.pitch / PI * 180);
     Console.print(" Actual pitch : ");
@@ -386,7 +386,7 @@ void IMUClass::run() {
 
   if (((abs(yprtest[2]) - abs(ypr.roll)) > 0.3490) && useComCalibration && millis() > nextSendPitchRollError) //check only after startup finish , avoid trouble if iMU not calibrate
   {
-    nextSendPitchRollError=millis()+2000;
+    nextSendPitchRollError = millis() + 2000;
     Console.print("Last roll : ");
     Console.print(ypr.roll / PI * 180);
     Console.print(" Actual roll : ");
@@ -428,10 +428,13 @@ void IMUClass::readQMC5883L() {
     //errorCounter++;
     return;
   }
-  // scale +1.3Gauss..-1.3Gauss  (*0.00092)
+
   float x = (int16_t) (((uint16_t)buf[0]) << 8 | buf[1]);
-  float y = (int16_t) (((uint16_t)buf[4]) << 8 | buf[5]);
-  float z = (int16_t) (((uint16_t)buf[2]) << 8 | buf[3]);
+  x = x / 16; //hmc out is -2048 to 2047 and qmc ou is -32768 to 32767
+  float z = (int16_t) (((uint16_t)buf[4]) << 8 | buf[5]);
+  z = z / 16;
+  float y = (int16_t) (((uint16_t)buf[2]) << 8 | buf[3]);
+  y = y / 16;
   if (useComCalibration) {
 
     x -= comOfs.x;
@@ -675,8 +678,8 @@ void IMUClass::calibComStartStop() {
     foundNewMinMax = false;
     useComCalibration = false;
     state = IMU_CAL_COM;
-    comMin.x = comMin.y = comMin.z = 99999;
-    comMax.x = comMax.y = comMax.z = -99999;
+    comMin.x = comMin.y = comMin.z = 9999;
+    comMax.x = comMax.y = comMax.z = -9999;
   }
 }
 void IMUClass::calibComUpdate() {
@@ -684,12 +687,15 @@ void IMUClass::calibComUpdate() {
   delay(20);
   if (COMPASS_IS == HMC5883L) readHMC5883L();
   if (COMPASS_IS == QMC5883L) readQMC5883L();
-  /*
-  Console.print(" Last ");
-  Console.print(comLast.x);
-  Console.print(" Actual ");
-  Console.println(com.x);
-  */
+/*
+  Console.print("x ");
+  Console.print(com.x);
+  Console.print(" y ");
+  Console.print(com.y);
+  Console.print(" z ");
+  Console.println(com.z);
+*/
+
   watchdogReset();
   boolean newfound = false;
   if ( (abs(com.x - comLast.x) < 10) &&  (abs(com.y - comLast.y) < 10) &&  (abs(com.z - comLast.z) < 10) ) {

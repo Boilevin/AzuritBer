@@ -128,8 +128,8 @@
 
 
 
-#define COMPASS_IS HMC5883L
-//#define COMPASS_IS QMC5883L
+//#define COMPASS_IS HMC5883L
+#define COMPASS_IS QMC5883L
  
 #define Console Serial
 //#define CONSOLE_BAUDRATE    115200       // baudrate used for PC

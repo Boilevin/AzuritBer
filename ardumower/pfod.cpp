@@ -1551,8 +1551,8 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
   }
   else if (pfodCmd == "yt7") {
     robot->odometryRight = robot->odometryLeft = 0;
-    robot->motorLeftSpeedRpmSet = robot->motorSpeedMaxRpm / 2;
-    robot->motorRightSpeedRpmSet = -robot->motorSpeedMaxRpm / 2;
+    robot->motorLeftSpeedRpmSet = robot->motorSpeedMaxRpm / 3;
+    robot->motorRightSpeedRpmSet = -robot->motorSpeedMaxRpm / 3;
     robot->stateEndOdometryRight = robot->odometryRight - (int)36000 * (robot->odometryTicksPerCm * PI * robot->odometryWheelBaseCm / 360);
     robot->stateEndOdometryLeft = robot->odometryLeft + (int)36000 * (robot->odometryTicksPerCm * PI * robot->odometryWheelBaseCm / 360);
     robot->setNextState(STATE_TEST_MOTOR, robot->rollDir);
