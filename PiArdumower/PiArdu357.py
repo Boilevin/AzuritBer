@@ -2711,7 +2711,7 @@ def ButtonStartArea2_click():
     consoleInsertText("Try to Start Area2 Sender" + ipMessage + '\n')
     sub = subprocess.Popen("curl "+Sender2AdressIP+"/A1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output,error_output = sub.communicate()
-    if str(output)=="b'SENDER IS ON'":
+    if str(output)=="b'SENDER A IS ON'":
         mymower.sigAreaOff=False
         consoleInsertText("Area2 Sender is Running" + '\n')    
     else:
@@ -2725,7 +2725,7 @@ def ButtonStopArea2_click():
     consoleInsertText("Try to Stop Area2 Sender" + '\n')  
     sub = subprocess.Popen("curl "+Sender2AdressIP+"/A0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output, error_output = sub.communicate()   
-    if str(output)=="b'SENDER IS OFF'":
+    if str(output)=="b'SENDER A IS OFF'":
         mymower.sigAreaOff=True
         consoleInsertText("Area2 Sender is Stop" + '\n')   
     else:
@@ -2740,7 +2740,7 @@ def ButtonStartArea3_click():
     consoleInsertText("Try to Start Area3 Sender" + ipMessage + '\n')
     sub = subprocess.Popen("curl "+Sender3AdressIP+"/A1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output,error_output = sub.communicate()
-    if str(output)=="b'SENDER IS ON'":
+    if str(output)=="b'SENDER A IS ON'":
         mymower.sigAreaOff=False
         consoleInsertText("Area3 Sender is Running" + '\n')    
     else:
@@ -2754,7 +2754,7 @@ def ButtonStopArea3_click():
     consoleInsertText("Try to Stop Area3 Sender" + '\n')  
     sub = subprocess.Popen("curl "+Sender3AdressIP+"/A0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
     output, error_output = sub.communicate()   
-    if str(output)=="b'SENDER IS OFF'":
+    if str(output)=="b'SENDER A IS OFF'":
         mymower.sigArea3Off=True
         consoleInsertText("Area3 Sender is Stop" + '\n')   
     else:
