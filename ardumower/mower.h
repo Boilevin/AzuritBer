@@ -131,10 +131,10 @@
 //#define COMPASS_IS HMC5883L
 #define COMPASS_IS QMC5883L
  
-#define Console Serial
+//#define Console Serial
 //#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
 
-//#define Console SerialUSB
+#define Console SerialUSB
 #define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
 
 #define Enable_DueWatchdog true
@@ -144,14 +144,14 @@
 
 #define RaspberryPIPort SerialUSB  //The PI is connected on NATIVE USB port over USB cable
 
-#define ESP8266port Serial3  //not use and exchange with GPS to avoid workarround (but no issue for me ????????)
+#define ESP8266port Serial1  //esp01
 #define ESP8266_BAUDRATE    115200      // baudrate used for communication with esp8266 Wifi module
 
 #define Bluetooth Serial2  // Ardumower default OK for ESP32 or HC05
 #define BLUETOOTH_BAUDRATE  19200      // baudrate used for communication with Bluetooth module (Ardumower default: 19200)
 #define BLUETOOTH_PIN       1234
 
-#define GpsPort Serial1  // connected on P44 Wlan
+#define GpsPort Serial3  // GPS do not forget workarround if PCB1.3 use
 
 
 // ------- ultrasonic config ---------------------------------------------------------

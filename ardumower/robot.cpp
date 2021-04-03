@@ -435,8 +435,8 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, gpsBaudrate);  //baudrate for the GPS
   eereadwrite(readflag, addr, dropUse);
   eereadwrite(readflag, addr, statsOverride);
-  eereadwrite(readflag, addr, bluetoothUse);
-  eereadwrite(readflag, addr, esp8266Use);
+  eereadwrite(readflag, addr, freeboolean); // old bluetoothUse only define into mower.cpp free for other boolean
+  eereadwrite(readflag, addr, freeboolean);  // old esp8266Use only define into mower.cpp free for other boolean
   eereadwriteString(readflag, addr, esp8266ConfigString);
   eereadwrite(readflag, addr, tiltUse);
   eereadwrite(readflag, addr, trackingPerimeterTransitionTimeOut);
@@ -2199,17 +2199,7 @@ void Robot::menu() {
           testMotors();
           printMenu();
           break;
-        case '2':
-          //testOdometry();
-          printMenu();
-          break;
-        case '3':
-          if (bluetoothUse)
-            commsMenuBT();
-          else if (esp8266Use)
-            commsMenuWifi();
-          printMenu();
-          break;
+        
         case '5':
           imu.deleteAccelGyroCalib();
           imuUse=false;
@@ -2220,13 +2210,7 @@ void Robot::menu() {
           CompassUse=false;
           printMenu();
           break;
-        case '7':
-          // imu.deleteCalib();
-          //printMenu();
-          break;
-        case '8':
-          //ADCMan.calibrate();
-          break;
+       
         case '9':
           saveUserSettings();
           printMenu();
@@ -2259,7 +2243,7 @@ void Robot::menu() {
 }
 
 
-
+/*
 void Robot::commsMenuBT() {
   while (true) {
     Console.println();
@@ -2289,36 +2273,7 @@ void Robot::commsMenuBT() {
   }
 }
 
-void Robot::commsMenuWifi() {
-  while (true) {
-    Console.println();
-    Console.println(F("COMMUNICATIONS MENU  === WIFI =="));
-    Console.print(F(" Current Config: \""));
-    Console.print(esp8266ConfigString);
-    Console.println(F("\""));
-    Console.println(F(" 1=Select other communication method"));
-    Console.println(F(" 2=configure"));
-    Console.println(F(" 0=Main Menu"));
-    Console.println();
 
-    delay(100);
-    purgeConsole();
-
-    switch (waitCharConsole()) {
-      case '0':
-        return;
-      case '1':
-        commsMenuSelect();
-        return;
-      case '2':
-        Console.print(F("\nEnter Connection String: "));
-        delay(100);
-        purgeConsole();
-        esp8266ConfigString = waitStringConsole();
-        break;
-    }
-  }
-}
 
 void Robot::commsMenuSelect(void) {
   bluetoothUse = 0;
@@ -2338,7 +2293,7 @@ void Robot::commsMenuSelect(void) {
     }
   }
 }
-
+*/
 void Robot::readSerial() {
 
 
@@ -4683,29 +4638,9 @@ void Robot::checkTimeout() {
 }
 
 
-void Robot::purgeConsole() {
 
-  while ((!RaspberryPIUse) && (Console.available()))  // no if raspberry use
-    Console.read();
-}
 
-char Robot::waitCharConsole() {
-  while ((!RaspberryPIUse) && (Console.available()))  // no if raspberry use
-    return (char)Console.read();
-}
 
-String Robot::waitStringConsole() {
-  String s = "";
-  char ch;
-  while (true) {
-    ch = waitCharConsole();
-    if (ch == '\n' || ch == '\r')
-      break;
-    else
-      s += ch;
-  };
-  return s;
-}
 
 void Robot::loop()  {
   stateTime = millis() - stateStartTime;
@@ -4724,7 +4659,7 @@ void Robot::loop()  {
     readSerial();
   }
 
-  if (bluetoothUse) {
+ if (bluetoothUse || esp8266Use) {
     rc.readSerial();
   }
   readSensors();

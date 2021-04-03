@@ -241,6 +241,7 @@ class Robot
     unsigned long nextTimeTimer ;
     byte ActualRunningTimer;
     // ----- bluetooth -------------------------------------
+    boolean freeboolean;        //use to keep the eeprom integrity
     boolean bluetoothUse;       // use Bluetooth module?
     // ----- esp8266 ---------------------------------------
     boolean esp8266Use;         // use ESP8266 Wifi module?
@@ -858,19 +859,12 @@ class Robot
     // virtual void receiveGPSTime();
     virtual void calcOdometry();
     virtual void menu();
-    virtual void commsMenuBT();
-    virtual void commsMenuWifi();
-    virtual void commsMenuSelect();
     virtual void configureBluetooth(boolean quick) {};
 
 
     virtual void beeper();
 
 
-    // Console helpers
-    virtual void purgeConsole();
-    virtual char waitCharConsole();
-    virtual String waitStringConsole();
     
 
 };
