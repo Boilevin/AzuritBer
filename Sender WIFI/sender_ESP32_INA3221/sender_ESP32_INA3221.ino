@@ -2,8 +2,8 @@
   WIFI Communicating sender
   Adjust IP according to your ESP32 value 10.0.0.150 in this example
   On your browser send :
-  http://10.0.0.150/0   *********** to stop the sender
-  http://10.0.0.150/1   *********** to start the sender
+  http://10.0.0.150/A0   *********** to stop the sender
+  http://10.0.0.150/A1   *********** to start the sender
   http://10.0.0.150/sigCode/2 ******* to change the sigcode in use possible value are 0,1,2,3,4 ,see sigcode list
   http://10.0.0.150/?   *********** to see the state of the sender
   http://10.0.0.150/sigDuration/104    *********** to change the speed sender to 104 microsecondes
@@ -506,7 +506,7 @@ void loop()
     Serial.println("------------------------ - ");
     //client.flush();
     // Match the request
-    if (req.indexOf("GET /0") != -1) {
+    if (req.indexOf("GET /A0") != -1) {
       // WiffiRequestOn = false;
       enableSender = false;
       workTimeMins = 0;
@@ -514,13 +514,13 @@ void loop()
       digitalWrite(pinIN1, LOW);
       digitalWrite(pinIN2, LOW);
       String sResponse;
-      sResponse = "SENDER IS OFF";
+      sResponse = "SENDER A IS OFF";
       // Send the response to the client
       Serial.println(sResponse);
       client.print(sResponse);
       client.flush();
     }
-    if (req.indexOf("GET /1") != -1) {
+    if (req.indexOf("GET /A1") != -1) {
       //WiffiRequestOn = 1;
       workTimeMins = 0;
       enableSender = true;
@@ -529,7 +529,7 @@ void loop()
       digitalWrite(pinIN2, LOW);
       // Prepare the response
       String sResponse;
-      sResponse = "SENDER IS ON";
+      sResponse = "SENDER A IS ON";
       // Send the response to the client
       Serial.println(sResponse);
       client.print(sResponse);
