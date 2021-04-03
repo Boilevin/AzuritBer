@@ -131,10 +131,10 @@
 //#define COMPASS_IS HMC5883L
 #define COMPASS_IS QMC5883L
  
-//#define Console Serial
+#define Console Serial
 //#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
 
-#define Console SerialUSB
+//#define Console SerialUSB
 #define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
 
 #define Enable_DueWatchdog true

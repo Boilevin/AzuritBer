@@ -13,6 +13,11 @@
  *      During all test and dev set Enable_DueWatchdog to false
  *      or increase the delay in robot.cpp line : watchdogEnable(3000);// Watchdog trigger after  3 sec if not reseted.
  *      
+ *      --------------------------BT or ESP8266 --------------------------------------------------
+ *      Into mower.cpp line 255 select correct configuration
+ *       bluetoothUse      = 1;      // use Bluetooth module? It's Impossible to use Bluetooth and esp8266 at same time
+ *       esp8266Use        = 0;       // use ESP8266 Wifi module?
+ *      
  *      --------------------------------- GPS ----------------------------------------------------
  *      GPS You need to change speed into pfod setting according to your module and connected to P44
  *     
