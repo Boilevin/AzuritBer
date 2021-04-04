@@ -26,9 +26,7 @@
 #include "mower.h"
 #include "i2c.h"
 #include "robot.h"
-//#include "buzzer.h"
 #include "flashmem.h"
-
 
 ///////////////////////////////////   CONFIGURATION FOR ACCEL GYRO MPU6050 CALIBRATION  /////////////////////////////
 //Change this 3 variables if you want to fine tune the skecth to your needs.
@@ -36,10 +34,7 @@ int buffersize = 1000;   //Amount of readings used to average, make it higher to
 int acel_deadzone = 8;   //Acelerometer error allowed, make it lower to get more precision, but sketch may not converge  (default:8)
 int giro_deadzone = 1;   //Giro error allowed, make it lower to get more precision, but sketch may not converge  (default:1)
 
-
-
 MPU6050 mpu(0x69);
-
 
 boolean blinkState = false;
 float nextTimeLoop;
@@ -56,18 +51,7 @@ int16_t ax, ay, az, gx, gy, gz;
 int mean_ax, mean_ay, mean_az, mean_gx, mean_gy, mean_gz, state = 0;
 int ax_offset, ay_offset, az_offset, gx_offset, gy_offset, gz_offset;
 
-// orientation/motion vars
-//Quaternion q;           // [w, x, y, z]         quaternion container
-//VectorInt16 aa;         // [x, y, z]            accel sensor measurements
-//VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
-//VectorInt16 aaWorld;    // [x, y, z]            world-frame accel sensor measurements
-//VectorFloat gravity;    // [x, y, z]            gravity vector
-//float euler[3];         // [psi, theta, phi]    Euler angle container
 float yprtest[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
-
-// packet structure for InvenSense teapot demo
-//uint8_t teapotPacket[14] = { '$', 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0x00, 0x00, '\r', '\n' };
-
 
 #define ADDR 600
 #define MAGIC 6
@@ -101,25 +85,21 @@ void IMUClass::begin() {
 
     if (COMPASS_IS == QMC5883L) {
       Console.println(F("--------------------------------- COMPASS QMC5883L INITIALISATION ---------------"));
-
       comOfs.x = comOfs.y = comOfs.z = 0;
       comScale.x = comScale.y = comScale.z = 2;
       useComCalibration = true;
+      I2CwriteTo(QMC5883L, 0x0b, 0x01);
       /*
-        Define
-        OSR = 512
-        Full Scale Range = 8G(Gauss)
-        ODR = 500HZ
-        set continuous measurement mode
-        so it's  00010101 = 15
+         osr512         00
+         rng 8g         01
+         odr 100hz      10
+         mode continous 01
+
+        so 00011001 = 0x19
       */
-
-      I2CwriteTo(QMC5883L, 0x09, 0x15);  // Mode_Continuous,ODR_500Hz,RNG_8G,OSR_512.
-
+      I2CwriteTo(QMC5883L, 0x09, 0x19);
       delay(2000); //    wait 2 second before doing the first reading
     }
-
-
   }
 
   loadCalib();
@@ -139,14 +119,7 @@ void IMUClass::begin() {
   mpu.setXGyroOffset(gx_offset);//-1
   mpu.setYGyroOffset(gy_offset);//-3
   mpu.setZGyroOffset(gz_offset);//-2
-  /*
-    mpu.setXAccelOffset(-1929); //-1929
-    mpu.setYAccelOffset(471); //471
-    mpu.setZAccelOffset(1293); // 1293
-    mpu.setXGyroOffset(-1);//-1
-    mpu.setYGyroOffset(-3);//-3
-    mpu.setZGyroOffset(-2);//-2
-  */
+  
   CompassGyroOffset = 0;
 
   // make sure it worked (returns 0 if so)
@@ -179,9 +152,6 @@ void IMUClass::begin() {
   else {
     CompassGyroOffset = 0;
   }
-
-
-
 
   Console.println(F("--------------------------------- IMU READY ------------------------------"));
 }
@@ -330,20 +300,17 @@ void IMUClass::meansensors() {
   }
 }
 
-
-
-
-
-
-
-
-
-
 void IMUClass::run() {
   if (!robot.imuUse)  return;
   if (devStatus != 0) return;
   if (state == IMU_CAL_COM) { //don't read the MPU6050 if compass calibration
-    calibComUpdate();
+    if (COMPASS_IS == HMC5883L) {
+      calibComUpdate();
+    }
+    if (COMPASS_IS == QMC5883L) {
+      calibComQMC5883Update();
+    }
+
     return;
   }
   //-------------------read the mpu6050 DMP into yprtest array--------------------------------
@@ -409,6 +376,7 @@ void IMUClass::run() {
     comTilt.x =  com.x  * cos(ypr.pitch) + com.z * sin(ypr.pitch);
     comTilt.y =  com.x  * sin(ypr.roll)         * sin(ypr.pitch) + com.y * cos(ypr.roll) - com.z * sin(ypr.roll) * cos(ypr.pitch);
     comTilt.z = -com.x  * cos(ypr.roll)         * sin(ypr.pitch) + com.y * sin(ypr.roll) + com.z * cos(ypr.roll) * cos(ypr.pitch);
+
     comYaw = scalePI( atan2(comTilt.y, comTilt.x)  ); // the compass yaw not accurate but reliable
   }
   else
@@ -422,21 +390,17 @@ void IMUClass::run() {
 }
 
 void IMUClass::readQMC5883L() {
-
+  
   uint8_t buf[6];
   if (I2CreadFrom(QMC5883L, 0x00, 6, (uint8_t*)buf) != 6) {
     //errorCounter++;
     return;
   }
+  float x = (int16_t) (((uint16_t)buf[1]) << 8 | buf[0]);
+  float y = (int16_t) (((uint16_t)buf[3]) << 8 | buf[2]);
+  float z = (int16_t) (((uint16_t)buf[5]) << 8 | buf[4]);
 
-  float x = (int16_t) (((uint16_t)buf[0]) << 8 | buf[1]);
-  x = x / 16; //hmc out is -2048 to 2047 and qmc ou is -32768 to 32767
-  float z = (int16_t) (((uint16_t)buf[4]) << 8 | buf[5]);
-  z = z / 16;
-  float y = (int16_t) (((uint16_t)buf[2]) << 8 | buf[3]);
-  y = y / 16;
   if (useComCalibration) {
-
     x -= comOfs.x;
     y -= comOfs.y;
     z -= comOfs.z;
@@ -527,7 +491,7 @@ void IMUClass::printCalib() {
   Console.print(gy_offset);
   Console.print(" gz: ");
   Console.println(gz_offset);
-  Console.print("COMPASS OFFSET X.Y.Z AND SCALE X.Y.Z   --> ");
+  Console.println("COMPASS OFFSET X.Y.Z AND SCALE X.Y.Z");
   Console.print(F("comOfs="));
   printPt(comOfs);
   Console.print(F("comScale="));
@@ -678,27 +642,56 @@ void IMUClass::calibComStartStop() {
     foundNewMinMax = false;
     useComCalibration = false;
     state = IMU_CAL_COM;
-    comMin.x = comMin.y = comMin.z = 9999;
-    comMax.x = comMax.y = comMax.z = -9999;
+    comMin.x = comMin.y = comMin.z = 99999;
+    comMax.x = comMax.y = comMax.z = -99999;
+  }
+}
+
+void IMUClass::calibComQMC5883Update() {
+  comLast = com;
+  delay(20);
+  readQMC5883L();
+  watchdogReset();
+  if (com.x < comMin.x) {
+    comMin.x = com.x;
+    Console.print("NEW min x: ");
+    Console.println(comMin.x);
+  }
+  if (com.y < comMin.y) {
+    comMin.y = com.y;
+    Console.print("NEW min y: ");
+    Console.println(comMin.y);
+  }
+  if (com.z < comMin.z) {
+    comMin.z = com.z;
+    Console.print("NEW min z: ");
+    Console.println(comMin.z);
+  }
+  if (com.x > comMax.x) {
+    comMax.x = com.x;
+    Console.print("NEW max x: ");
+    Console.println(comMax.x);
+  }
+  if (com.y > comMax.y) {
+    comMax.y = com.y;
+    Console.print("NEW max y: ");
+    Console.println(comMax.y);
+  }
+  if (com.z > comMax.z) {
+    comMax.z = com.z;
+    Console.print("NEW max z: ");
+    Console.println(comMax.z);
   }
 }
 void IMUClass::calibComUpdate() {
   comLast = com;
   delay(20);
-  if (COMPASS_IS == HMC5883L) readHMC5883L();
-  if (COMPASS_IS == QMC5883L) readQMC5883L();
-/*
-  Console.print("x ");
-  Console.print(com.x);
-  Console.print(" y ");
-  Console.print(com.y);
-  Console.print(" z ");
-  Console.println(com.z);
-*/
-
+  readHMC5883L();
+ 
   watchdogReset();
   boolean newfound = false;
   if ( (abs(com.x - comLast.x) < 10) &&  (abs(com.y - comLast.y) < 10) &&  (abs(com.z - comLast.z) < 10) ) {
+
     if (com.x < comMin.x) {
       comMin.x = com.x;
       newfound = true;

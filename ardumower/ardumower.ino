@@ -18,8 +18,7 @@
  *       bluetoothUse      = 1;      // use Bluetooth module? It's Impossible to use Bluetooth and esp8266 at same time
  *       esp8266Use        = 0;       // use ESP8266 Wifi module?
  *      
- *      --------------------------------- GPS ----------------------------------------------------
- *      GPS You need to change speed into pfod setting according to your module and connected to P44
+ *      
  *     
  *      ------------------------------ RASPBERRY -------------------------------------------------
  *      If Raspberry PI is not connected you need to change into mower.h
