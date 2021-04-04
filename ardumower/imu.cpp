@@ -98,7 +98,7 @@ void IMUClass::begin() {
         so 00011001 = 0x19
       */
       I2CwriteTo(QMC5883L, 0x09, 0x19);
-      delay(2000); //    wait 2 second before doing the first reading
+      delay(500); //    wait  before doing the first reading
     }
   }
 
@@ -392,8 +392,10 @@ void IMUClass::run() {
 void IMUClass::readQMC5883L() {
   
   uint8_t buf[6];
+ 
   if (I2CreadFrom(QMC5883L, 0x00, 6, (uint8_t*)buf) != 6) {
-    //errorCounter++;
+    Console.println("error when read compass");
+    robot.addErrorCounter(ERR_IMU_COMM);
     return;
   }
   float x = (int16_t) (((uint16_t)buf[1]) << 8 | buf[0]);
@@ -420,7 +422,8 @@ void IMUClass::readQMC5883L() {
 void IMUClass::readHMC5883L() {
   uint8_t buf[6];
   if (I2CreadFrom(HMC5883L, 0x03, 6, (uint8_t*)buf) != 6) {
-    //errorCounter++;
+    Console.println("error when read compass");
+    robot.addErrorCounter(ERR_IMU_COMM);
     return;
   }
   // scale +1.3Gauss..-1.3Gauss  (*0.00092)
