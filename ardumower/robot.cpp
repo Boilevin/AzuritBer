@@ -161,6 +161,7 @@ Robot::Robot() {
   perimeterLastTransitionTime = 0;
   perimeterTriggerTime = 0;
   areaInMowing = 1;
+  perimeterSpeedCoeff = 1;
 
   lawnSensorCounter = 0;
   lawnSensor = false;
@@ -1484,9 +1485,17 @@ void Robot::motorControlOdo() {
       }
     }
 
-    //bber200
-    rightSpeed = rightSpeed * sonarSpeedCoeff;
-    leftSpeed = leftSpeed * sonarSpeedCoeff;
+    //bber200 perimeter speed only if both perimeter and sonar are actif
+    if (perimeterSpeedCoeff == 1) {
+      rightSpeed = rightSpeed * sonarSpeedCoeff;
+      leftSpeed = leftSpeed * sonarSpeedCoeff;
+    }
+    else
+    {
+      rightSpeed = rightSpeed * perimeterSpeedCoeff;
+      leftSpeed = leftSpeed * perimeterSpeedCoeff;
+    }
+
 
 
 
@@ -2959,7 +2968,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 0;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorRightSpeedRpmSet = motorSpeedMaxRpm ;
+      motorLeftSpeedRpmSet = motorRightSpeedRpmSet = motorSpeedMaxRpm * 0.7 ; //perimeterSpeedCoeff reduce speed near the wire to 70%
       stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * DistPeriOutStop);
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * DistPeriOutStop);
       OdoRampCompute();
@@ -4302,6 +4311,13 @@ void Robot::checkPerimeterBoundary() {
   }
   //bber17
   if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_MOW_SPIRALE) ) {
+    //bber200
+    //speed coeff between 0.7 and 1 according 50% of perimetermagmax
+    int miniValue = (int)perimeterMagMaxValue / 2;
+    perimeterSpeedCoeff = (float) map(perimeter.getSmoothMagnitude(0), miniValue, perimeterMagMaxValue, 100, 70) / 100;
+    if (perimeterSpeedCoeff < 0.7) perimeterSpeedCoeff = 0.7;
+    if (perimeterSpeedCoeff > 1) perimeterSpeedCoeff = 1;
+
     if (perimeterTriggerTime != 0) {
       if (millis() >= perimeterTriggerTime) {
         perimeterTriggerTime = 0;
@@ -4436,7 +4452,7 @@ void Robot::checkSonar() {
   if (sonarDistLeft < 25 || sonarDistLeft  > 90) sonarDistLeft = NO_ECHO;
 
   if (((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow))  ||  ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) ||  ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow))  ) {
-    setBeeper(2000, 500, 500, 60, 60);
+    setBeeper(1000, 500, 500, 60, 60);
     nextTimeCheckSonar = millis() + 1500;  //wait before next reading
 
     //**************************if sonar during spirale reinit spirale variable*****************
