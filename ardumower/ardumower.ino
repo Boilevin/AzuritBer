@@ -2,9 +2,9 @@
  *      DUE and ODOMETRY MANDATORY VERSION 
  *      PCB1.3 
  *      COMPATIBLE WITH THIS IMU 
- *      GY-88 
- *      GY-521 with compass deactivate
- *      GY-521 + GY-273 with compass activate
+ *      GY-88 CONNECTED ON I2C1
+ *      GY-521 with compass deactivate CONNECTED ON I2C1
+ *      GY-521 CONNECTED ON I2C1 + GY-273 CONNECTED ON I2C2 with compass activate
  *      SO IT'S MPU6050 and HMC5883L or QMC5883L
  *      
  *      Connect DUE programming port to PC for programming and PC console
