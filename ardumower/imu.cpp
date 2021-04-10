@@ -449,6 +449,7 @@ void IMUClass::deleteAccelGyroCalib() {
 
 // calculate gyro offsets
 void IMUClass::calibGyro() {
+  Console.println("No calibration needed for MPU-9250 it's auto on startup");
   /*
     Console.println("Reading sensors for first time... without any offset");
     watchdogReset();
