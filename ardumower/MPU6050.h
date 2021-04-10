@@ -439,7 +439,7 @@ class MPU6050 {
         MPU6050(uint8_t address);
 
         void initialize();
-        boolean testConnection();
+        bool testConnection();
 
         // AUX_VDDIO register
         uint8_t getAuxVDDIOLevel();
@@ -469,12 +469,12 @@ class MPU6050 {
 		uint8_t getGyroZSelfTestFactoryTrim();
 		
         // ACCEL_CONFIG register
-        boolean getAccelXSelfTest();
-        void setAccelXSelfTest(boolean enabled);
-        boolean getAccelYSelfTest();
-        void setAccelYSelfTest(boolean enabled);
-        boolean getAccelZSelfTest();
-        void setAccelZSelfTest(boolean enabled);
+        bool getAccelXSelfTest();
+        void setAccelXSelfTest(bool enabled);
+        bool getAccelYSelfTest();
+        void setAccelYSelfTest(bool enabled);
+        bool getAccelZSelfTest();
+        void setAccelZSelfTest(bool enabled);
         uint8_t getFullScaleAccelRange();
         void setFullScaleAccelRange(uint8_t range);
         uint8_t getDHPFMode();
@@ -505,32 +505,32 @@ class MPU6050 {
         void setZeroMotionDetectionDuration(uint8_t duration);
 
         // FIFO_EN register
-        boolean getTempFIFOEnabled();
-        void setTempFIFOEnabled(boolean enabled);
-        boolean getXGyroFIFOEnabled();
-        void setXGyroFIFOEnabled(boolean enabled);
-        boolean getYGyroFIFOEnabled();
-        void setYGyroFIFOEnabled(boolean enabled);
-        boolean getZGyroFIFOEnabled();
-        void setZGyroFIFOEnabled(boolean enabled);
-        boolean getAccelFIFOEnabled();
-        void setAccelFIFOEnabled(boolean enabled);
-        boolean getSlave2FIFOEnabled();
-        void setSlave2FIFOEnabled(boolean enabled);
-        boolean getSlave1FIFOEnabled();
-        void setSlave1FIFOEnabled(boolean enabled);
-        boolean getSlave0FIFOEnabled();
-        void setSlave0FIFOEnabled(boolean enabled);
+        bool getTempFIFOEnabled();
+        void setTempFIFOEnabled(bool enabled);
+        bool getXGyroFIFOEnabled();
+        void setXGyroFIFOEnabled(bool enabled);
+        bool getYGyroFIFOEnabled();
+        void setYGyroFIFOEnabled(bool enabled);
+        bool getZGyroFIFOEnabled();
+        void setZGyroFIFOEnabled(bool enabled);
+        bool getAccelFIFOEnabled();
+        void setAccelFIFOEnabled(bool enabled);
+        bool getSlave2FIFOEnabled();
+        void setSlave2FIFOEnabled(bool enabled);
+        bool getSlave1FIFOEnabled();
+        void setSlave1FIFOEnabled(bool enabled);
+        bool getSlave0FIFOEnabled();
+        void setSlave0FIFOEnabled(bool enabled);
 
         // I2C_MST_CTRL register
-        boolean getMultiMasterEnabled();
-        void setMultiMasterEnabled(boolean enabled);
-        boolean getWaitForExternalSensorEnabled();
-        void setWaitForExternalSensorEnabled(boolean enabled);
-        boolean getSlave3FIFOEnabled();
-        void setSlave3FIFOEnabled(boolean enabled);
-        boolean getSlaveReadWriteTransitionEnabled();
-        void setSlaveReadWriteTransitionEnabled(boolean enabled);
+        bool getMultiMasterEnabled();
+        void setMultiMasterEnabled(bool enabled);
+        bool getWaitForExternalSensorEnabled();
+        void setWaitForExternalSensorEnabled(bool enabled);
+        bool getSlave3FIFOEnabled();
+        void setSlave3FIFOEnabled(bool enabled);
+        bool getSlaveReadWriteTransitionEnabled();
+        void setSlaveReadWriteTransitionEnabled(bool enabled);
         uint8_t getMasterClockSpeed();
         void setMasterClockSpeed(uint8_t speed);
 
@@ -539,14 +539,14 @@ class MPU6050 {
         void setSlaveAddress(uint8_t num, uint8_t address);
         uint8_t getSlaveRegister(uint8_t num);
         void setSlaveRegister(uint8_t num, uint8_t reg);
-        boolean getSlaveEnabled(uint8_t num);
-        void setSlaveEnabled(uint8_t num, boolean enabled);
-        boolean getSlaveWordByteSwap(uint8_t num);
-        void setSlaveWordByteSwap(uint8_t num, boolean enabled);
-        boolean getSlaveWriteMode(uint8_t num);
-        void setSlaveWriteMode(uint8_t num, boolean mode);
-        boolean getSlaveWordGroupOffset(uint8_t num);
-        void setSlaveWordGroupOffset(uint8_t num, boolean enabled);
+        bool getSlaveEnabled(uint8_t num);
+        void setSlaveEnabled(uint8_t num, bool enabled);
+        bool getSlaveWordByteSwap(uint8_t num);
+        void setSlaveWordByteSwap(uint8_t num, bool enabled);
+        bool getSlaveWriteMode(uint8_t num);
+        void setSlaveWriteMode(uint8_t num, bool mode);
+        bool getSlaveWordGroupOffset(uint8_t num);
+        void setSlaveWordGroupOffset(uint8_t num, bool enabled);
         uint8_t getSlaveDataLength(uint8_t num);
         void setSlaveDataLength(uint8_t num, uint8_t length);
 
@@ -556,68 +556,68 @@ class MPU6050 {
         uint8_t getSlave4Register();
         void setSlave4Register(uint8_t reg);
         void setSlave4OutputByte(uint8_t data);
-        boolean getSlave4Enabled();
-        void setSlave4Enabled(boolean enabled);
-        boolean getSlave4InterruptEnabled();
-        void setSlave4InterruptEnabled(boolean enabled);
-        boolean getSlave4WriteMode();
-        void setSlave4WriteMode(boolean mode);
+        bool getSlave4Enabled();
+        void setSlave4Enabled(bool enabled);
+        bool getSlave4InterruptEnabled();
+        void setSlave4InterruptEnabled(bool enabled);
+        bool getSlave4WriteMode();
+        void setSlave4WriteMode(bool mode);
         uint8_t getSlave4MasterDelay();
         void setSlave4MasterDelay(uint8_t delay);
         uint8_t getSlate4InputByte();
 
         // I2C_MST_STATUS register
-        boolean getPassthroughStatus();
-        boolean getSlave4IsDone();
-        boolean getLostArbitration();
-        boolean getSlave4Nack();
-        boolean getSlave3Nack();
-        boolean getSlave2Nack();
-        boolean getSlave1Nack();
-        boolean getSlave0Nack();
+        bool getPassthroughStatus();
+        bool getSlave4IsDone();
+        bool getLostArbitration();
+        bool getSlave4Nack();
+        bool getSlave3Nack();
+        bool getSlave2Nack();
+        bool getSlave1Nack();
+        bool getSlave0Nack();
 
         // INT_PIN_CFG register
-        boolean getInterruptMode();
-        void setInterruptMode(boolean mode);
-        boolean getInterruptDrive();
-        void setInterruptDrive(boolean drive);
-        boolean getInterruptLatch();
-        void setInterruptLatch(boolean latch);
-        boolean getInterruptLatchClear();
-        void setInterruptLatchClear(boolean clear);
-        boolean getFSyncInterruptLevel();
-        void setFSyncInterruptLevel(boolean level);
-        boolean getFSyncInterruptEnabled();
-        void setFSyncInterruptEnabled(boolean enabled);
-        boolean getI2CBypassEnabled();
-        void setI2CBypassEnabled(boolean enabled);
-        boolean getClockOutputEnabled();
-        void setClockOutputEnabled(boolean enabled);
+        bool getInterruptMode();
+        void setInterruptMode(bool mode);
+        bool getInterruptDrive();
+        void setInterruptDrive(bool drive);
+        bool getInterruptLatch();
+        void setInterruptLatch(bool latch);
+        bool getInterruptLatchClear();
+        void setInterruptLatchClear(bool clear);
+        bool getFSyncInterruptLevel();
+        void setFSyncInterruptLevel(bool level);
+        bool getFSyncInterruptEnabled();
+        void setFSyncInterruptEnabled(bool enabled);
+        bool getI2CBypassEnabled();
+        void setI2CBypassEnabled(bool enabled);
+        bool getClockOutputEnabled();
+        void setClockOutputEnabled(bool enabled);
 
         // INT_ENABLE register
         uint8_t getIntEnabled();
         void setIntEnabled(uint8_t enabled);
-        boolean getIntFreefallEnabled();
-        void setIntFreefallEnabled(boolean enabled);
-        boolean getIntMotionEnabled();
-        void setIntMotionEnabled(boolean enabled);
-        boolean getIntZeroMotionEnabled();
-        void setIntZeroMotionEnabled(boolean enabled);
-        boolean getIntFIFOBufferOverflowEnabled();
-        void setIntFIFOBufferOverflowEnabled(boolean enabled);
-        boolean getIntI2CMasterEnabled();
-        void setIntI2CMasterEnabled(boolean enabled);
-        boolean getIntDataReadyEnabled();
-        void setIntDataReadyEnabled(boolean enabled);
+        bool getIntFreefallEnabled();
+        void setIntFreefallEnabled(bool enabled);
+        bool getIntMotionEnabled();
+        void setIntMotionEnabled(bool enabled);
+        bool getIntZeroMotionEnabled();
+        void setIntZeroMotionEnabled(bool enabled);
+        bool getIntFIFOBufferOverflowEnabled();
+        void setIntFIFOBufferOverflowEnabled(bool enabled);
+        bool getIntI2CMasterEnabled();
+        void setIntI2CMasterEnabled(bool enabled);
+        bool getIntDataReadyEnabled();
+        void setIntDataReadyEnabled(bool enabled);
 
         // INT_STATUS register
         uint8_t getIntStatus();
-        boolean getIntFreefallStatus();
-        boolean getIntMotionStatus();
-        boolean getIntZeroMotionStatus();
-        boolean getIntFIFOBufferOverflowStatus();
-        boolean getIntI2CMasterStatus();
-        boolean getIntDataReadyStatus();
+        bool getIntFreefallStatus();
+        bool getIntMotionStatus();
+        bool getIntZeroMotionStatus();
+        bool getIntFIFOBufferOverflowStatus();
+        bool getIntI2CMasterStatus();
+        bool getIntDataReadyStatus();
 
         // ACCEL_*OUT_* registers
         void getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz);
@@ -643,22 +643,22 @@ class MPU6050 {
 
         // MOT_DETECT_STATUS register
         uint8_t getMotionStatus();
-        boolean getXNegMotionDetected();
-        boolean getXPosMotionDetected();
-        boolean getYNegMotionDetected();
-        boolean getYPosMotionDetected();
-        boolean getZNegMotionDetected();
-        boolean getZPosMotionDetected();
-        boolean getZeroMotionDetected();
+        bool getXNegMotionDetected();
+        bool getXPosMotionDetected();
+        bool getYNegMotionDetected();
+        bool getYPosMotionDetected();
+        bool getZNegMotionDetected();
+        bool getZPosMotionDetected();
+        bool getZeroMotionDetected();
 
         // I2C_SLV*_DO register
         void setSlaveOutputByte(uint8_t num, uint8_t data);
 
         // I2C_MST_DELAY_CTRL register
-        boolean getExternalShadowDelayEnabled();
-        void setExternalShadowDelayEnabled(boolean enabled);
-        boolean getSlaveDelayEnabled(uint8_t num);
-        void setSlaveDelayEnabled(uint8_t num, boolean enabled);
+        bool getExternalShadowDelayEnabled();
+        void setExternalShadowDelayEnabled(bool enabled);
+        bool getSlaveDelayEnabled(uint8_t num);
+        void setSlaveDelayEnabled(uint8_t num, bool enabled);
 
         // SIGNAL_PATH_RESET register
         void resetGyroscopePath();
@@ -674,41 +674,41 @@ class MPU6050 {
         void setMotionDetectionCounterDecrement(uint8_t decrement);
 
         // USER_CTRL register
-        boolean getFIFOEnabled();
-        void setFIFOEnabled(boolean enabled);
-        boolean getI2CMasterModeEnabled();
-        void setI2CMasterModeEnabled(boolean enabled);
-        void switchSPIEnabled(boolean enabled);
+        bool getFIFOEnabled();
+        void setFIFOEnabled(bool enabled);
+        bool getI2CMasterModeEnabled();
+        void setI2CMasterModeEnabled(bool enabled);
+        void switchSPIEnabled(bool enabled);
         void resetFIFO();
         void resetI2CMaster();
         void resetSensors();
 
         // PWR_MGMT_1 register
         void reset();
-        boolean getSleepEnabled();
-        void setSleepEnabled(boolean enabled);
-        boolean getWakeCycleEnabled();
-        void setWakeCycleEnabled(boolean enabled);
-        boolean getTempSensorEnabled();
-        void setTempSensorEnabled(boolean enabled);
+        bool getSleepEnabled();
+        void setSleepEnabled(bool enabled);
+        bool getWakeCycleEnabled();
+        void setWakeCycleEnabled(bool enabled);
+        bool getTempSensorEnabled();
+        void setTempSensorEnabled(bool enabled);
         uint8_t getClockSource();
         void setClockSource(uint8_t source);
 
         // PWR_MGMT_2 register
         uint8_t getWakeFrequency();
         void setWakeFrequency(uint8_t frequency);
-        boolean getStandbyXAccelEnabled();
-        void setStandbyXAccelEnabled(boolean enabled);
-        boolean getStandbyYAccelEnabled();
-        void setStandbyYAccelEnabled(boolean enabled);
-        boolean getStandbyZAccelEnabled();
-        void setStandbyZAccelEnabled(boolean enabled);
-        boolean getStandbyXGyroEnabled();
-        void setStandbyXGyroEnabled(boolean enabled);
-        boolean getStandbyYGyroEnabled();
-        void setStandbyYGyroEnabled(boolean enabled);
-        boolean getStandbyZGyroEnabled();
-        void setStandbyZGyroEnabled(boolean enabled);
+        bool getStandbyXAccelEnabled();
+        void setStandbyXAccelEnabled(bool enabled);
+        bool getStandbyYAccelEnabled();
+        void setStandbyYAccelEnabled(bool enabled);
+        bool getStandbyZAccelEnabled();
+        void setStandbyZAccelEnabled(bool enabled);
+        bool getStandbyXGyroEnabled();
+        void setStandbyXGyroEnabled(bool enabled);
+        bool getStandbyYGyroEnabled();
+        void setStandbyYGyroEnabled(bool enabled);
+        bool getStandbyZGyroEnabled();
+        void setStandbyZGyroEnabled(bool enabled);
 
         // FIFO_COUNT_* registers
         uint16_t getFIFOCount();
@@ -726,7 +726,7 @@ class MPU6050 {
         
         // XG_OFFS_TC register
         uint8_t getOTPBankValid();
-        void setOTPBankValid(boolean enabled);
+        void setOTPBankValid(bool enabled);
         int8_t getXGyroOffsetTC();
         void setXGyroOffsetTC(int8_t offset);
 
@@ -775,30 +775,30 @@ class MPU6050 {
         void setZGyroOffset(int16_t offset);
         
         // INT_ENABLE register (DMP functions)
-        boolean getIntPLLReadyEnabled();
-        void setIntPLLReadyEnabled(boolean enabled);
-        boolean getIntDMPEnabled();
-        void setIntDMPEnabled(boolean enabled);
+        bool getIntPLLReadyEnabled();
+        void setIntPLLReadyEnabled(bool enabled);
+        bool getIntDMPEnabled();
+        void setIntDMPEnabled(bool enabled);
         
         // DMP_INT_STATUS
-        boolean getDMPInt5Status();
-        boolean getDMPInt4Status();
-        boolean getDMPInt3Status();
-        boolean getDMPInt2Status();
-        boolean getDMPInt1Status();
-        boolean getDMPInt0Status();
+        bool getDMPInt5Status();
+        bool getDMPInt4Status();
+        bool getDMPInt3Status();
+        bool getDMPInt2Status();
+        bool getDMPInt1Status();
+        bool getDMPInt0Status();
 
         // INT_STATUS register (DMP functions)
-        boolean getIntPLLReadyStatus();
-        boolean getIntDMPStatus();
+        bool getIntPLLReadyStatus();
+        bool getIntDMPStatus();
         
         // USER_CTRL register (DMP functions)
-        boolean getDMPEnabled();
-        void setDMPEnabled(boolean enabled);
+        bool getDMPEnabled();
+        void setDMPEnabled(bool enabled);
         void resetDMP();
         
         // BANK_SEL register
-        void setMemoryBank(uint8_t bank, boolean prefetchEnabled=false, boolean userBank=false);
+        void setMemoryBank(uint8_t bank, bool prefetchEnabled=false, bool userBank=false);
         
         // MEM_START_ADDR register
         void setMemoryStartAddress(uint8_t address);
@@ -807,11 +807,11 @@ class MPU6050 {
         uint8_t readMemoryByte();
         void writeMemoryByte(uint8_t data);
         void readMemoryBlock(uint8_t *data, uint16_t dataSize, uint8_t bank=0, uint8_t address=0);
-        boolean writeMemoryBlock(const uint8_t *data, uint16_t dataSize, uint8_t bank=0, uint8_t address=0, boolean verify=true, boolean useProgMem=false);
-        boolean writeProgMemoryBlock(const uint8_t *data, uint16_t dataSize, uint8_t bank=0, uint8_t address=0, boolean verify=true);
+        bool writeMemoryBlock(const uint8_t *data, uint16_t dataSize, uint8_t bank=0, uint8_t address=0, bool verify=true, bool useProgMem=false);
+        bool writeProgMemoryBlock(const uint8_t *data, uint16_t dataSize, uint8_t bank=0, uint8_t address=0, bool verify=true);
 
-        boolean writeDMPConfigurationSet(const uint8_t *data, uint16_t dataSize, boolean useProgMem=false);
-        boolean writeProgDMPConfigurationSet(const uint8_t *data, uint16_t dataSize);
+        bool writeDMPConfigurationSet(const uint8_t *data, uint16_t dataSize, bool useProgMem=false);
+        bool writeProgDMPConfigurationSet(const uint8_t *data, uint16_t dataSize);
 
         // DMP_CFG_1 register
         uint8_t getDMPConfig1();
@@ -827,7 +827,7 @@ class MPU6050 {
             uint16_t dmpPacketSize;
 
             uint8_t dmpInitialize();
-            boolean dmpPacketAvailable();
+            bool dmpPacketAvailable();
 
             uint8_t dmpSetFIFORate(uint8_t fifoRate);
             uint8_t dmpGetFIFORate();
@@ -928,7 +928,7 @@ class MPU6050 {
             uint16_t dmpPacketSize;
 
             uint8_t dmpInitialize();
-            boolean dmpPacketAvailable();
+            bool dmpPacketAvailable();
 
             uint8_t dmpSetFIFORate(uint8_t fifoRate);
             uint8_t dmpGetFIFORate();
