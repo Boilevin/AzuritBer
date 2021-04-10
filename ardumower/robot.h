@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.50-Azuritber GY-88"
+#define VER "1.50-Azuritber MPU9250"
 
 
 // sensors

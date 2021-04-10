@@ -197,6 +197,7 @@ void IMUClass::run() {
   //-------------------read the mpu9250 DMP  --------------------------------
   // Check for new data in the FIFO
 
+
   if (imu.fifoAvailable() )
   {
     // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
