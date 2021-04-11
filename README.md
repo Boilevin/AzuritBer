@@ -2,8 +2,8 @@
 Ardumower full odometry version
 see https://www.ardumower.de for more info.
 
-Master branch is GY-88 version
-See other branch for GY-87 or MPU-9250/9255 version
+Master branch is GY-88 / GY-521  based on MPU6050 version
+See other branch for GY-87  or MPU-9250/9255 version
 
 
 OPTIONAL RFID/RASPBERRY:
