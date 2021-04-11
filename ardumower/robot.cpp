@@ -4683,9 +4683,12 @@ void Robot::loop()  {
       imu.run();
       EndReadAt = millis();
       ReadDuration = EndReadAt - StartReadAt;
-      if ( ReadDuration > 100) {
-        Console.print("reading imu too long duratiopn :    ");
+      if ( ReadDuration > 30) {
+        Console.print("Error reading imu too long duration :    ");
         Console.println(ReadDuration);
+        Console.println ("Try to reset it");
+        imu.begin();
+        
       }
     }
 
