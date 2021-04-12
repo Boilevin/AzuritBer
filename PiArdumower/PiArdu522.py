@@ -1677,7 +1677,7 @@ def BtnImuPlotStartRec_click():
     f.write("{};{};{}\n".format("0","0","0"))
     f.close()
     ImuPlotterKst.start('/home/pi/Documents/PiArdumower/plotImu.kst')
-    send_req_message('IMU',''+str(SldMainBatRefresh.get())+'','1','10000','0','0','0',)    
+    send_req_message('IMU',''+str(SldMainImuRefresh.get())+'','1','10000','0','0','0',)    
 
 def BtnImuPlotStopRec_click():
     global firstplotImux
