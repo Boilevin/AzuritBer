@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.51-Azuritber MPU-6050"
+#define VER "1.52-Azuritber MPU-6050"
 
 
 // sensors

@@ -549,12 +549,12 @@ void Robot::printSettingSerial() {
   Console.println(SpeedOdoMax);
   Console.print  ("motorTickPerSecond         : ");
   Console.println(motorTickPerSecond);
-  
- // Console.print  ("motorBiDirSpeedRatio1      : ");
- // Console.println(motorBiDirSpeedRatio1);
+
+  // Console.print  ("motorBiDirSpeedRatio1      : ");
+  // Console.println(motorBiDirSpeedRatio1);
   watchdogReset();
- //Console.print  ("motorBiDirSpeedRatio2                      : ");
- //Console.println(motorBiDirSpeedRatio2);
+  //Console.print  ("motorBiDirSpeedRatio2                      : ");
+  //Console.println(motorBiDirSpeedRatio2);
 
   Console.print  ("motorLeftPID.Kp            : ");
   Console.println(motorLeftPID.Kp);
@@ -587,7 +587,7 @@ void Robot::printSettingSerial() {
   Console.println(motorMowPowerMax);
   Console.print  ("motorMowSenseScale       : ");
   Console.println(motorMowSenseScale);
- 
+
   watchdogReset();
   // ------ bumper ------------------------------------
   Console.println("---------- bumper -----------------");
@@ -678,7 +678,7 @@ void Robot::printSettingSerial() {
   Console.println(DistPeriObstacleForw);
   watchdogReset();
   delayWithWatchdog (2000);
-  // ------ By Lanes mowing --------------------- 
+  // ------ By Lanes mowing ---------------------
   Console.println(F("---------- By Lanes mowing ----------"));
   Console.print  (F("yawSet1                   : "));
   Console.println(yawSet1);
@@ -709,7 +709,7 @@ void Robot::printSettingSerial() {
   Console.print  (F("lawnSensorUse            : "));
   Console.println(lawnSensorUse, 1);
 
-  // ------  IMU (compass/accel/gyro) ------ 
+  // ------  IMU (compass/accel/gyro) ------
   Console.println(F("---------- IMU (compass/accel/gyro) ---- "));
   Console.print  (F("imuUse                : "));
   Console.println( imuUse, 1);
@@ -822,7 +822,7 @@ void Robot::printSettingSerial() {
   Console.print  (F("rfidUse         : "));
   Console.println(rfidUse, 1);
   watchdogReset();
-  // ----- RASPBERRY PI -------------- 
+  // ----- RASPBERRY PI --------------
   Console.println(F("---------- RASPBERRY PI------ "));
   Console.print  (F("RaspberryPIUse  : "));
   Console.println(RaspberryPIUse, 1);
@@ -2199,18 +2199,18 @@ void Robot::menu() {
           testMotors();
           printMenu();
           break;
-        
+
         case '5':
           imu.deleteAccelGyroCalib();
-          imuUse=false;
+          imuUse = false;
           printMenu();
           break;
         case '6':
           imu.deleteCompassCalib();
-          CompassUse=false;
+          CompassUse = false;
           printMenu();
           break;
-       
+
         case '9':
           saveUserSettings();
           printMenu();
@@ -2244,7 +2244,7 @@ void Robot::menu() {
 
 
 /*
-void Robot::commsMenuBT() {
+  void Robot::commsMenuBT() {
   while (true) {
     Console.println();
     Console.println(F("COMMUNICATIONS MENU  == Bluetooth =="));
@@ -2271,11 +2271,11 @@ void Robot::commsMenuBT() {
         break;
     }
   }
-}
+  }
 
 
 
-void Robot::commsMenuSelect(void) {
+  void Robot::commsMenuSelect(void) {
   bluetoothUse = 0;
   esp8266Use = 0;
 
@@ -2292,7 +2292,7 @@ void Robot::commsMenuSelect(void) {
       case '2': esp8266Use = 1; return;
     }
   }
-}
+  }
 */
 void Robot::readSerial() {
 
@@ -3839,7 +3839,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       //use to start mow motor at low speed and limit noise on perimeter reading on startup
       motorMowSpeedPWMSet = motorMowSpeedMinPwm;
       motorMowPowerMedian.clear();
-      
+
       // after this state the mower use pid imu to drive straight so accelerate only at half the max speed
       UseAccelLeft = 1;
       UseBrakeLeft = 0;
@@ -4429,7 +4429,7 @@ void Robot::checkSonar() {
         }
       }
       if ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow)) {  //LEFT
-         if (!sonarLikeBumper) {
+        if (!sonarLikeBumper) {
           sonarSpeedCoeff = 0.70;
           nextTimeCheckSonar = millis() + 3000;
         }
@@ -4659,7 +4659,7 @@ void Robot::loop()  {
     readSerial();
   }
 
- if (bluetoothUse || esp8266Use) {
+  if (bluetoothUse || esp8266Use) {
     rc.readSerial();
   }
   readSensors();
@@ -4675,18 +4675,21 @@ void Robot::loop()  {
     checkTimer();
   }
   beeper();
-
-  if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
+//bber400
+  if (stateCurr != STATE_PERI_TRACK) {
+    //  if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
     if ((imuUse) && (millis() >= nextTimeImuLoop)) {
-      imu.run();
       nextTimeImuLoop = millis() + 50;
-      /* Console.print(" Yaw ");
-        Console.print(imu.ypr.yaw);
-        Console.print(" Pitch ");
-        Console.print(imu.ypr.pitch);
-        Console.print(" Roll ");
-        Console.println(imu.ypr.roll);
-      */
+      StartReadAt = millis();
+      imu.run();
+      EndReadAt = millis();
+      ReadDuration = EndReadAt - StartReadAt;
+      if ( ReadDuration > 30) {
+        Console.print("Error reading imu too long duration : ");
+        Console.println(ReadDuration);
+        imuUse=false;
+        addErrorCounter(ERR_IMU_COMM);
+      }
 
     }
 
@@ -6135,7 +6138,7 @@ void Robot::loop()  {
 
     //bber50
     case STATE_ACCEL_FRWRD:
-      
+
       motorControlOdo();
       if (!perimeterInside) {
         Console.println("Try to start at other location : We are not inside perimeter");
