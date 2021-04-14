@@ -4675,8 +4675,8 @@ void Robot::loop()  {
     checkTimer();
   }
   beeper();
-
-  if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
+if (stateCurr != STATE_PERI_TRACK) {
+  //if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
     if ((imuUse) && (millis() >= nextTimeImuLoop)) {
       nextTimeImuLoop = millis() + 50;
       StartReadAt = millis();
@@ -4686,9 +4686,9 @@ void Robot::loop()  {
       if ( ReadDuration > 30) {
         Console.print("Error reading imu too long duration : ");
         Console.println(ReadDuration);
-        Console.println ("Try to reset it");
-        setNextState(STATE_OFF, 0);
-        imu.begin();
+        Console.println ("IMU IS DEACTIVATE");
+        imuUse=false;
+        addErrorCounter(ERR_IMU_COMM);
       }
     }
   }
