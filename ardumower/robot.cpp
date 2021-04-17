@@ -4753,15 +4753,29 @@ void Robot::loop()  {
 
   if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
     if ((imuUse) && (millis() >= nextTimeImuLoop)) {
-      imu.run();
       nextTimeImuLoop = millis() + 50;
-      /* Console.print(" Yaw ");
-        Console.print(imu.ypr.yaw);
-        Console.print(" Pitch ");
-        Console.print(imu.ypr.pitch);
-        Console.print(" Roll ");
-        Console.println(imu.ypr.roll);
-      */
+
+      StartReadAt = millis();
+      imu.run();
+      EndReadAt = millis();
+      ReadDuration = EndReadAt - StartReadAt;
+      if (ReadDuration > 30) {
+        Console.print("Error reading IMU too long duration : ");
+        Console.println(ReadDuration);
+        Console.println("IMU and RFID are deactivate Mow in safe mode");
+        imuUse = false;
+        rfidUse = false;
+        addErrorCounter(ERR_IMU_COMM);
+      }
+
+
+
+
+
+
+
+
+
 
     }
 
@@ -5341,10 +5355,17 @@ void Robot::loop()  {
         Console.print("Compute Max State Duration : ");
         Console.println(MaxOdoStateDuration);
         motorTickPerSecond = 1000 * stateEndOdometryRight / Tempovar;
-
-        Console.print(" motorTickPerSecond ");
+        //bber400
+        float motorRpmAvg;
+        motorRpmAvg = 60000 * (stateEndOdometryRight / odometryTicksPerRevolution) / Tempovar;
+        Console.print(" motorTickPerSecond : ");
         Console.println(motorTickPerSecond);
+        Console.print(" Average RPM : ");
+        Console.println(motorRpmAvg);
         setNextState(STATE_OFF, 0);
+        motorSpeedMaxRpm = int(motorRpmAvg);
+        saveUserSettings();
+        return;
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         Console.println ("Warning can t TestMotor in time please check your Odometry or speed setting ");
