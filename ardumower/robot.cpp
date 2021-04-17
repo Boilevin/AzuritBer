@@ -958,7 +958,7 @@ void Robot::autoReboot() {
   //this feature use the watchdog to perform a restart of the due
   if (RaspberryPIUse) {
     Console.println(F("Due reset after 1 secondes, send a command to Pi for restart also"));
-    MyRpi.sendCommandToPi("RestartPi");
+    //MyRpi.sendCommandToPi("RestartPi");
   }
   else
   {
@@ -966,7 +966,7 @@ void Robot::autoReboot() {
   }
   delay(1000);
   watchdogReset();
-  delay(20000); // this reset the due.
+  delay(30000); // this IS USED to force watchdog to reset due.
 }
 
 // ---- motor RPM (interrupt) --------------------------------------------------------------
@@ -4675,8 +4675,8 @@ void Robot::loop()  {
     checkTimer();
   }
   beeper();
-if (stateCurr != STATE_PERI_TRACK) {
-  //if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
+  if (stateCurr != STATE_PERI_TRACK) {
+    //if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
     if ((imuUse) && (millis() >= nextTimeImuLoop)) {
       nextTimeImuLoop = millis() + 50;
       StartReadAt = millis();
@@ -4686,8 +4686,9 @@ if (stateCurr != STATE_PERI_TRACK) {
       if ( ReadDuration > 30) {
         Console.print("Error reading imu too long duration : ");
         Console.println(ReadDuration);
-        Console.println ("IMU IS DEACTIVATE");
-        imuUse=false;
+        Console.println ("IMU and RFID are DEACTIVATE Mow in safe mode");
+        imuUse = false;
+        rfidUse = false;
         addErrorCounter(ERR_IMU_COMM);
       }
     }
@@ -5226,10 +5227,17 @@ if (stateCurr != STATE_PERI_TRACK) {
         Console.print("Compute Max State Duration : ");
         Console.println(MaxOdoStateDuration);
         motorTickPerSecond = 1000 * stateEndOdometryRight / Tempovar;
-
-        Console.print(" motorTickPerSecond ");
+        //bber400
+        float motorRpmAvg;
+        motorRpmAvg = 60000 * (stateEndOdometryRight / odometryTicksPerRevolution) / Tempovar;
+        Console.print(" motorTickPerSecond : ");
         Console.println(motorTickPerSecond);
+        Console.print(" Average RPM : ");
+        Console.println(motorRpmAvg);
         setNextState(STATE_OFF, 0);
+        motorSpeedMaxRpm=int(motorRpmAvg);
+        saveUserSettings();
+        return;
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         Console.println ("Warning can t TestMotor in time please check your Odometry or speed setting ");
@@ -5261,7 +5269,12 @@ if (stateCurr != STATE_PERI_TRACK) {
       boolean finish_4rev;
       finish_4rev = false;
       motorControlOdo();
-      imu.run();
+
+      //bber400
+      if ((imuUse) && (millis() >= nextTimeImuLoop)) {
+        nextTimeImuLoop = millis() + 50;
+        imu.run();
+      }
       //it's ok
       if (CompassUse) {
         if ((yawToFind - 2 < (imu.comYaw / PI * 180)) && (yawToFind + 2 > (imu.comYaw / PI * 180)))  { //at +-2 degres
