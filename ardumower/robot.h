@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.52-Azuritber GY-88/GY-521"
+#define VER "1.53-Azuritber GY-88/GY-521"
 
 
 // sensors
@@ -376,6 +376,8 @@ class Robot
     int motorRightOffsetFwd;
     int motorRightOffsetRev;
     int motorTickPerSecond;
+    //bber400
+    float motorRpmCoeff; // coeff use to have a stable RPM on slope or when battery is full or empty
 
     unsigned long nextTimeMotorOdoControl ;
     unsigned long nextTimePidCompute;
@@ -409,6 +411,7 @@ class Robot
     boolean UseAccelLeft;
     boolean UseBrakeLeft;
     boolean odoLeftRightCorrection;
+    boolean autoAdjustSlopeSpeed;
     int AngleRotate;
     int newtagRotAngle1;
     int newtagRotAngle2;
@@ -505,6 +508,8 @@ class Robot
     RunningMedian compassYawMedian = RunningMedian(60);
     RunningMedian accelGyroYawMedian = RunningMedian(60);
     RunningMedian motorMowPowerMedian = RunningMedian(30);
+    RunningMedian motorSpeedRpmMedian = RunningMedian(35);
+    
     
     //bb 5
 

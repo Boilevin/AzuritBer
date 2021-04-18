@@ -90,7 +90,9 @@ Mower::Mower() {
   SpeedOdoMin = 50;
   SpeedOdoMax = 140;
   odoLeftRightCorrection     = true;       // left-right correction for straight lines used in manual mode
+  autoAdjustSlopeSpeed = true;  //adjust the speed on slope to have same speed on uphill and downhill
 
+  
   // ------ mower motor -------------------------------
   motorMowAccel       = 1000;  // motor mower acceleration (warning: do not set too low) 2000 seems to fit best considerating start time and power consumption
   motorMowSpeedMaxPwm   = 200;    // motor mower max PWM

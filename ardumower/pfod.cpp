@@ -330,10 +330,6 @@ void RemoteControl::processErrorMenu(String pfodCmd) {
 void RemoteControl::sendMotorMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Motor`1000"));
 
-  serialPort->println(F("|a00~Overload Counter l, r "));
-  serialPort->print(robot->motorLeftSenseCounter);
-  serialPort->print(", ");
-  serialPort->print(robot->motorRightSenseCounter);
   serialPort->println(F("|a01~Power in Watt l, r "));
   serialPort->print(robot->motorLeftPower);
   serialPort->print(", ");
@@ -342,15 +338,16 @@ void RemoteControl::sendMotorMenu(boolean update) {
   serialPort->print(robot->motorLeftSenseCurrent);
   serialPort->print(", ");
   serialPort->print(robot->motorRightSenseCurrent);
-  //Console.print("motorpowermax=");
-  //Console.println(robot->motorPowerMax);
-  sendSlider("a02", F("Power max"), robot->motorPowerMax, "", 0.1, 100, 0);
-  //sendSlider("a03", F("calibrate left motor "), robot->motorLeftSenseCurrent, "", 1, 1000, 0);
-  //sendSlider("a04", F("calibrate right motor"), robot->motorRightSenseCurrent, "", 1, 1000, 0);
+  sendSlider("a02", F("Power max"), robot->motorPowerMax, "", 0.1, 100, 0); 
   serialPort->println(F("|a03~RPM Speed l, r "));
   serialPort->print(robot->motorLeftRpmCurr);
   serialPort->print(", ");
-  serialPort->println(robot->motorRightRpmCurr); 
+  serialPort->print(robot->motorRightRpmCurr); 
+//bber400
+  serialPort->print(F("|a04~motor RPM coeff : "));
+  serialPort->print(robot->motorRpmCoeff);
+  serialPort->print(F("|a10~Auto Adjust Speed : "));
+  sendYesNo(robot->autoAdjustSlopeSpeed); 
   serialPort->print(F("|a05~PWM Speed l, r "));
   serialPort->print(robot->motorLeftPWMCurr);
   serialPort->print(", ");
@@ -363,15 +360,8 @@ void RemoteControl::sendMotorMenu(boolean update) {
   sendSlider("a19", F("Roll Degrees min"), robot->motorRollDegMin, "", 1, 180, 1);
   sendSlider("a08", F("Rev Distance / Perimeter"), robot->DistPeriOutRev, "", 1, 100, 1);
   sendSlider("a09", F("Stop Distance / Perimeter"), robot->DistPeriOutStop, "", 1, 30, 1);
-  //sendSlider("a12", F("Bidir speed ratio 1"), robot->motorBiDirSpeedRatio1, "", 0.01, 1.0);
-  //sendSlider("a13", F("Bidir speed ratio 2"), robot->motorBiDirSpeedRatio2, "", 0.01, 1.0);
   sendPIDSlider("a14", "RPM", robot->motorLeftPID, 0.01, 3.0);
-  serialPort->println(F("|a10~Testing is"));
-  switch (testmode) {
-    case 0: serialPort->print(F("OFF")); break;
-    case 1: serialPort->print(F("Left motor forw")); break;
-    case 2: serialPort->print(F("Right motor forw")); break;
-  }
+  
   //bb add
   if (robot->developerActive) {
     sendSlider("a20", F("MotorSenseLeftScale"), robot->motorSenseLeftScale, "", 0.01, 0.10, 3.00);
@@ -383,16 +373,12 @@ void RemoteControl::sendMotorMenu(boolean update) {
   serialPort->print(robot->motorSenseLeftScale);
   serialPort->print(", ");
   serialPort->print(robot->motorSenseRightScale);
-  serialPort->print(F("|a16~Swap left direction "));
-  sendYesNo(robot->motorLeftSwapDir);
-  serialPort->print(F("|a17~Swap right direction "));
-  sendYesNo(robot->motorRightSwapDir);
   //bb
   sendSlider("a22", F("PWM Right Forward offset in %"), robot->motorRightOffsetFwd, "", 1, 50, -50);
   sendSlider("a23", F("PWM Right Reverse offset in %"), robot->motorRightOffsetRev, "", 1, 50, -50);
   sendSlider("a30", F("Speed Odo Minimum"), robot->SpeedOdoMin, "", 1, 90, 0);
   sendSlider("a31", F("Speed Odo Maximum"), robot->SpeedOdoMax, "", 1, 254, 100);
-  serialPort->print(F("|a32~Calib Speed and Ticks/Second"));  //to compute the ticks per second motor speed and the RPM speed according to PWM
+  serialPort->print(F("|a32~Calib Motor"));  //to compute the ticks per second motor speed and the RPM speed according to PWM
   serialPort->println("}");
 }
 
@@ -428,12 +414,11 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("a19")) processSlider(pfodCmd, robot->motorRollDegMin, 1);
   else if (pfodCmd.startsWith("a08")) processSlider(pfodCmd, robot->DistPeriOutRev, 1);
   else if (pfodCmd.startsWith("a09")) processSlider(pfodCmd, robot->DistPeriOutStop, 1);
+  else if (pfodCmd.startsWith("a10")) robot->autoAdjustSlopeSpeed = !robot->autoAdjustSlopeSpeed;
   else if (pfodCmd.startsWith("a11")) processSlider(pfodCmd, robot->motorAccel, 1);
   else if (pfodCmd.startsWith("a12")) processSlider(pfodCmd, robot->motorBiDirSpeedRatio1, 0.01);
   else if (pfodCmd.startsWith("a13")) processSlider(pfodCmd, robot->motorBiDirSpeedRatio2, 0.01);
   else if (pfodCmd.startsWith("a14")) processPIDSlider(pfodCmd, "a14", robot->motorLeftPID, 0.01, 3.0);
-  else if (pfodCmd.startsWith("a16")) robot->motorLeftSwapDir = !robot->motorLeftSwapDir;
-  else if (pfodCmd.startsWith("a17")) robot->motorRightSwapDir = !robot->motorRightSwapDir;
   else if (pfodCmd.startsWith("a18")) processSlider(pfodCmd, robot->motorPowerIgnoreTime, 1);
   else if (pfodCmd.startsWith("a22")) processSlider(pfodCmd, robot->motorRightOffsetFwd, 1);
   else if (pfodCmd.startsWith("a23")) processSlider(pfodCmd, robot->motorRightOffsetRev, 1);
@@ -444,7 +429,7 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
 
   else if (pfodCmd == "a32") {
     robot->odometryRight = robot->odometryLeft = 0;
-    robot->stateEndOdometryRight = robot->odometryRight + 6 * robot->odometryTicksPerRevolution;
+    robot->stateEndOdometryRight = robot->odometryRight + 6 * robot->odometryTicksPerRevolution; //test on 6 full rev
     robot->stateEndOdometryLeft = robot->odometryLeft + 6 * robot->odometryTicksPerRevolution;
     robot->motorLeftSpeedRpmSet = 100;//robot->motorSpeedMaxRpm;
     robot->motorRightSpeedRpmSet = 100;//robot->motorSpeedMaxRpm;
@@ -452,14 +437,7 @@ void RemoteControl::processMotorMenu(String pfodCmd) {
     sendTestOdoMenu(true);
   }
 
-  else if (pfodCmd == "a10") {
-    testmode = (testmode + 1) % 3;
-    switch (testmode) {
-      case 0: robot->setNextState(STATE_OFF, 0); break;
-      case 1: robot->setNextState(STATE_MANUAL, 0); robot->motorRightSpeedRpmSet = 0; robot->motorLeftSpeedRpmSet = robot->motorSpeedMaxRpm; break;
-      case 2: robot->setNextState(STATE_MANUAL, 0); robot->motorLeftSpeedRpmSet  = 0; robot->motorRightSpeedRpmSet = robot->motorSpeedMaxRpm; break;
-    }
-  }
+  
   sendMotorMenu(true);
 }
 

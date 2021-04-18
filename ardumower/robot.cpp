@@ -117,6 +117,7 @@ Robot::Robot() {
   motorLeftZeroTimeout = 0;
   motorRightZeroTimeout = 0;
   rotateLeft = true;
+  motorRpmCoeff = 1;
 
   remoteSteer = remoteSpeed = remoteMow = remoteSwitch = 0;
   remoteSteerLastTime = remoteSpeedLastTime = remoteMowLastTime = remoteSwitchLastTime = 0;
@@ -436,7 +437,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, dropUse);
   eereadwrite(readflag, addr, statsOverride);
   eereadwrite(readflag, addr, freeboolean); // old bluetoothUse only define into mower.cpp free for other boolean
-  eereadwrite(readflag, addr, freeboolean);  // old esp8266Use only define into mower.cpp free for other boolean
+  eereadwrite(readflag, addr, autoAdjustSlopeSpeed);  
   eereadwriteString(readflag, addr, esp8266ConfigString);
   eereadwrite(readflag, addr, tiltUse);
   eereadwrite(readflag, addr, trackingPerimeterTransitionTimeOut);
@@ -571,6 +572,11 @@ void Robot::printSettingSerial() {
   Console.println(motorRightOffsetFwd);
   Console.print  ("motorRightOffsetRev        : ");
   Console.println(motorRightOffsetRev);
+  Console.print  ("autoAdjustSlopeSpeed       : ");
+  Console.println(autoAdjustSlopeSpeed);
+  
+
+  
   watchdogReset();
   delayWithWatchdog (2000);
   // ------ mower motor -----------------------------------
@@ -1039,23 +1045,26 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
   int TaC = int(millis() - lastSetMotorSpeedTime);    // sampling time in millis
   lastSetMotorSpeedTime = millis();
   if (TaC > 1000) TaC = 1;
-  /*
-    if (stateCurr != STATE_OFF) {
-    Console.print(stateNames[stateCurr]);
-    Console.print(" Les valeurs demandÃ©es a ");
-    Console.print (millis());
-    Console.print(" TaC=");
-    Console.print (TaC);
-    Console.print(" Useaccel=");
-    Console.print (useAccel);
-    Console.print(" pwmLeft=");
-    Console.print (pwmLeft);
-    Console.print ("  motorLeftZeroTimeout : ");
-    Console.print (motorLeftZeroTimeout);
-    Console.print(" motorLeftPWMCurr=");
-    Console.println (motorLeftPWMCurr);
-    }
-  */
+
+  if (stateCurr != STATE_OFF) {
+    /*
+      Console.print(stateNames[stateCurr]);
+      Console.print(" Voeux a ");
+      Console.print (millis());
+      Console.print(" TaC=");
+      Console.print (TaC);
+      Console.print(" Useaccel=");
+      Console.print (useAccel);
+      Console.print(" pwmLeft ");
+      Console.println (pwmLeft);
+
+      Console.print ("  motorLeftZeroTimeout : ");
+      Console.print (motorLeftZeroTimeout);
+      Console.print(" motorLeftPWMCurr=");
+      Console.println (motorLeftPWMCurr);
+    */
+  }
+
   // ----- driver protection (avoids driver explosion) ----------
   if ( ((pwmLeft < 0) && (motorLeftPWMCurr > 0)) || ((pwmLeft > 0) && (motorLeftPWMCurr < 0)) ) { // slowing before reverse
     if (developerActive) {
@@ -1132,16 +1141,14 @@ void Robot::setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel) {
 
   if (stateCurr != STATE_OFF) {
     /*
+      Console.print(" result ");
       Console.print (millis());
-      Console.print("; Right/Left PWM ;");
+      Console.print(" Right/Left ");
       Console.print (motorRightPWMCurr);
-      Console.print(";");
-      Console.print (motorLeftPWMCurr);
-      Console.print("; RightLEFT Current= ;");
-      Console.print (motorRightSenseCurrent);
-      Console.print(";");
-      Console.println (motorLeftSenseCurrent);
+      Console.print(" / ");
+      Console.println (motorLeftPWMCurr);
     */
+
 
   }
   // ---------------------------------
@@ -1162,6 +1169,10 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
   //Compute the accel duration (very important for small distance)
   //Compute when you need to brake the 2 wheels to stop at the ODO
   //Compute the estimate duration of the state so can force next state if the mower is stuck
+  //bber400
+  motorSpeedRpmMedian.clear();
+
+
   stateStartOdometryLeft = odometryLeft;
   stateStartOdometryRight = odometryRight;
   lastStartOdometryRight = odometryRight;
@@ -1265,10 +1276,20 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
     Console.print(accelDurationLeft);
     Console.print("ms accelDurationRight ");
     Console.println(accelDurationRight);
-    Console.print("SpeedOdoMaxLeft ");
-    Console.print(SpeedOdoMaxLeft);
-    Console.print("pwm SpeedOdoMaxRight ");
+
+    Console.print (F(stateNames[stateNext]));
+    Console.print(" RightSpeedRpmSet ");
+    Console.print(motorRightSpeedRpmSet);
+    Console.print("  PwmRightSpeed ");
+    Console.print(PwmRightSpeed);
+    Console.print("  SpeedOdoMaxRight ");
     Console.println(SpeedOdoMaxRight);
+
+
+
+
+
+
     Console.print("OdoStartBrakeLeft ");
     Console.print(OdoStartBrakeLeft);
     Console.print("Ticks OdoStartBrakeRight ");
@@ -1439,13 +1460,53 @@ void Robot::motorControlOdo() {
         leftSpeed =  leftSpeed - (66 - (millis() - stateStartTime) / 30);
       }
 
-      rightSpeed =  rightSpeed + imuDirPID.y / 2;
-      leftSpeed =  leftSpeed - imuDirPID.y / 2;
+      else //adjust rpm speed only after 1 seconde
+      {
+        //bber400
+
+
+        //PID version
+        motorRightPID.x = motorRightRpmCurr;
+        motorRightPID.w = motorSpeedMaxRpm; 
+        motorRightPID.y_min = -motorSpeedMaxPwm;       // Regel-MIN
+        motorRightPID.y_max = motorSpeedMaxPwm;  // Regel-MAX
+        motorRightPID.max_output = motorSpeedMaxPwm;   // Begrenzung
+        motorRightPID.compute();
+        //Console.println(motorRightPID.y);
+        motorRpmCoeff = (100 + motorRightPID.y) / 100;
+        if (motorRpmCoeff < 0.80) motorRpmCoeff = 0.80;
+        if (motorRpmCoeff > 1.20) motorRpmCoeff = 1.20;
+
+/*
+        //median version
+        //add median on current RPM
+        motorSpeedRpmMedian.add(motorRightRpmCurr + motorLeftRpmCurr);
+        if (motorSpeedRpmMedian.getCount() >= 33) { //check each 33 * 15 millisecondes = 0.5 secondes
+          //Console.println(motorSpeedRpmMedian.getAverage(8)/2);
+          //motorRpmCoeff = float((2 * motorSpeedMaxRpm / motorSpeedRpmMedian.getAverage(8))) ;
+          //if (motorRpmCoeff < 0.50) motorRpmCoeff = 0.50;
+          //if (motorRpmCoeff > 1.50) motorRpmCoeff = 1.50;
+          motorSpeedRpmMedian.clear();
+          Console.print(motorRpmCoeff);
+          Console.print(" / ");
+          Console.print(motorRightPID.y);
+          Console.print(" / ");
+          Console.println(rightSpeed);
+        }
+*/
+      }
+
+      if ((sonarSpeedCoeff != 1) || (!autoAdjustSlopeSpeed)) { //do not change speed if sonar is activate
+        motorRpmCoeff = 1;
+      }
+      
+      rightSpeed =  (motorRpmCoeff  * rightSpeed) + imuDirPID.y / 2;
+      leftSpeed =  (motorRpmCoeff  * leftSpeed) - imuDirPID.y / 2;
 
 
 
 
-      //--------------------------------------------------------------------------------------try to find the yaw with the odometry-------------------------------------
+      //not use ??------------------------------------------------------------try to find the yaw with the odometry-------------------------------------
       if (((millis() - stateStartTime) > 2000) && (millis() >= nextTimePidCompute)) { //compute  the yaw with the odometry only after 2 sec
         float odoTheta;
         int odoDiffRightLeft;
@@ -4402,7 +4463,7 @@ void Robot::checkSonar() {
       if ((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow)) {  //center
         //bber200
         if (!sonarLikeBumper) {
-          sonarSpeedCoeff = 0.70;
+          sonarSpeedCoeff = 0.80;
           nextTimeCheckSonar = millis() + 3000;
         }
         else {
@@ -5235,7 +5296,7 @@ void Robot::loop()  {
         Console.print(" Average RPM : ");
         Console.println(motorRpmAvg);
         setNextState(STATE_OFF, 0);
-        motorSpeedMaxRpm=int(motorRpmAvg);
+        motorSpeedMaxRpm = int(0.8 * motorRpmAvg); //limit to 80% to have enought PWM
         saveUserSettings();
         return;
       }
