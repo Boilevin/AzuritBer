@@ -101,7 +101,7 @@ Robot::Robot() {
   //mowPatternCurr = MOW_RANDOM;
 
   odometryLeft = odometryRight = 0;
-  PeriOdoIslandDiff =0;
+  PeriOdoIslandDiff = 0;
   odometryLeftLastState = odometryLeftLastState2 = odometryRightLastState = odometryRightLastState2 = LOW;
   odometryTheta = odometryX = odometryY = 0;
   prevYawCalcOdo = 0;
@@ -439,7 +439,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, dropUse);
   eereadwrite(readflag, addr, statsOverride);
   eereadwrite(readflag, addr, freeboolean); // old bluetoothUse only define into mower.cpp free for other boolean
-  eereadwrite(readflag, addr, autoAdjustSlopeSpeed);  
+  eereadwrite(readflag, addr, autoAdjustSlopeSpeed);
   eereadwriteString(readflag, addr, esp8266ConfigString);
   eereadwrite(readflag, addr, tiltUse);
   eereadwrite(readflag, addr, trackingPerimeterTransitionTimeOut);
@@ -576,9 +576,9 @@ void Robot::printSettingSerial() {
   Console.println(motorRightOffsetRev);
   Console.print  ("autoAdjustSlopeSpeed       : ");
   Console.println(autoAdjustSlopeSpeed);
-  
 
-  
+
+
   watchdogReset();
   delayWithWatchdog (2000);
   // ------ mower motor -----------------------------------
@@ -1469,7 +1469,7 @@ void Robot::motorControlOdo() {
 
         //PID version
         motorRightPID.x = motorRightRpmCurr;
-        motorRightPID.w = motorSpeedMaxRpm; 
+        motorRightPID.w = motorSpeedMaxRpm;
         motorRightPID.y_min = -motorSpeedMaxPwm;       // Regel-MIN
         motorRightPID.y_max = motorSpeedMaxPwm;  // Regel-MAX
         motorRightPID.max_output = motorSpeedMaxPwm;   // Begrenzung
@@ -1479,29 +1479,29 @@ void Robot::motorControlOdo() {
         if (motorRpmCoeff < 0.80) motorRpmCoeff = 0.80;
         if (motorRpmCoeff > 1.20) motorRpmCoeff = 1.20;
 
-/*
-        //median version
-        //add median on current RPM
-        motorSpeedRpmMedian.add(motorRightRpmCurr + motorLeftRpmCurr);
-        if (motorSpeedRpmMedian.getCount() >= 33) { //check each 33 * 15 millisecondes = 0.5 secondes
-          //Console.println(motorSpeedRpmMedian.getAverage(8)/2);
-          //motorRpmCoeff = float((2 * motorSpeedMaxRpm / motorSpeedRpmMedian.getAverage(8))) ;
-          //if (motorRpmCoeff < 0.50) motorRpmCoeff = 0.50;
-          //if (motorRpmCoeff > 1.50) motorRpmCoeff = 1.50;
-          motorSpeedRpmMedian.clear();
-          Console.print(motorRpmCoeff);
-          Console.print(" / ");
-          Console.print(motorRightPID.y);
-          Console.print(" / ");
-          Console.println(rightSpeed);
-        }
-*/
+        /*
+                //median version
+                //add median on current RPM
+                motorSpeedRpmMedian.add(motorRightRpmCurr + motorLeftRpmCurr);
+                if (motorSpeedRpmMedian.getCount() >= 33) { //check each 33 * 15 millisecondes = 0.5 secondes
+                  //Console.println(motorSpeedRpmMedian.getAverage(8)/2);
+                  //motorRpmCoeff = float((2 * motorSpeedMaxRpm / motorSpeedRpmMedian.getAverage(8))) ;
+                  //if (motorRpmCoeff < 0.50) motorRpmCoeff = 0.50;
+                  //if (motorRpmCoeff > 1.50) motorRpmCoeff = 1.50;
+                  motorSpeedRpmMedian.clear();
+                  Console.print(motorRpmCoeff);
+                  Console.print(" / ");
+                  Console.print(motorRightPID.y);
+                  Console.print(" / ");
+                  Console.println(rightSpeed);
+                }
+        */
       }
 
       if ((sonarSpeedCoeff != 1) || (!autoAdjustSlopeSpeed)) { //do not change speed if sonar is activate
         motorRpmCoeff = 1;
       }
-      
+
       rightSpeed =  (motorRpmCoeff  * rightSpeed) + imuDirPID.y / 2;
       leftSpeed =  (motorRpmCoeff  * leftSpeed) - imuDirPID.y / 2;
 
@@ -1572,7 +1572,7 @@ void Robot::motorControlOdo() {
 
     //bber200
 
-   //bber200 perimeter speed only if both perimeter and sonar are actif
+    //bber200 perimeter speed only if both perimeter and sonar are actif
     if (perimeterSpeedCoeff == 1) {
       rightSpeed = rightSpeed * sonarSpeedCoeff;
       leftSpeed = leftSpeed * sonarSpeedCoeff;
@@ -4315,10 +4315,10 @@ void Robot::checkBumpersPerimeter() {
 
 //bber401
 void Robot::checkStuckOnIsland() {
-//6 * is a test value
-  if ((odometryRight - odometryLeft)-PeriOdoIslandDiff > 6 * odometryTicksPerRevolution) {
-    Console.println("Right wheel is 3 full revolution more than left one --> Island  ??? ");
-    newtagRotAngle1=90;
+  //6 * is a test value
+  if ((odometryRight - odometryLeft) - PeriOdoIslandDiff > 6 * odometryTicksPerRevolution) {
+    Console.println("Right wheel is 6 full revolution more than left one --> Island  ??? ");
+    newtagRotAngle1 = 90;
     setNextState(STATE_PERI_STOP_TOROLL, 0);
     return;
   }
@@ -4336,7 +4336,7 @@ void Robot::checkPerimeterBoundary() {
   }
   //bber2
   if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_MOW_SPIRALE) ) {
-     //bber200
+    //bber200
     //speed coeff between 0.7 and 1 according 50% of perimetermagmax
     int miniValue = (int)perimeterMagMaxValue / 2;
     perimeterSpeedCoeff = (float) map(perimeter.getSmoothMagnitude(0), miniValue, perimeterMagMaxValue, 100, 70) / 100;
@@ -5446,9 +5446,10 @@ void Robot::loop()  {
       checkCurrent();
       checkBumpersPerimeter();
       checkSonarPeriTrack();
-      checkStuckOnIsland();
+      if (statusCurr == BACK_TO_STATION) {
+        checkStuckOnIsland();
+      }
 
-      //bber50
       if (ActualSpeedPeriPWM != MaxSpeedperiPwm) {
         if (totalDistDrive > whereToResetSpeed) {
           Console.print("Distance OK, time to reset the initial Speed : ");
