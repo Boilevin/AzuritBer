@@ -608,6 +608,8 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
   sendYesNo(robot->perimeter.read2Coil);
   serialPort->print(F("|e13~Block inner wheel  "));
   sendYesNo(robot->trakBlockInnerWheel);
+  serialPort->print(F("|e24~Actual Speed coeff "));
+  serialPort->print(robot->perimeterSpeedCoeff);
   serialPort->println("}");
 }
 

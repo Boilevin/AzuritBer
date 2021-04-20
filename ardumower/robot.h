@@ -575,6 +575,7 @@ class Robot
     int rightSpeedperi;
     int lastLeftSpeedperi;
     int lastRightSpeedperi;
+    float perimeterSpeedCoeff; // coeff to reduce speed when near perimeter wire
     int uu;
     int vv;
     unsigned long lastTimeForgetWire;
