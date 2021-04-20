@@ -96,6 +96,7 @@ Robot::Robot() {
   //mowPatternCurr = MOW_RANDOM;
 
   odometryLeft = odometryRight = 0;
+  PeriOdoIslandDiff =0;
   odometryLeftLastState = odometryLeftLastState2 = odometryRightLastState = odometryRightLastState2 = LOW;
   odometryTheta = odometryX = odometryY = 0;
   prevYawCalcOdo = 0;
@@ -3049,7 +3050,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_PERI_STOP_TOROLL:
-      imu.run(); //31/08/19 In peritrack the imu is stop so try to add this to start it now and avoid imu tilt error (occur once per week or less) ??????
+      //imu.run(); //31/08/19 In peritrack the imu is stop so try to add this to start it now and avoid imu tilt error (occur once per week or less) ??????
       if (statusCurr == TRACK_TO_START) {
         startByTimer = false; // cancel because we have reach the start point and avoid repeat search entry
         justChangeLaneDir = false; //the first lane need to be distance control
@@ -3217,8 +3218,9 @@ void Robot::setNextState(byte stateNew, byte dir) {
       periFindDriveHeading = scalePI(imu.ypr.yaw + newtagRotAngle1Radian);
       Console.print("New PeriFind Heading ");
       Console.println(periFindDriveHeading * 180 / PI);
-      Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
       //Always rotate RIGHT to leave the wire
+      Tempovar = abs(36000 / AngleRotate); //need a value*100 for integer division later
+      
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -3227,7 +3229,18 @@ void Robot::setNextState(byte stateNew, byte dir) {
       motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
       stateEndOdometryRight = odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
       stateEndOdometryLeft = odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
-
+      /*
+      Console.print(odometryRight);
+      Console.print(" / ");
+      Console.print(stateEndOdometryRight);
+      Console.print("  ");
+      Console.print(odometryLeft);
+      Console.print(" / ");
+      Console.print(stateEndOdometryLeft);
+      Console.print("  ");
+      Console.println(AngleRotate);
+      */
+      
       OdoRampCompute();
       break;
 
@@ -3890,7 +3903,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_PERI_TRACK:
       //motorMowEnable = false;     // FIXME: should be an option?
       perimeterPID.reset();
-
+      PeriOdoIslandDiff =  odometryRight - odometryLeft;
+      
       break;
 
     case STATE_WAIT_AND_REPEAT:
@@ -4296,6 +4310,16 @@ void Robot::checkBumpersPerimeter() {
       Console.println("Detect a voltage on charging contact check if it's the station");
       setNextState(STATE_STATION_CHECK, rollDir);
     }
+  }
+}
+//bber401
+void Robot::checkStuckOnIsland() {
+//6 * is a test value
+  if ((odometryRight - odometryLeft)-PeriOdoIslandDiff > 6 * odometryTicksPerRevolution) {
+    Console.println("Right wheel is 3 full revolution more than left one --> Island  ??? ");
+    newtagRotAngle1=90;
+    setNextState(STATE_PERI_STOP_TOROLL, 0);
+    return;
   }
 }
 
@@ -5161,10 +5185,8 @@ void Robot::loop()  {
 
     case STATE_ROLL_TONEXTTAG:
       motorControlOdo();
-
       if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft) ) {
-        if (motorRightPWMCurr == 0 ) { //wait until the left motor completly stop because rotation is inverted
-
+        if (motorRightPWMCurr == 0 ) { //wait until the right motor completly stop because rotation is inverted
           setNextState(STATE_PERI_FIND, rollDir);
         }
       }
@@ -5469,6 +5491,7 @@ void Robot::loop()  {
       checkCurrent();
       checkBumpersPerimeter();
       checkSonarPeriTrack();
+      checkStuckOnIsland();
 
       //bber50
       if (ActualSpeedPeriPWM != MaxSpeedperiPwm) {
