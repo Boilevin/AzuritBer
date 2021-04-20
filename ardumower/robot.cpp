@@ -96,7 +96,7 @@ Robot::Robot() {
   //mowPatternCurr = MOW_RANDOM;
 
   odometryLeft = odometryRight = 0;
-  PeriOdoIslandDiff =0;
+  PeriOdoIslandDiff = 0;
   odometryLeftLastState = odometryLeftLastState2 = odometryRightLastState = odometryRightLastState2 = LOW;
   odometryTheta = odometryX = odometryY = 0;
   prevYawCalcOdo = 0;
@@ -3219,8 +3219,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       Console.print("New PeriFind Heading ");
       Console.println(periFindDriveHeading * 180 / PI);
       //Always rotate RIGHT to leave the wire
-      Tempovar = abs(36000 / AngleRotate); //need a value*100 for integer division later
-      
+      Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
+
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -3230,17 +3230,17 @@ void Robot::setNextState(byte stateNew, byte dir) {
       stateEndOdometryRight = odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
       stateEndOdometryLeft = odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
       /*
-      Console.print(odometryRight);
-      Console.print(" / ");
-      Console.print(stateEndOdometryRight);
-      Console.print("  ");
-      Console.print(odometryLeft);
-      Console.print(" / ");
-      Console.print(stateEndOdometryLeft);
-      Console.print("  ");
-      Console.println(AngleRotate);
+        Console.print(odometryRight);
+        Console.print(" / ");
+        Console.print(stateEndOdometryRight);
+        Console.print("  ");
+        Console.print(odometryLeft);
+        Console.print(" / ");
+        Console.print(stateEndOdometryLeft);
+        Console.print("  ");
+        Console.println(AngleRotate);
       */
-      
+
       OdoRampCompute();
       break;
 
@@ -3904,7 +3904,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       //motorMowEnable = false;     // FIXME: should be an option?
       perimeterPID.reset();
       PeriOdoIslandDiff =  odometryRight - odometryLeft;
-      
+
       break;
 
     case STATE_WAIT_AND_REPEAT:
@@ -4314,10 +4314,10 @@ void Robot::checkBumpersPerimeter() {
 }
 //bber401
 void Robot::checkStuckOnIsland() {
-//6 * is a test value
-  if ((odometryRight - odometryLeft)-PeriOdoIslandDiff > 6 * odometryTicksPerRevolution) {
-    Console.println("Right wheel is 3 full revolution more than left one --> Island  ??? ");
-    newtagRotAngle1=90;
+  //6 * is a test value
+  if ((odometryRight - odometryLeft) - PeriOdoIslandDiff > 6 * odometryTicksPerRevolution) {
+    Console.println("Right wheel is 6 full revolution more than left one --> Island  ??? ");
+    newtagRotAngle1 = 90;
     setNextState(STATE_PERI_STOP_TOROLL, 0);
     return;
   }
@@ -5491,7 +5491,9 @@ void Robot::loop()  {
       checkCurrent();
       checkBumpersPerimeter();
       checkSonarPeriTrack();
-      checkStuckOnIsland();
+      if (statusCurr == BACK_TO_STATION) {
+        checkStuckOnIsland();
+      }
 
       //bber50
       if (ActualSpeedPeriPWM != MaxSpeedperiPwm) {
