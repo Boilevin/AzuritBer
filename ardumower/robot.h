@@ -289,6 +289,7 @@ class Robot
     int lastStartOdometryRight;
     int lastStartOdometryLeft;  // use to calculate the accel
     int stateStartOdometryRight;
+    int PeriOdoIslandDiff; //use to check if island while tracking
     float straightLineTheta; //angle read by odometry during the last lane to verify the IMU drift
     int DistPeriOutRev; // Distance in CM when reach perimeter
     int DistPeriObstacleRev; // Distance in CM when prei rev obstacle
@@ -823,6 +824,7 @@ class Robot
     virtual void checkDrop();                                                                                                             // Dropsensor - Absturzsensor
     virtual void checkBumpersPerimeter();
     virtual void checkPerimeterBoundary();
+    virtual void checkStuckOnIsland();
 
     virtual void checkLawn();
     virtual void checkSonar();
