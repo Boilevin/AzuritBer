@@ -11,6 +11,7 @@
   // Mega2560/Due pins
   #define SDA 20
   #define SCL 21
+ 
 #endif
 
 
@@ -110,6 +111,7 @@ void I2CwriteTo(uint8_t device, uint8_t address, uint8_t val) {
    Wire.endTransmission(); //end transmission
 }
 
+
 void I2CwriteToBuf(uint8_t device, uint8_t address, int num, uint8_t buff[]) {
    Wire.beginTransmission(device); //start transmission to device 
    Wire.write(address);        // send register address
@@ -129,9 +131,10 @@ int I2CreadFrom(uint8_t device, uint8_t address, uint8_t num, uint8_t buff[], in
   
     //Wire.beginTransmission(device); //start transmission to device (initiate again)
     Wire.requestFrom(device, num);    // request 6 bytes from device
-  
+    
     while(Wire.available())    //device may send less than requested (abnormal)
     {  
+      
       buff[i] = Wire.read(); // receive a byte
       i++;
     }

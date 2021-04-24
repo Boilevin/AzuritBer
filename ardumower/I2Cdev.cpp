@@ -352,7 +352,7 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
                 Wire.beginTransmission(devAddr);
                 Wire.requestFrom(devAddr, (uint8_t)(length * 2)); // length=words, this wants bytes
     
-                boolean msb = true; // starts with MSB, then LSB
+                bool msb = true; // starts with MSB, then LSB
                 for (; Wire.available() && count < length && (timeout == 0 || millis() - t1 < timeout);) {
                     if (msb) {
                         // first byte is bits 15-8 (MSb=15)
@@ -385,7 +385,7 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
                 Wire.beginTransmission(devAddr);
                 Wire.requestFrom(devAddr, (uint8_t)(length * 2)); // length=words, this wants bytes
     
-                boolean msb = true; // starts with MSB, then LSB
+                bool msb = true; // starts with MSB, then LSB
                 for (; Wire.available() && count < length && (timeout == 0 || millis() - t1 < timeout);) {
                     if (msb) {
                         // first byte is bits 15-8 (MSb=15)
@@ -418,7 +418,7 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
                 Wire.beginTransmission(devAddr);
                 Wire.requestFrom(devAddr, (uint8_t)(length * 2)); // length=words, this wants bytes
         
-                boolean msb = true; // starts with MSB, then LSB
+                bool msb = true; // starts with MSB, then LSB
                 for (; Wire.available() && count < length && (timeout == 0 || millis() - t1 < timeout);) {
                     if (msb) {
                         // first byte is bits 15-8 (MSb=15)
@@ -474,7 +474,7 @@ int8_t I2Cdev::readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint1
  * @param value New bit value to write
  * @return Status of operation (true = success)
  */
-boolean I2Cdev::writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data) {
+bool I2Cdev::writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data) {
     uint8_t b;
     readByte(devAddr, regAddr, &b);
     b = (data != 0) ? (b | (1 << bitNum)) : (b & ~(1 << bitNum));
@@ -488,7 +488,7 @@ boolean I2Cdev::writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8
  * @param value New bit value to write
  * @return Status of operation (true = success)
  */
-boolean I2Cdev::writeBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t data) {
+bool I2Cdev::writeBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t data) {
     uint16_t w;
     readWord(devAddr, regAddr, &w);
     w = (data != 0) ? (w | (1 << bitNum)) : (w & ~(1 << bitNum));
@@ -503,7 +503,7 @@ boolean I2Cdev::writeBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint
  * @param data Right-aligned value to write
  * @return Status of operation (true = success)
  */
-boolean I2Cdev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data) {
+bool I2Cdev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data) {
     //      010 value to write
     // 76543210 bit numbers
     //    xxx   args: bitStart=4, length=3
@@ -532,7 +532,7 @@ boolean I2Cdev::writeBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, ui
  * @param data Right-aligned value to write
  * @return Status of operation (true = success)
  */
-boolean I2Cdev::writeBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t data) {
+bool I2Cdev::writeBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t data) {
     //              010 value to write
     // fedcba9876543210 bit numbers
     //    xxx           args: bitStart=12, length=3
@@ -559,7 +559,7 @@ boolean I2Cdev::writeBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, u
  * @param data New byte value to write
  * @return Status of operation (true = success)
  */
-boolean I2Cdev::writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t data) {
+bool I2Cdev::writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t data) {
     return writeBytes(devAddr, regAddr, 1, &data);
 }
 
@@ -569,7 +569,7 @@ boolean I2Cdev::writeByte(uint8_t devAddr, uint8_t regAddr, uint8_t data) {
  * @param data New word value to write
  * @return Status of operation (true = success)
  */
-boolean I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
+bool I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
     return writeWords(devAddr, regAddr, 1, &data);
 }
 
@@ -580,7 +580,7 @@ boolean I2Cdev::writeWord(uint8_t devAddr, uint8_t regAddr, uint16_t data) {
  * @param data Buffer to copy new data from
  * @return Status of operation (true = success)
  */
-boolean I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data) {
+bool I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t* data) {
     #ifdef I2CDEV_SERIAL_DEBUG
         Serial.print("I2C (0x");
         Serial.print(devAddr, HEX);
@@ -635,7 +635,7 @@ boolean I2Cdev::writeBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uin
  * @param data Buffer to copy new data from
  * @return Status of operation (true = success)
  */
-boolean I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t* data) {
+bool I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t* data) {
     #ifdef I2CDEV_SERIAL_DEBUG
         Serial.print("I2C (0x");
         Serial.print(devAddr, HEX);
@@ -1428,6 +1428,9 @@ uint16_t I2Cdev::readTimeout = I2CDEV_DEFAULT_READ_TIMEOUT;
     
         return read;
     }
+
+
+    
     
     void TwoWire::nbrequestFrom(uint8_t address, int quantity, void (*function)(int)) {
         // clamp to buffer length

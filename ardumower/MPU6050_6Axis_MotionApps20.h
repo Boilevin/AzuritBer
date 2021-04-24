@@ -545,7 +545,7 @@ uint8_t MPU6050::dmpInitialize() {
     return 0; // success
 }
 
-boolean MPU6050::dmpPacketAvailable() {
+bool MPU6050::dmpPacketAvailable() {
     return getFIFOCount() >= dmpGetFIFOPacketSize();
 }
 
