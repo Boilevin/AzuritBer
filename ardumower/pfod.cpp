@@ -356,8 +356,8 @@ void RemoteControl::sendMotorMenu(boolean update) {
   serialPort->print(F("|a04~Actual Slope coeff : "));
   serialPort->print(robot->motorRpmCoeff);
 
-  sendSlider("a06", F("Speed max in rpm"), robot->motorSpeedMaxRpm, "", 1, 100, 1);
-  sendSlider("a15", F("Speed max in pwm"), robot->motorSpeedMaxPwm, "", 1, 255, 1);
+  sendSlider("a06", F("Speed max in rpm"), robot->motorSpeedMaxRpm, "", 1, 50, 20);
+  sendSlider("a15", F("Speed max in pwm"), robot->motorSpeedMaxPwm, "", 1, 255, 150);
   sendSlider("a11", F("Accel"), robot->motorAccel, "", 1, 2000, 500);
   sendSlider("a18", F("Power ignore time"), robot->motorPowerIgnoreTime, "", 1, 8000, 1);
   sendSlider("a07", F("Roll Degrees max"), robot->motorRollDegMax, "", 1, 360, 1);

@@ -1483,10 +1483,8 @@ void Robot::motorControlOdo() {
       }
       else //adjust rpm speed only after 1 seconde
       {
-        //bber400
-
-
-        //PID version
+        //bber400 //adjust RPM speed
+      //PID version
         motorRightPID.x = motorRightRpmCurr;
         motorRightPID.w = motorSpeedMaxRpm;
         motorRightPID.y_min = -motorSpeedMaxPwm;       // Regel-MIN
@@ -1567,8 +1565,26 @@ void Robot::motorControlOdo() {
         imuDirPID.y_max = motorSpeedMaxPwm / 2;
         imuDirPID.max_output = motorSpeedMaxPwm / 2;
         imuDirPID.compute();
-        rightSpeed =  rightSpeed + imuDirPID.y / 2;
-        leftSpeed =  leftSpeed - imuDirPID.y / 2;
+        
+        //bber400 //adjust RPM speed
+        //PID version
+        motorRightPID.x = motorRightRpmCurr;
+        motorRightPID.w = motorSpeedMaxRpm;
+        motorRightPID.y_min = -motorSpeedMaxPwm;       // Regel-MIN
+        motorRightPID.y_max = motorSpeedMaxPwm;  // Regel-MAX
+        motorRightPID.max_output = motorSpeedMaxPwm;   // Begrenzung
+        motorRightPID.compute();
+        //Console.println(motorRightPID.y);
+        motorRpmCoeff = (100 + motorRightPID.y) / 100;
+        if (motorRpmCoeff < 0.80) motorRpmCoeff = 0.80;
+        if (motorRpmCoeff > 1.20) motorRpmCoeff = 1.20;
+
+        if ((sonarSpeedCoeff != 1) || (!autoAdjustSlopeSpeed)) { //do not change speed if sonar is activate
+          motorRpmCoeff = 1;
+        }
+
+        rightSpeed =  (motorRpmCoeff  * rightSpeed) + imuDirPID.y / 2;
+        leftSpeed =  (motorRpmCoeff  * leftSpeed) - imuDirPID.y / 2;
 
 
       }
@@ -5388,7 +5404,7 @@ void Robot::loop()  {
         Console.print(" Average RPM : ");
         Console.println(motorRpmAvg);
         setNextState(STATE_OFF, 0);
-        motorSpeedMaxRpm = int(0.8 * motorRpmAvg); //limit to 80% to have enought PWM
+        motorSpeedMaxRpm = int(motorRpmAvg); //limit to 80% to have enought PWM
         saveUserSettings();
         return;
       }
