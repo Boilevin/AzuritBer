@@ -392,6 +392,7 @@ class Robot
     byte timeToAddMowMedian;
     unsigned long lastSetMotorMowSpeedTime;
     unsigned long nextTimeCheckCurrent;
+    unsigned long nextTimeCheckperimeterSpeedCoeff;
     unsigned long lastTimeMotorMowStuck;
     int leftSpeed;
     int rightSpeed;
@@ -598,7 +599,7 @@ class Robot
     float R;
     int smoothPeriMag;
     unsigned long nextTimeReadSmoothPeriMag ; //use when wait for sig2
-
+    boolean reduceSpeedNearPerimeter; //Activate the speed reduction near perimeter
     //End add bb
     //  --------- lawn state ----------------------------
     boolean lawnSensorUse     ;       // use capacitive Sensor
