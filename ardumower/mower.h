@@ -134,6 +134,7 @@
 #define Console SerialUSB
 #define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
 
+#define track_ClockWise false
 
 #define Enable_DueWatchdog true
 
