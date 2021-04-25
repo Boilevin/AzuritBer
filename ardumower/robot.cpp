@@ -1207,9 +1207,10 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
 
   movingTimeLeft = 1000 * distToMoveLeft / motorTickPerSecond ;
   movingTimeLeft = movingTimeLeft * motorSpeedMaxPwm / abs(SpeedOdoMaxLeft);
+  if (movingTimeLeft < 4000 ) movingTimeLeft = 4000;
   movingTimeRight = 1000 * distToMoveRight / motorTickPerSecond ;
   movingTimeRight = movingTimeRight * motorSpeedMaxPwm / abs(SpeedOdoMaxRight);
-
+  if (movingTimeRight < 4000 ) movingTimeRight = 4000;
   //for small mouvement need to reduce the accel duration
   if (movingTimeLeft >= motorOdoAccel) accelDurationLeft = motorOdoAccel;
   else   accelDurationLeft =  movingTimeLeft / 2;
@@ -4124,6 +4125,11 @@ void Robot::checkRobotStats() {
 
 void Robot::reverseOrBidir(byte aRollDir) {
   //Console.println(aRollDir);
+  if (stateCurr == STATE_PERI_OUT_ROLL_TOINSIDE) {
+    Console.println("Bumper hit ! try roll in other dir");
+    setNextState(STATE_WAIT_AND_REPEAT, aRollDir);
+    return;
+  }
   if (mowPatternCurr == MOW_LANES) setNextState(STATE_STOP_ON_BUMPER, rollDir);
   else  setNextState(STATE_STOP_ON_BUMPER, aRollDir);
 }
@@ -4624,13 +4630,17 @@ void Robot::checkTilt() {
 
   if ( (stateCurr != STATE_OFF) && (stateCurr != STATE_ERROR) && (stateCurr != STATE_STATION) && (stateCurr != STATE_STATION_CHARGING)) {
     if ( (abs(pitchAngle) > 40) || (abs(rollAngle) > 40) ) {
-      Console.print(F("Error : IMU Roll / Tilt---------------------------------------------------------------------------- -- > "));
+      nextTimeCheckTilt = millis() + 5000; // avoid repeat
+      Console.print(F("Warning : IMU Roll / Tilt -- > "));
       Console.print(rollAngle);
       Console.print(F(" / "));
       Console.println(pitchAngle);
-
       addErrorCounter(ERR_IMU_TILT);
-      setNextState(STATE_ERROR, 0);
+      //bber500
+      Console.println("Motor mow STOP start again after 1 minute");
+      motorMowEnable = false;
+      lastTimeMotorMowStuck = millis();
+      reverseOrBidir(rollDir);
     }
   }
 
