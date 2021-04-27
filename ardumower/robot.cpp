@@ -3258,7 +3258,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_ROLL_TONEXTTAG:  // when find a tag the mower roll to leave the wire and go again in peirfind with new heading
-      AngleRotate = newtagRotAngle1;
+      AngleRotate = abs(newtagRotAngle1);
       newtagRotAngle1Radian = newtagRotAngle1 * PI / 180.0;
       Console.print("Actual Heading ");
       Console.println(imu.ypr.yaw * 180 / PI);
@@ -3578,10 +3578,21 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 0;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 2;
-      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 2;
-      stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm * 5); //stop on 5 cm
-      stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 5);
+      //bber600
+      if (track_ClockWise) {
+        motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5;
+        motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
+        stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm * 5); //stop on 5 cm
+        stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 5);
+
+      }
+      else {
+        motorLeftSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
+        motorRightSpeedRpmSet = motorSpeedMaxRpm / 1.5;
+        stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * 5); //stop on 5 cm
+        stateEndOdometryLeft = odometryLeft - (int)(odometryTicksPerCm * 5);
+      }
+
 
 
       OdoRampCompute();
