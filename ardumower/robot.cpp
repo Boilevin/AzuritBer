@@ -82,6 +82,7 @@ unsigned long StartReadAt;
 int distance_find;
 unsigned long EndReadAt;
 unsigned long ReadDuration;
+int readSonarNr;
 
 Robot::Robot() {
   name = "Generic";
@@ -176,6 +177,7 @@ Robot::Robot() {
   sonarObstacleTimeout = 0;
   distToObstacle = 0;
   sonarSpeedCoeff = 1;
+  readSonarNr = 1;
 
   batVoltage = 0;
   batRefFactor = 0;
@@ -1841,7 +1843,7 @@ void Robot::motorMowControl() {
         //filter on speed reduce to keep the mow speed high for longuer duration
         motorMowPwmCoeff = int((0.1) * motorMowPwmCoeff + (0.9) * prevcoeff);// use only 10% of the new value
       }
-      if  (statusCurr == SPIRALE_MOWING) motorMowPwmCoeff = 100;
+
       if (motorMowPwmCoeff > 100) motorMowPwmCoeff = 100;
       if (motorMowEnable) {
         motorMowSpeedPWMSet = motorMowSpeedMinPwm + ((double)(motorMowSpeedMaxPwm - motorMowSpeedMinPwm)) * (((double)motorMowPwmCoeff) / 100.0);
@@ -4509,16 +4511,11 @@ void Robot::checkSonarPeriTrack() {
   if (millis() < nextTimeCheckSonar) return;
   nextTimeCheckSonar = millis() + 200;
 
-  /*
-    if (millis() > timeToResetSpeedPeri) {
-    timeToResetSpeedPeri = 0; //brake the tracking during 6 secondes
-    ActualSpeedPeriPWM = MaxSpeedperiPwm ;
-    }
-  */
+
   if (track_ClockWise) { //use the right sonar
     if (sonarRightUse) {
       sonarDistRight = readSensor(SEN_SONAR_RIGHT);
-      if (sonarDistRight < 30 || sonarDistRight > 150) sonarDistRight = NO_ECHO; // Object is too close to the sensor JSN SR04T can't read <20 CM . Sensor value is useless
+      if (sonarDistRight < 20 || sonarDistRight > 110) sonarDistRight = NO_ECHO; // Object is too close to the sensor JSN SR04T can't read <20 CM . Sensor value is useless
     }
 
     else sonarDistRight = NO_ECHO;
@@ -4526,7 +4523,7 @@ void Robot::checkSonarPeriTrack() {
   else {
     if (sonarLeftUse) { //use the left sonar
       sonarDistLeft = readSensor(SEN_SONAR_LEFT);
-      if (sonarDistLeft < 30 || sonarDistLeft  > 150) sonarDistLeft = NO_ECHO;
+      if (sonarDistLeft < 20 || sonarDistLeft  > 110) sonarDistLeft = NO_ECHO;
     }
     else sonarDistLeft = NO_ECHO;
   }
@@ -4536,8 +4533,7 @@ void Robot::checkSonarPeriTrack() {
     Console.println("Sonar reduce speed on tracking for 2 meters");
     whereToResetSpeed =  totalDistDrive + 200; // when a speed tag is read it's where the speed is back to maxpwm value
 
-    nextTimeCheckSonar = millis() + 4000;  //wait before next reading
-    // timeToResetSpeedPeri = millis() + 10000; //brake the tracking during 10 secondes
+    nextTimeCheckSonar = millis() + 3000;  //wait before next reading
     ActualSpeedPeriPWM = MaxSpeedperiPwm * dockingSpeed / 100;
     trakBlockInnerWheel = 1; //don't want that a wheel reverse just before station check   /bber30
 
@@ -4551,18 +4547,27 @@ void Robot::checkSonar() {
   if (millis() < nextTimeCheckSonar) return;
   nextTimeCheckSonar = millis() + 100;
   sonarSpeedCoeff = 1;
-  if (sonarRightUse) sonarDistRight = readSensor(SEN_SONAR_RIGHT);
-  else sonarDistRight = NO_ECHO;
-  if (sonarLeftUse) sonarDistLeft = readSensor(SEN_SONAR_LEFT);
-  else sonarDistLeft = NO_ECHO ;
-  if (sonarCenterUse) sonarDistCenter = readSensor(SEN_SONAR_CENTER);
-  else sonarDistCenter = NO_ECHO;
+  readSonarNr = readSonarNr + 1;
+  if (readSonarNr > 3) readSonarNr = 1;
 
+  if ((sonarRightUse) && (readSonarNr == 1)) sonarDistRight = readSensor(SEN_SONAR_RIGHT);
+  else sonarDistRight = NO_ECHO;
+  if ((sonarCenterUse) && (readSonarNr == 2)) sonarDistCenter = readSensor(SEN_SONAR_CENTER);
+  else sonarDistCenter = NO_ECHO;
+  if ((sonarLeftUse) && (readSonarNr == 3)) sonarDistLeft = readSensor(SEN_SONAR_LEFT);
+  else sonarDistLeft = NO_ECHO ;
+  /*
+    Console.print(sonarDistRight);
+    Console.print(" / ");
+    Console.print(sonarDistCenter);
+    Console.print(" / ");
+    Console.println(sonarDistLeft);
+  */
   if (stateCurr == STATE_OFF) return; //avoid the mower move when testing
 
-  if (sonarDistCenter < 25 || sonarDistCenter > 90) sonarDistCenter = NO_ECHO; //need to be adjust if sonar is directly in front of mower 25Cm in my case
-  if (sonarDistRight < 25 || sonarDistRight > 90) sonarDistRight = NO_ECHO; // Object is too close to the sensor JSN SR04T can't read <20 CM . Sensor value is useless
-  if (sonarDistLeft < 25 || sonarDistLeft  > 90) sonarDistLeft = NO_ECHO;
+  if (sonarDistCenter < sonarToFrontDist || sonarDistCenter > 110) sonarDistCenter = NO_ECHO; //need to be adjust if sonar is directly in front of mower 25Cm in my case
+  if (sonarDistRight < sonarToFrontDist || sonarDistRight > 110) sonarDistRight = NO_ECHO; // Object is too close  the sensor JSN SR04T can't read <20 CM . Sensor value is useless
+  if (sonarDistLeft < sonarToFrontDist || sonarDistLeft  > 110) sonarDistLeft = NO_ECHO;
 
   if (((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow))  ||  ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) ||  ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow))  ) {
     setBeeper(1000, 500, 500, 60, 60);
@@ -4639,7 +4644,10 @@ void Robot::checkTilt() {
   int pitchAngle = (imu.ypr.pitch / PI * 180.0);
   int rollAngle  = (imu.ypr.roll / PI * 180.0);
 
-  if ( (stateCurr != STATE_OFF) && (stateCurr != STATE_ERROR) && (stateCurr != STATE_STATION) && (stateCurr != STATE_STATION_CHARGING)) {
+  //bber600
+
+  if ((statusCurr == NORMAL_MOWING) || (statusCurr == SPIRALE_MOWING) || (statusCurr == WIRE_MOWING) ) {
+    //if ( (stateCurr != STATE_OFF) && (stateCurr != STATE_ERROR) && (stateCurr != STATE_STATION) && (stateCurr != STATE_STATION_CHARGING)) {
     if ( (abs(pitchAngle) > 40) || (abs(rollAngle) > 40) ) {
       nextTimeCheckTilt = millis() + 5000; // avoid repeat
       Console.print(F("Warning : IMU Roll / Tilt -- > "));
@@ -4984,7 +4992,7 @@ void Robot::loop()  {
       motorControlOdo();
       //bber13
       motorMowEnable = false; //to stop mow motor in OFF mode by pressing OFF again (the one shot OFF is bypass)
-      checkSonar();  // only for test never use or the mower can't stay into the station
+      checkSonar();
       readDHT22();
       checkBattery();
 
@@ -5993,6 +6001,7 @@ void Robot::loop()  {
       }
 
       break;
+
     case STATE_MOW_SPIRALE:
       motorControlOdo();
       checkCurrent();
