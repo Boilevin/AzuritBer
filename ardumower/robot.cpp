@@ -1950,7 +1950,7 @@ void Robot::motorMowControl() {
         //filter on speed reduce to keep the mow speed high for longuer duration
         motorMowPwmCoeff = int((0.1) * motorMowPwmCoeff + (0.9) * prevcoeff);// use only 10% of the new value
       }
-      if ((statusCurr == WIRE_MOWING) || (statusCurr == SPIRALE_MOWING)) motorMowPwmCoeff = 100;
+      
       if (motorMowPwmCoeff > 100) motorMowPwmCoeff = 100;
       if (motorMowEnable) {
         motorMowSpeedPWMSet = motorMowSpeedMinPwm + ((double)(motorMowSpeedMaxPwm - motorMowSpeedMinPwm)) * (((double)motorMowPwmCoeff) / 100.0);
@@ -3325,7 +3325,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
     case STATE_ROTATE_RIGHT_360:
       spiraleNbTurn = 0;
       halfLaneNb = 0;
-      highGrassDetect = false;
+      //highGrassDetect = false;
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
@@ -5919,16 +5919,16 @@ void Robot::loop()  {
       checkTimeout();
 
       //*************************************end of the spirale ***********************************************
-      if (spiraleNbTurn >= 8) {
+      if ((spiraleNbTurn >= 8) || (!highGrassDetect)) {
         spiraleNbTurn = 0;
         highGrassDetect = false;
-        setNextState(STATE_PERI_OUT_STOP, RIGHT); //stop the spirale or setNextState(STATE_PERI_OUT_FORW, rollDir)
+        setNextState(STATE_STOP_ON_BUMPER, RIGHT); //stop the spirale or setNextState(STATE_PERI_OUT_FORW, rollDir)
         return;
       }
       //********************************************************************************************
       if ((odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft) ) {
         if (!perimeterInside) {
-          setNextState(STATE_PERI_OUT_STOP, rollDir);
+          setNextState(STATE_STOP_ON_BUMPER, rollDir);
         }
         else
         {
