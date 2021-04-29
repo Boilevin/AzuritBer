@@ -42,11 +42,11 @@
 
 
 
-#define MAGIC 52
-#define ADDR_USER_SETTINGS 2000 //New adress to avoid issue if Azurit1.09 is install
-#define ADDR_ERR_COUNTERS 500
+#define MAGIC 52  //value 52 is only use to know if the eeprom is OK : 52 is save and read at first byte of memory location
+#define ADDR_USER_SETTINGS 2000 //New adress to avoid issue if Azurit1.09 is already instaled
+#define ADDR_ERR_COUNTERS 500 //same adress as azurit
 //carrefull that the  ADDR 600 is used by the IMU calibration
-#define ADDR_ROBOT_STATS 800
+#define ADDR_ROBOT_STATS 800 
 
 //Setting for DHT22------------------------------------
 #define DHTPIN 49                  // temperature sensor DHT22
@@ -966,7 +966,7 @@ void Robot::autoReboot() {
   //this feature use the watchdog to perform a restart of the due
   if (RaspberryPIUse) {
     Console.println(F("Due reset after 1 secondes, send a command to Pi for restart also"));
-    //MyRpi.sendCommandToPi("RestartPi");
+    MyRpi.sendCommandToPi("RestartPi");
   }
   else
   {
