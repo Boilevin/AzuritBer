@@ -4143,8 +4143,15 @@ void Robot::reverseOrBidir(byte aRollDir) {
     setNextState(STATE_WAIT_AND_REPEAT, aRollDir);
     return;
   }
-  if (mowPatternCurr == MOW_LANES) setNextState(STATE_STOP_ON_BUMPER, rollDir);
-  else  setNextState(STATE_STOP_ON_BUMPER, aRollDir);
+  if (mowPatternCurr == MOW_LANES){
+    setNextState(STATE_STOP_ON_BUMPER, rollDir);
+    
+    return;
+  }
+  else {
+    setNextState(STATE_STOP_ON_BUMPER, aRollDir);
+    return;
+  }
 }
 
 // check motor current
@@ -4159,12 +4166,7 @@ void Robot::checkCurrent() {
       Console.println("Warning  motorMowPower >= 0.8 * motorMowPowerMax ");
       ////  http://forums.parallax.com/discussion/comment/1326585#Comment_1326585
     }
-    else {
-      if (spiraleNbTurn >= 8) {
-        spiraleNbTurn = 0;
-        highGrassDetect = false; //stop the spirale
-      }
-    }
+   
   }
 
   // if (motorMowPower >= motorMowPowerMax)
@@ -4322,8 +4324,12 @@ void Robot::checkBumpers() {
     }
     else
     {
-      spiraleNbTurn = 0;
-      highGrassDetect = false;
+      if (statusCurr == SPIRALE_MOWING) {
+        highGrassDetect = false;
+        statusCurr = NORMAL_MOWING;
+        if (RaspberryPIUse) MyRpi.SendStatusToPi();     
+      }
+      
       motorLeftRpmCurr = motorRightRpmCurr = 0 ;
       motorLeftPWMCurr = motorRightPWMCurr = 0;
       setMotorPWM( 0, 0, false );
@@ -4574,8 +4580,6 @@ void Robot::checkSonar() {
     nextTimeCheckSonar = millis() + 1500;  //wait before next reading
 
     //**************************if sonar during spirale reinit spirale variable*****************
-    spiraleNbTurn = 0;
-
     highGrassDetect = false; //stop the spirale
     //*********************************************************************************
     if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
@@ -4892,15 +4896,6 @@ void Robot::loop()  {
         rfidUse = false;
         addErrorCounter(ERR_IMU_COMM);
       }
-
-
-
-
-
-
-
-
-
 
     }
 
@@ -6005,24 +6000,21 @@ void Robot::loop()  {
     case STATE_MOW_SPIRALE:
       motorControlOdo();
       checkCurrent();
-      checkBumpers();
-      //checkDrop();                                                                                                                            // Dropsensor - Absturzsensor
+      checkBumpers();                                                                                          
       checkSonar();
-
-      //checkLawn();
       checkTimeout();
 
       //*************************************end of the spirale ***********************************************
-      if (spiraleNbTurn >= 8) {
+      if ((spiraleNbTurn >= 8) || (!highGrassDetect)){
         spiraleNbTurn = 0;
         highGrassDetect = false;
-        setNextState(STATE_PERI_OUT_STOP, RIGHT); //stop the spirale or setNextState(STATE_PERI_OUT_FORW, rollDir)
+        setNextState(STATE_STOP_ON_BUMPER, RIGHT); //stop the spirale or setNextState(STATE_PERI_OUT_FORW, rollDir)
         return;
       }
       //********************************************************************************************
       if ((odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft) ) {
         if (!perimeterInside) {
-          setNextState(STATE_PERI_OUT_STOP, rollDir);
+          setNextState(STATE_STOP_ON_BUMPER, rollDir);
         }
         else
         {
