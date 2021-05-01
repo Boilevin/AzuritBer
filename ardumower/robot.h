@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.75-AzuritBer-Robomow"
+#define VER "1.76-AzuritBer-Robomow"
 
 
 // sensors
@@ -636,8 +636,21 @@ class Robot
     byte distToObstacle; //min distance to obstacle in CM of the 3 sonars
     byte sonarToFrontDist;
     float sonarSpeedCoeff; // coeff to reduce speed when sonar detect something
+    unsigned long last_millis_sonarRight; //use to check on multiple reading for valid detection 
+    unsigned long last_millis_sonarLeft; //use to check on multiple reading for valid detection 
+    unsigned long last_millis_sonarCenter; //use to check on multiple reading for valid detection 
+    int sonarRight_last_read; //use to check on multiple reading for valid detection last reading detection
+    int sonarLeft_last_read; //use to check on multiple reading for valid detection last reading detection
+    int sonarCenter_last_read; //use to check on multiple reading for valid detection last reading detection
+    
+    boolean sonarRight_trigged; // valid detection
+    boolean sonarLeft_trigged; // valid detection
+    boolean sonarCenter_trigged; // valid detection
+    byte sonarRight_qty_read; //number of consecutive detection valid
+    byte sonarLeft_qty_read; //number of consecutive detection valid
+    byte sonarCenter_qty_read; //number of consecutive detection valid
+    byte sonar_speed_distance; // distance in cm that mower move on forward mode
 
-    //boolean sonarReduceSpeed ; // if true the mower reduce speed
 
 
     // --------- pfodApp ----------------------------------

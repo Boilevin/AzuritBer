@@ -179,6 +179,15 @@ Robot::Robot() {
   sonarSpeedCoeff = 1;
   readSonarNr = 1;
 
+  sonar_speed_distance = 8; //mower can't move 10 cm between 2 sonar reading (150 ms)
+  sonarRight_qty_read = 0;
+  sonarLeft_qty_read = 0;
+  sonarCenter_qty_read = 0;
+
+  last_millis_sonarRight = millis();
+  last_millis_sonarLeft = millis();
+  last_millis_sonarCenter = millis();
+
   batVoltage = 0;
   batRefFactor = 0;
   batCapacity = 0;
@@ -3340,8 +3349,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorSpeedMaxRpm * 0.8 ;
       motorRightSpeedRpmSet = -motorSpeedMaxRpm * 0.8 ;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm * 0.8 ;
       stateEndOdometryRight = odometryRight - (int)36000 * (odometryTicksPerCm * PI * odometryWheelBaseCm / 36000);
       stateEndOdometryLeft = odometryLeft + (int)36000 * (odometryTicksPerCm * PI * odometryWheelBaseCm / 36000);
       OdoRampCompute();
@@ -4143,9 +4152,9 @@ void Robot::reverseOrBidir(byte aRollDir) {
     setNextState(STATE_WAIT_AND_REPEAT, aRollDir);
     return;
   }
-  if (mowPatternCurr == MOW_LANES){
+  if (mowPatternCurr == MOW_LANES) {
     setNextState(STATE_STOP_ON_BUMPER, rollDir);
-    
+
     return;
   }
   else {
@@ -4166,7 +4175,7 @@ void Robot::checkCurrent() {
       Console.println("Warning  motorMowPower >= 0.8 * motorMowPowerMax ");
       ////  http://forums.parallax.com/discussion/comment/1326585#Comment_1326585
     }
-   
+
   }
 
   // if (motorMowPower >= motorMowPowerMax)
@@ -4185,14 +4194,14 @@ void Robot::checkCurrent() {
       if ((stateCurr == STATE_FORWARD_ODO)) { //avoid risq of restart not allowed
         motorMowEnable = true;
         lastTimeMotorMowStuck = 0;
-        Console.println("Time to restart the mow motor after the 60 secondes pause");
+        Console.println("Time to restart the mow motor");
       }
     }
   }
   //need to check this
   if (motorMowSenseCounter >= 10) { //ignore motorMowPower for 1 seconds
     motorMowEnable = false;
-    Console.println("Motor mow power overload. Motor STOP and try to start again after 1 minute");
+    Console.println("Motor mow power overload. Motor STOP for 1 minute");
     addErrorCounter(ERR_MOW_SENSE);
     lastTimeMotorMowStuck = millis();
   }
@@ -4200,13 +4209,13 @@ void Robot::checkCurrent() {
   //bb add test current in manual mode and stop immediatly
   if (statusCurr == MANUAL) {
     if (motorLeftPower >= 0.8 * motorPowerMax) {
-      Console.print("Motor Left power is 80 % of the max, value --> ");
+      Console.print("Motor Left power is 80 % of max--> ");
       Console.println(motorLeftPower);
       setMotorPWM( 0, 0, false );
       setNextState(STATE_OFF, 0);
     }
     if (motorRightPower >= 0.8 * motorPowerMax) {
-      Console.print("Motor Right power is 80 % of the max, value --> ");
+      Console.print("Motor Right power is 80 % of max--> ");
       Console.println(motorRightPower);
       setMotorPWM( 0, 0, false );
       setNextState(STATE_OFF, 0);
@@ -4224,12 +4233,12 @@ void Robot::checkCurrent() {
       motorRightSenseCounter++;
       setBeeper(1000, 50, 50, 200, 100);
       setMotorPWM( 0, 0, false );
-      Console.print("Motor Right power is 80 % of the max, value --> ");
+      Console.print("Motor Right power is 80 % of max--> ");
       Console.println(motorRightPower);
 
       if (stateCurr != STATE_ERROR) {
         if ((stateCurr == STATE_PERI_TRACK) || (stateCurr == STATE_PERI_FIND)) {
-          Console.println("Power motor left warning ");
+          //Console.println("Power motor left warning ");
           setNextState(STATE_STATION_CHECK, rollDir);
           return;
         }
@@ -4251,7 +4260,7 @@ void Robot::checkCurrent() {
       //setMotorPWM( 0, 0, false );
       //addErrorCounter(ERR_MOTOR_RIGHT);
       //setNextState(STATE_ERROR, 0);
-      Console.print("Warning: Motor power current over 100% , Max possible 10 time in 1 seconde. Actual count --> ");
+      Console.print("Warning: Motor power > 100% , Max possible 10 time/seconde.Count --> ");
       Console.println(motorRightSenseCounter);
 
     }
@@ -4264,11 +4273,11 @@ void Robot::checkCurrent() {
       motorLeftSenseCounter++;
       setBeeper(1000, 50, 50, 100, 50);
       setMotorPWM( 0, 0, false );
-      Console.print("Motor Left power is 80 % of the max, value --> ");
+      Console.print("Motor Left power is 80 % of max--> ");
       Console.println(motorLeftPower);
       if (stateCurr != STATE_ERROR) {
         if ((stateCurr == STATE_PERI_TRACK) || (stateCurr == STATE_PERI_FIND)) {
-          Console.println("Power motor left warning ");
+          //Console.println("Power motor left warning ");
           setNextState(STATE_STATION_CHECK, rollDir);
           return;
         }
@@ -4290,7 +4299,7 @@ void Robot::checkCurrent() {
       //setMotorPWM( 0, 0, false );
       //addErrorCounter(ERR_MOTOR_LEFT);
       //setNextState(STATE_ERROR, 0);
-      Console.print("Warning: Motor Left power over 100% , Max possible 10 time in 1 seconde. Actual count --> ");
+      Console.print("Warning: Motor Left power > 100% , Max possible 10 time/seconde.Count --> ");
       Console.println(motorLeftSenseCounter);
     }
     //final test on the counter to generate the error and stop the mower
@@ -4309,7 +4318,7 @@ void Robot::checkCurrent() {
       setNextState(STATE_ERROR, 0);
     }
 
-  } //motorpower ignore time
+  }
 
 }
 
@@ -4327,9 +4336,9 @@ void Robot::checkBumpers() {
       if (statusCurr == SPIRALE_MOWING) {
         highGrassDetect = false;
         statusCurr = NORMAL_MOWING;
-        if (RaspberryPIUse) MyRpi.SendStatusToPi();     
+        if (RaspberryPIUse) MyRpi.SendStatusToPi();
       }
-      
+
       motorLeftRpmCurr = motorRightRpmCurr = 0 ;
       motorLeftPWMCurr = motorRightPWMCurr = 0;
       setMotorPWM( 0, 0, false );
@@ -4551,88 +4560,262 @@ void Robot::checkSonarPeriTrack() {
 void Robot::checkSonar() {
   if (!sonarUse) return;
   if (millis() < nextTimeCheckSonar) return;
-  nextTimeCheckSonar = millis() + 100;
+  nextTimeCheckSonar = millis() + 50;
   sonarSpeedCoeff = 1;
   readSonarNr = readSonarNr + 1;
   if (readSonarNr > 3) readSonarNr = 1;
-
-  if ((sonarRightUse) && (readSonarNr == 1)) sonarDistRight = readSensor(SEN_SONAR_RIGHT);
-  else sonarDistRight = NO_ECHO;
-  if ((sonarCenterUse) && (readSonarNr == 2)) sonarDistCenter = readSensor(SEN_SONAR_CENTER);
-  else sonarDistCenter = NO_ECHO;
-  if ((sonarLeftUse) && (readSonarNr == 3)) sonarDistLeft = readSensor(SEN_SONAR_LEFT);
-  else sonarDistLeft = NO_ECHO ;
+  sonarRight_trigged = false;
+  sonarLeft_trigged = false;
+  sonarCenter_trigged = false;
   /*
-    Console.print(sonarDistRight);
-    Console.print(" / ");
-    Console.print(sonarDistCenter);
-    Console.print(" / ");
-    Console.println(sonarDistLeft);
+     Sonar is not very accurate and have bad detection,Need a filter to check if 3 consecutives reading are correct
   */
-  if (stateCurr == STATE_OFF) return; //avoid the mower move when testing
+  //management of the sensorRight ------------------------------------------------------------------
+  if ((sonarRightUse) && (readSonarNr == 1)) {
+    sonarDistRight = readSensor(SEN_SONAR_RIGHT);
+    if ((sonarDistRight != NO_ECHO) && (sonarDistRight <= sonarTriggerBelow) && (sonarDistRight >= sonarToFrontDist)) {  //test only less
+      last_millis_sonarRight = millis();
+      if (sonarRight_qty_read != 0) { //do not compare on first reading
+        Tempovar = sonarDistRight - sonarRight_last_read;
+        if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) { //always forward tempovar >1
+          sonarRight_qty_read = sonarRight_qty_read + 1;
+        }
+        else
+        {
+          Console.print("Bad reading SonarRight last/actual : ");
+          Console.print(sonarRight_last_read);
+          Console.print(" / ");
+          Console.println(sonarDistRight);
+          sonarRight_qty_read = 0;
+        }
+      }
+      else
+      {
+        sonarRight_qty_read = sonarRight_qty_read + 1;
+      }
 
-  if (sonarDistCenter < sonarToFrontDist || sonarDistCenter > 110) sonarDistCenter = NO_ECHO; //need to be adjust if sonar is directly in front of mower 25Cm in my case
-  if (sonarDistRight < sonarToFrontDist || sonarDistRight > 110) sonarDistRight = NO_ECHO; // Object is too close  the sensor JSN SR04T can't read <20 CM . Sensor value is useless
-  if (sonarDistLeft < sonarToFrontDist || sonarDistLeft  > 110) sonarDistLeft = NO_ECHO;
+      sonarRight_last_read = sonarDistRight;
+    }
+    if (sonarRight_qty_read >= 3) { // read 3 distances consecutive detection is valid
 
-  if (((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow))  ||  ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) ||  ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow))  ) {
+      Console.println("SonarRight trig");
+      sonarRight_trigged = true;
+      sonarRight_qty_read = 0;
+      sonarRight_last_read = sonarDistRight;
+      distToObstacle = sonarDistRight;
+
+    }
+    if (millis() >= last_millis_sonarRight + 2000 ) { //reset if no detection in 2 secondes
+      sonarRight_trigged = false;
+      sonarRight_qty_read = 0;
+      sonarRight_last_read = 0;
+    }
+
+  }
+
+  //management of the sensorLeft ------------------------------------------------------------------
+  if ((sonarLeftUse) && (readSonarNr == 2)) {
+    sonarDistLeft = readSensor(SEN_SONAR_LEFT);
+    if ((sonarDistLeft != NO_ECHO) && (sonarDistLeft <= sonarTriggerBelow) && (sonarDistLeft >= sonarToFrontDist)) {  //test only less
+      last_millis_sonarLeft = millis();
+      if (sonarLeft_qty_read != 0) { //do not compare on first reading
+        Tempovar = sonarDistLeft - sonarLeft_last_read;
+        if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) {
+          sonarLeft_qty_read = sonarLeft_qty_read + 1;
+        }
+        else
+        {
+          Console.print("Bad reading SonarLeft last/actual : ");
+          Console.print(sonarLeft_last_read);
+          Console.print(" / ");
+          Console.println(sonarDistLeft);
+          sonarLeft_qty_read = 0;
+        }
+      }
+      else
+      {
+        sonarLeft_qty_read = sonarLeft_qty_read + 1;
+      }
+
+      sonarLeft_last_read = sonarDistLeft;
+
+    }
+    if (sonarLeft_qty_read >= 3) { // read 3 distances consecutive detection is valid
+
+      Console.println("SonarLeft trig");
+      sonarLeft_trigged = true;
+      sonarLeft_qty_read = 0;
+      sonarLeft_last_read = sonarDistLeft;
+      distToObstacle = sonarDistLeft;
+
+    }
+    if (millis() >= last_millis_sonarLeft + 2000 ) { //reset if no detection in 2 secondes
+      sonarLeft_trigged = false;
+      sonarLeft_qty_read = 0;
+      sonarLeft_last_read = 0;
+    }
+
+  }
+
+  //management of the sensorCenter ------------------------------------------------------------------
+  if ((sonarCenterUse) && (readSonarNr == 3)) {
+    sonarDistCenter = readSensor(SEN_SONAR_CENTER);
+    if ((sonarDistCenter != NO_ECHO) && (sonarDistCenter <= sonarTriggerBelow) && (sonarDistCenter >= sonarToFrontDist)) {  //test only less
+      last_millis_sonarCenter = millis();
+      if (sonarLeft_qty_read != 0) { //do not compare on first reading
+        Tempovar = sonarDistCenter - sonarCenter_last_read;
+        if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) {
+          sonarCenter_qty_read = sonarCenter_qty_read + 1;
+        }
+        else
+        {
+          Console.print("Bad reading SonarCenter last/actual : ");
+          Console.print(sonarCenter_last_read);
+          Console.print(" / ");
+          Console.println(sonarDistCenter);
+          sonarCenter_qty_read = 0;
+        }
+      }
+      else {
+        sonarCenter_qty_read = sonarCenter_qty_read + 1;
+      }
+
+
+      sonarCenter_last_read = sonarDistCenter;
+    }
+    if (sonarCenter_qty_read >= 3) { // read 3 distances consecutive detection is valid
+
+      Console.println("SonarCenter trig");
+      sonarCenter_trigged = true;
+      sonarCenter_qty_read = 0;
+      sonarCenter_last_read = sonarDistCenter;
+      distToObstacle = sonarDistCenter;
+    }
+    if (millis() >= last_millis_sonarCenter + 2000 ) { //reset if no detection in 2 secondes
+      sonarCenter_trigged = false;
+      sonarCenter_qty_read = 0;
+      sonarCenter_last_read = 0;
+    }
+
+  }
+  if ((sonarRight_trigged)  ||  (sonarLeft_trigged) ||  (sonarCenter_trigged)  ) {
     setBeeper(1000, 500, 500, 60, 60);
     nextTimeCheckSonar = millis() + 1500;  //wait before next reading
 
     //**************************if sonar during spirale reinit spirale variable*****************
     highGrassDetect = false; //stop the spirale
-    //*********************************************************************************
-    if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
-      //avoid the mower move when testing
-      if ((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow)) {  //center
-        //bber200
-        if (!sonarLikeBumper) {
-          sonarSpeedCoeff = 0.70;
-          nextTimeCheckSonar = millis() + 3000;
-        }
-        else {
 
-          distToObstacle =  sonarDistCenter;
-          Console.print("Sonar Center Trigger at cm : ");
-          Console.println (distToObstacle);
-          setNextState(STATE_SONAR_TRIG, rollDir);  //don't change the rotation if center
-          return;
-        }
+    if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) { //avoid the mower move when testing
 
+      //bber700
+      if (!sonarLikeBumper) {
+        sonarSpeedCoeff = 0.70;
+        nextTimeCheckSonar = millis() + 3000;
       }
-      if ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) {  //right
-        if (!sonarLikeBumper) {
-          sonarSpeedCoeff = 0.70;
-          nextTimeCheckSonar = millis() + 3000;
-        }
-        else {
-          distToObstacle =  sonarDistRight;
+      else
+      {
+        if (sonarRight_trigged) {
+          distToObstacle =  sonarRight_last_read;
           Console.print("Sonar Right Trigger at cm : ");
           Console.println (distToObstacle);
           if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
           else setNextState(STATE_SONAR_TRIG, LEFT);
           return;
         }
-
-      }
-      if ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow)) {  //LEFT
-        if (!sonarLikeBumper) {
-          sonarSpeedCoeff = 0.70;
-          nextTimeCheckSonar = millis() + 3000;
-        }
-        else {
-          distToObstacle =  sonarDistLeft;
+        if (sonarLeft_trigged) {
+          distToObstacle =  sonarLeft_last_read;
           Console.print("Sonar Left Trigger at cm : ");
           Console.println (distToObstacle);
           if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
           else setNextState(STATE_SONAR_TRIG, RIGHT);
           return;
         }
-
+        if (sonarCenter_trigged) {
+          distToObstacle =  sonarCenter_last_read;
+          Console.print("Sonar Center Trigger at cm : ");
+          Console.println (distToObstacle);
+          setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation
+          return;
+        }
       }
+
+
+
     }
   }
 
+  /*
+    if ((sonarRightUse) && (readSonarNr == 1)) sonarDistRight = readSensor(SEN_SONAR_RIGHT);
+    else sonarDistRight = NO_ECHO;
+    if ((sonarCenterUse) && (readSonarNr == 2)) sonarDistCenter = readSensor(SEN_SONAR_CENTER);
+    else sonarDistCenter = NO_ECHO;
+    if ((sonarLeftUse) && (readSonarNr == 3)) sonarDistLeft = readSensor(SEN_SONAR_LEFT);
+    else sonarDistLeft = NO_ECHO ;
+
+    if (stateCurr == STATE_OFF) return; //avoid the mower move when testing
+
+    if (sonarDistCenter < sonarToFrontDist || sonarDistCenter > 110) sonarDistCenter = NO_ECHO; //need to be adjust if sonar is directly in front of mower 25Cm in my case
+    if (sonarDistRight < sonarToFrontDist || sonarDistRight > 110) sonarDistRight = NO_ECHO; // Object is too close  the sensor JSN SR04T can't read <20 CM . Sensor value is useless
+    if (sonarDistLeft < sonarToFrontDist || sonarDistLeft  > 110) sonarDistLeft = NO_ECHO;
+
+    if (((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow))  ||  ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) ||  ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow))  ) {
+      setBeeper(1000, 500, 500, 60, 60);
+      nextTimeCheckSonar = millis() + 1500;  //wait before next reading
+
+      //**************************if sonar during spirale reinit spirale variable*****************
+      highGrassDetect = false; //stop the spirale
+      //*********************************************************************************
+      if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
+        //avoid the mower move when testing
+        if ((sonarDistCenter != NO_ECHO) && (sonarDistCenter < sonarTriggerBelow)) {  //center
+          //bber200
+          if (!sonarLikeBumper) {
+            sonarSpeedCoeff = 0.70;
+            nextTimeCheckSonar = millis() + 3000;
+          }
+          else {
+
+            distToObstacle =  sonarDistCenter;
+            Console.print("Sonar Center Trigger at cm : ");
+            Console.println (distToObstacle);
+            setNextState(STATE_SONAR_TRIG, rollDir);  //don't change the rotation if center
+            return;
+          }
+
+        }
+        if ((sonarDistRight != NO_ECHO) && (sonarDistRight < sonarTriggerBelow)) {  //right
+          if (!sonarLikeBumper) {
+            sonarSpeedCoeff = 0.70;
+            nextTimeCheckSonar = millis() + 3000;
+          }
+          else {
+            distToObstacle =  sonarDistRight;
+            Console.print("Sonar Right Trigger at cm : ");
+            Console.println (distToObstacle);
+            if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
+            else setNextState(STATE_SONAR_TRIG, LEFT);
+            return;
+          }
+
+        }
+        if ((sonarDistLeft != NO_ECHO) && (sonarDistLeft < sonarTriggerBelow)) {  //LEFT
+          if (!sonarLikeBumper) {
+            sonarSpeedCoeff = 0.70;
+            nextTimeCheckSonar = millis() + 3000;
+          }
+          else {
+            distToObstacle =  sonarDistLeft;
+            Console.print("Sonar Left Trigger at cm : ");
+            Console.println (distToObstacle);
+            if (mowPatternCurr == MOW_LANES) setNextState(STATE_SONAR_TRIG, rollDir); //don't change the rotation if lane mowing
+            else setNextState(STATE_SONAR_TRIG, RIGHT);
+            return;
+          }
+
+        }
+      }
+    }
+  */
 }
 
 
@@ -4883,7 +5066,6 @@ void Robot::loop()  {
   if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
     if ((imuUse) && (millis() >= nextTimeImuLoop)) {
       nextTimeImuLoop = millis() + 50;
-
       StartReadAt = millis();
       imu.run();
       EndReadAt = millis();
@@ -5545,7 +5727,10 @@ void Robot::loop()  {
       boolean finish_4rev;
       finish_4rev = false;
       motorControlOdo();
-      imu.run();
+      if ((millis() >= nextTimeImuLoop)) {
+        nextTimeImuLoop = millis() + 50;
+        imu.run();
+      }
       //it's ok
       if ((yawToFind - 2 < (imu.comYaw / PI * 180)) && (yawToFind + 2 > (imu.comYaw / PI * 180)))  { //at +-2 degres
         findedYaw = (imu.comYaw / PI * 180);
@@ -6000,12 +6185,12 @@ void Robot::loop()  {
     case STATE_MOW_SPIRALE:
       motorControlOdo();
       checkCurrent();
-      checkBumpers();                                                                                          
+      checkBumpers();
       checkSonar();
       checkTimeout();
 
       //*************************************end of the spirale ***********************************************
-      if ((spiraleNbTurn >= 8) || (!highGrassDetect)){
+      if ((spiraleNbTurn >= 8) || (!highGrassDetect)) {
         spiraleNbTurn = 0;
         highGrassDetect = false;
         setNextState(STATE_STOP_ON_BUMPER, RIGHT); //stop the spirale or setNextState(STATE_PERI_OUT_FORW, rollDir)
