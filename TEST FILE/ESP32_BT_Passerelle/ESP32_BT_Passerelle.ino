@@ -10,8 +10,8 @@ void setup() {
 //BT seial for Pfod init
   Serial.begin(115200);
   Serial.println("Start Bluetooth");
-  ESP_BT.begin("ESP32_1");
-  Serial.println("Bluetooth started with name ESP32_1  Wait 10 seconde......");
+  ESP_BT.begin("NEW_PCB");
+  Serial.println("Bluetooth started with name NEW_PCB  Wait 10 seconde......");
   delay(10000);
   
   Serial.println("Try to connect to DUE");
