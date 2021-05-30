@@ -4573,130 +4573,133 @@ void Robot::checkSonar() {
   //management of the sensorRight ------------------------------------------------------------------
   if ((sonarRightUse) && (readSonarNr == 1)) {
     sonarDistRight = readSensor(SEN_SONAR_RIGHT);
-    if ((sonarDistRight != NO_ECHO) && (sonarDistRight <= sonarTriggerBelow) && (sonarDistRight >= sonarToFrontDist)) {  //test only less
-      last_millis_sonarRight = millis();
-      if (sonarRight_qty_read != 0) { //do not compare on first reading
-        Tempovar = sonarDistRight - sonarRight_last_read;
-        if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) { //always forward tempovar >1
-          sonarRight_qty_read = sonarRight_qty_read + 1;
+    if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
+      if ((sonarDistRight != NO_ECHO) && (sonarDistRight <= sonarTriggerBelow) && (sonarDistRight >= sonarToFrontDist)) {  //test only less
+        last_millis_sonarRight = millis();
+        if (sonarRight_qty_read != 0) { //do not compare on first reading
+          Tempovar = sonarDistRight - sonarRight_last_read;
+          if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) { //always forward tempovar >1
+            sonarRight_qty_read = sonarRight_qty_read + 1;
+          }
+          else
+          {
+            Console.print("Bad reading SonarRight last/actual : ");
+            Console.print(sonarRight_last_read);
+            Console.print(" / ");
+            Console.println(sonarDistRight);
+            sonarRight_qty_read = 0;
+          }
         }
         else
         {
-          Console.print("Bad reading SonarRight last/actual : ");
-          Console.print(sonarRight_last_read);
-          Console.print(" / ");
-          Console.println(sonarDistRight);
-          sonarRight_qty_read = 0;
+          sonarRight_qty_read = sonarRight_qty_read + 1;
         }
+
+        sonarRight_last_read = sonarDistRight;
       }
-      else
-      {
-        sonarRight_qty_read = sonarRight_qty_read + 1;
+      if (sonarRight_qty_read >= 3) { // read 3 distances consecutive detection is valid
+
+        Console.println("SonarRight trig");
+        sonarRight_trigged = true;
+        sonarRight_qty_read = 0;
+        sonarRight_last_read = sonarDistRight;
+        distToObstacle = sonarDistRight;
+
       }
-
-      sonarRight_last_read = sonarDistRight;
+      if (millis() >= last_millis_sonarRight + 2000 ) { //reset if no detection in 2 secondes
+        sonarRight_trigged = false;
+        sonarRight_qty_read = 0;
+        sonarRight_last_read = 0;
+      }
     }
-    if (sonarRight_qty_read >= 3) { // read 3 distances consecutive detection is valid
-
-      Console.println("SonarRight trig");
-      sonarRight_trigged = true;
-      sonarRight_qty_read = 0;
-      sonarRight_last_read = sonarDistRight;
-      distToObstacle = sonarDistRight;
-
-    }
-    if (millis() >= last_millis_sonarRight + 2000 ) { //reset if no detection in 2 secondes
-      sonarRight_trigged = false;
-      sonarRight_qty_read = 0;
-      sonarRight_last_read = 0;
-    }
-
   }
 
   //management of the sensorLeft ------------------------------------------------------------------
   if ((sonarLeftUse) && (readSonarNr == 2)) {
     sonarDistLeft = readSensor(SEN_SONAR_LEFT);
-    if ((sonarDistLeft != NO_ECHO) && (sonarDistLeft <= sonarTriggerBelow) && (sonarDistLeft >= sonarToFrontDist)) {  //test only less
-      last_millis_sonarLeft = millis();
-      if (sonarLeft_qty_read != 0) { //do not compare on first reading
-        Tempovar = sonarDistLeft - sonarLeft_last_read;
-        if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) {
-          sonarLeft_qty_read = sonarLeft_qty_read + 1;
+    if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
+      if ((sonarDistLeft != NO_ECHO) && (sonarDistLeft <= sonarTriggerBelow) && (sonarDistLeft >= sonarToFrontDist)) {  //test only less
+        last_millis_sonarLeft = millis();
+        if (sonarLeft_qty_read != 0) { //do not compare on first reading
+          Tempovar = sonarDistLeft - sonarLeft_last_read;
+          if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) {
+            sonarLeft_qty_read = sonarLeft_qty_read + 1;
+          }
+          else
+          {
+            Console.print("Bad reading SonarLeft last/actual : ");
+            Console.print(sonarLeft_last_read);
+            Console.print(" / ");
+            Console.println(sonarDistLeft);
+            sonarLeft_qty_read = 0;
+          }
         }
         else
         {
-          Console.print("Bad reading SonarLeft last/actual : ");
-          Console.print(sonarLeft_last_read);
-          Console.print(" / ");
-          Console.println(sonarDistLeft);
-          sonarLeft_qty_read = 0;
+          sonarLeft_qty_read = sonarLeft_qty_read + 1;
         }
+
+        sonarLeft_last_read = sonarDistLeft;
+
       }
-      else
-      {
-        sonarLeft_qty_read = sonarLeft_qty_read + 1;
+      if (sonarLeft_qty_read >= 3) { // read 3 distances consecutive detection is valid
+
+        Console.println("SonarLeft trig");
+        sonarLeft_trigged = true;
+        sonarLeft_qty_read = 0;
+        sonarLeft_last_read = sonarDistLeft;
+        distToObstacle = sonarDistLeft;
+
       }
-
-      sonarLeft_last_read = sonarDistLeft;
-
+      if (millis() >= last_millis_sonarLeft + 2000 ) { //reset if no detection in 2 secondes
+        sonarLeft_trigged = false;
+        sonarLeft_qty_read = 0;
+        sonarLeft_last_read = 0;
+      }
     }
-    if (sonarLeft_qty_read >= 3) { // read 3 distances consecutive detection is valid
-
-      Console.println("SonarLeft trig");
-      sonarLeft_trigged = true;
-      sonarLeft_qty_read = 0;
-      sonarLeft_last_read = sonarDistLeft;
-      distToObstacle = sonarDistLeft;
-
-    }
-    if (millis() >= last_millis_sonarLeft + 2000 ) { //reset if no detection in 2 secondes
-      sonarLeft_trigged = false;
-      sonarLeft_qty_read = 0;
-      sonarLeft_last_read = 0;
-    }
-
   }
 
   //management of the sensorCenter ------------------------------------------------------------------
   if ((sonarCenterUse) && (readSonarNr == 3)) {
     sonarDistCenter = readSensor(SEN_SONAR_CENTER);
-    if ((sonarDistCenter != NO_ECHO) && (sonarDistCenter <= sonarTriggerBelow) && (sonarDistCenter >= sonarToFrontDist)) {  //test only less
-      last_millis_sonarCenter = millis();
-      if (sonarLeft_qty_read != 0) { //do not compare on first reading
-        Tempovar = sonarDistCenter - sonarCenter_last_read;
-        if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) {
+    if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_PERI_FIND) || (stateCurr == STATE_MOW_SPIRALE)) {
+      if ((sonarDistCenter != NO_ECHO) && (sonarDistCenter <= sonarTriggerBelow) && (sonarDistCenter >= sonarToFrontDist)) {  //test only less
+        last_millis_sonarCenter = millis();
+        if (sonarLeft_qty_read != 0) { //do not compare on first reading
+          Tempovar = sonarDistCenter - sonarCenter_last_read;
+          if ((Tempovar < sonar_speed_distance) && (Tempovar >= 1)) {
+            sonarCenter_qty_read = sonarCenter_qty_read + 1;
+          }
+          else
+          {
+            Console.print("Bad reading SonarCenter last/actual : ");
+            Console.print(sonarCenter_last_read);
+            Console.print(" / ");
+            Console.println(sonarDistCenter);
+            sonarCenter_qty_read = 0;
+          }
+        }
+        else {
           sonarCenter_qty_read = sonarCenter_qty_read + 1;
         }
-        else
-        {
-          Console.print("Bad reading SonarCenter last/actual : ");
-          Console.print(sonarCenter_last_read);
-          Console.print(" / ");
-          Console.println(sonarDistCenter);
-          sonarCenter_qty_read = 0;
-        }
+
+
+        sonarCenter_last_read = sonarDistCenter;
       }
-      else {
-        sonarCenter_qty_read = sonarCenter_qty_read + 1;
+      if (sonarCenter_qty_read >= 3) { // read 3 distances consecutive detection is valid
+
+        Console.println("SonarCenter trig");
+        sonarCenter_trigged = true;
+        sonarCenter_qty_read = 0;
+        sonarCenter_last_read = sonarDistCenter;
+        distToObstacle = sonarDistCenter;
       }
-
-
-      sonarCenter_last_read = sonarDistCenter;
+      if (millis() >= last_millis_sonarCenter + 2000 ) { //reset if no detection in 2 secondes
+        sonarCenter_trigged = false;
+        sonarCenter_qty_read = 0;
+        sonarCenter_last_read = 0;
+      }
     }
-    if (sonarCenter_qty_read >= 3) { // read 3 distances consecutive detection is valid
-
-      Console.println("SonarCenter trig");
-      sonarCenter_trigged = true;
-      sonarCenter_qty_read = 0;
-      sonarCenter_last_read = sonarDistCenter;
-      distToObstacle = sonarDistCenter;
-    }
-    if (millis() >= last_millis_sonarCenter + 2000 ) { //reset if no detection in 2 secondes
-      sonarCenter_trigged = false;
-      sonarCenter_qty_read = 0;
-      sonarCenter_last_read = 0;
-    }
-
   }
   if ((sonarRight_trigged)  ||  (sonarLeft_trigged) ||  (sonarCenter_trigged)  ) {
     setBeeper(1000, 500, 500, 60, 60);
