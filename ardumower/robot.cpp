@@ -5410,8 +5410,7 @@ void Robot::loop()  {
       //circle arc
       motorControlOdo();
       if ((odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft)) {
-
-
+        periFindDriveHeading = imu.ypr.yaw;
         setNextState(STATE_PERI_FIND, 0);
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {

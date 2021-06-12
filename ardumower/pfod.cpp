@@ -1388,6 +1388,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     sendCommandMenu(true);
   } else if (pfodCmd == "rt") {
     robot->batSwitchOffIfIdle = 0; // to stop immediatly the PCB
+    robot->setNextState(STATE_OFF, 0);
     sendCommandMenu(true);
   } 
   //bber60

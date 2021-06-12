@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.76-AzuritBer-Robomow"
+#define VER "1.77-AzuritBer-Robomow"
 
 
 // sensors
