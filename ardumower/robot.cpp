@@ -46,7 +46,7 @@
 #define ADDR_USER_SETTINGS 2000 //New adress to avoid issue if Azurit1.09 is already instaled
 #define ADDR_ERR_COUNTERS 500 //same adress as azurit
 //carrefull that the  ADDR 600 is used by the IMU calibration
-#define ADDR_ROBOT_STATS 800 
+#define ADDR_ROBOT_STATS 800
 
 //Setting for DHT22------------------------------------
 #define DHTPIN 49                  // temperature sensor DHT22
@@ -1484,7 +1484,7 @@ void Robot::motorControlOdo() {
       else //adjust rpm speed only after 1 seconde
       {
         //bber400 //adjust RPM speed
-      //PID version
+        //PID version
         motorRightPID.x = motorRightRpmCurr;
         motorRightPID.w = motorSpeedMaxRpm;
         motorRightPID.y_min = -motorSpeedMaxPwm;       // Regel-MIN
@@ -1565,7 +1565,7 @@ void Robot::motorControlOdo() {
         imuDirPID.y_max = motorSpeedMaxPwm / 2;
         imuDirPID.max_output = motorSpeedMaxPwm / 2;
         imuDirPID.compute();
-        
+
         //bber400 //adjust RPM speed
         //PID version
         motorRightPID.x = motorRightRpmCurr;
@@ -1749,6 +1749,7 @@ void Robot::motorControlPerimeter() {
     if (millis() > perimeterLastTransitionTime + trackingErrorTimeOut) {
       if (perimeterInside) {
         Console.println("Tracking Fail and we are inside, So start to find again the perimeter");
+        periFindDriveHeading = imu.ypr.yaw;
         setNextState(STATE_PERI_FIND, 0);
       }
       else
@@ -1950,7 +1951,7 @@ void Robot::motorMowControl() {
         //filter on speed reduce to keep the mow speed high for longuer duration
         motorMowPwmCoeff = int((0.1) * motorMowPwmCoeff + (0.9) * prevcoeff);// use only 10% of the new value
       }
-      
+
       if (motorMowPwmCoeff > 100) motorMowPwmCoeff = 100;
       if (motorMowEnable) {
         motorMowSpeedPWMSet = motorMowSpeedMinPwm + ((double)(motorMowSpeedMaxPwm - motorMowSpeedMinPwm)) * (((double)motorMowPwmCoeff) / 100.0);
@@ -2520,6 +2521,7 @@ void Robot::checkButton() {
           statusCurr = BACK_TO_STATION;
           buttonCounter = 0;
           if (RaspberryPIUse) MyRpi.SendStatusToPi();
+          periFindDriveHeading = imu.ypr.yaw;
           setNextState(STATE_PERI_FIND, 0);
           return;
         }
@@ -4014,6 +4016,7 @@ void Robot::checkBattery() {
       statusCurr = BACK_TO_STATION;
       areaToGo = 1;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
+      periFindDriveHeading = imu.ypr.yaw;
       setNextState(STATE_PERI_FIND, 0);
     }
 
@@ -4493,6 +4496,7 @@ void Robot::checkRain() {
     Console.println(F("RAIN"));
     areaToGo = 1;
     if (perimeterUse) {
+      periFindDriveHeading = imu.ypr.yaw;
       setNextState(STATE_PERI_FIND, 0);
     }
     else {
@@ -4639,13 +4643,13 @@ void Robot::checkTilt() {
       Console.println(pitchAngle);
       addErrorCounter(ERR_IMU_TILT);
       //bber500
-     
-      
-      Console.println("Motor mow STOP start again after 1 minute"); 
-      motorMowEnable = false;   
+
+
+      Console.println("Motor mow STOP start again after 1 minute");
+      motorMowEnable = false;
       lastTimeMotorMowStuck = millis();
       reverseOrBidir(rollDir);
-      
+
     }
   }
 }
@@ -5145,12 +5149,14 @@ void Robot::loop()  {
       //circle arc
       motorControlOdo();
       if ((odometryRight >= stateEndOdometryRight) || (odometryLeft >= stateEndOdometryLeft)) {
+        periFindDriveHeading = imu.ypr.yaw;
         setNextState(STATE_PERI_FIND, 0);
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         if (developerActive) {
           Console.println ("Warning can t PERI_OBSTACLE_AVOID in time ");
         }
+        periFindDriveHeading = imu.ypr.yaw;
         setNextState(STATE_PERI_FIND, 0);
       }
       checkCurrent();
