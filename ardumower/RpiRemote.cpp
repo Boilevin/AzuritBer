@@ -1309,6 +1309,9 @@ void RpiRemote::readWrite_setting()
 
     //********************************************************The Bylane set Setting**********************************************
     if (Setting_page == "ByLane") {
+      Console.println("new bylane setting");
+      Console.println(nr_page);
+      Console.println(val[4]);
       if (nr_page == 1) {
         robot->yawSet1 = val[0];
         robot->yawSet2 = val[1];

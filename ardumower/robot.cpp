@@ -3269,33 +3269,33 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_ROLL_TONEXTTAG:  // when find a tag the mower roll to leave the wire and go again in peirfind with new heading
-      AngleRotate = abs(newtagRotAngle1);
+      AngleRotate = newtagRotAngle1;
+
       newtagRotAngle1Radian = newtagRotAngle1 * PI / 180.0;
       Console.print("Actual Heading ");
       Console.println(imu.ypr.yaw * 180 / PI);
       periFindDriveHeading = scalePI(imu.ypr.yaw + newtagRotAngle1Radian);
       Console.print("New PeriFind Heading ");
       Console.println(periFindDriveHeading * 180 / PI);
+      Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
       //Always rotate RIGHT to leave the wire
-      //bber600
       UseAccelLeft = 1;
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      if (track_ClockWise) {
-        Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
-        motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5 ;
-        motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
-      }
-      else {
-        Tempovar = -36000 / AngleRotate; //need a value*100 for integer division later
+      if (AngleRotate <= 0) {
         motorLeftSpeedRpmSet = -motorSpeedMaxRpm / 1.5 ;
         motorRightSpeedRpmSet = motorSpeedMaxRpm / 1.5;
+        stateEndOdometryRight = odometryRight + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / abs(Tempovar));
+        stateEndOdometryLeft = odometryLeft - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / abs(Tempovar));
       }
-
-      stateEndOdometryRight = odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
-      stateEndOdometryLeft = odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
-
+      else
+      {
+        motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5 ;
+        motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
+        stateEndOdometryRight = odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / abs(Tempovar));
+        stateEndOdometryLeft = odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / abs(Tempovar));
+      }
       OdoRampCompute();
       break;
 
@@ -5477,7 +5477,8 @@ void Robot::loop()  {
     case STATE_ROLL_TONEXTTAG:
       motorControlOdo();
       //bber600
-      if (track_ClockWise) {
+
+      if (AngleRotate >= 0) {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft) ) {
           if (motorRightPWMCurr == 0 ) { //wait until the right motor completly stop because rotation is inverted
             setNextState(STATE_PERI_FIND, rollDir);
@@ -5486,7 +5487,7 @@ void Robot::loop()  {
       }
       else {
         if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft) ) {
-          if (motorRightPWMCurr == 0 ) { //wait until the right motor completly stop because rotation is inverted
+          if (motorLeftPWMCurr == 0 ) { //wait until the left motor completly stop because rotation is inverted
             setNextState(STATE_PERI_FIND, rollDir);
           }
         }
