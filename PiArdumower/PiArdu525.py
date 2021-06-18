@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-PiVersion="356"
+PiVersion="525"
 import traceback
 import sys
 import serial
@@ -16,6 +16,9 @@ from tkinter import messagebox
 from tkinter import filedialog
 import tkinter as tk
 import math
+
+from gpiozero import CPUTemperature
+
 from config import cwd
 from config import myOS
 from config import GpsConnectedOnPi
@@ -25,6 +28,7 @@ from config import GpsIsM6n
 from config import AutoRecordBatCharging
 from config import useDebugConsole
 from config import useMqtt
+
 from config import Mqtt_Broker_IP
 from config import Mqtt_Port
 from config import Mqtt_IdleFreqency
@@ -38,6 +42,18 @@ from config import Sender1AdressIP
 from config import Sender2AdressIP
 from config import Sender3AdressIP
 
+from config import useVision
+from config import visionDetectMinScore
+
+#Show video in tkinter canvas but very slow
+if(useVision):
+    from PIL import Image,ImageTk
+
+import threading
+
+
+    
+   
 
 if(useMqtt):   
     import paho.mqtt.client as mqtt_client
@@ -246,6 +262,7 @@ class streamVideo_class(object):
             
 myStreamVideo=streamVideo_class()
 
+
 #################################### GPS MANAGEMENT ###############################################
 
 class gpsRecord_class(object):
@@ -400,6 +417,8 @@ ImuVar1=tk.IntVar()
 SonVar1=tk.IntVar()
 SonVar2=tk.IntVar()
 SonVar3=tk.IntVar()
+SonVar4=tk.IntVar()
+
 BatVar1=tk.IntVar()
 MowVar1=tk.IntVar()
 PlotVar1=tk.IntVar()
@@ -471,17 +490,18 @@ tk_YawCible=tk.DoubleVar()
 firstFixFlag=False
 firstFixDate=0
 
+
 fen1.title('ARDUMOWER')
 fen1.geometry("800x480+0+0")
 
 class  datetime:
     def __init__(self):       
-        datetime.hour = 12;
-        datetime.minute = 0;
-        datetime.dayOfWeek = 0;
-        datetime.day = 1;
-        datetime.month = 1;
-        datetime.year = 2017;
+        datetime.hour = 12
+        datetime.minute = 0
+        datetime.dayOfWeek = 0
+        datetime.day = 1
+        datetime.month = 1
+        datetime.year = 2017
 
 class mower:
     #char* mowPatternNames[] = {"RAND", "LANE",  "WIRE"};
@@ -549,18 +569,29 @@ class mower:
         mower.callback_id=0
         mower.timeToSendMqttIdle=time.time()+20
         mower.timeToReconnectMqtt=time.time()+40
+        mower.oneMinuteTrigger=time.time()+10
+        mower.cpuFan=False
         mower.lastMqttBatteryValue=0
         
+        mower.visionDetect=False
+        mower.visionDetectAt=time.time()-3
+        mower.visionRollRight=1
+        mower.visionRunning=False
+        mower.surfaceDetected=0
+        mower.objectDetectedID=0
+        mower.userOut2=False
+        mower.userOut3=False
         
+        mower.visionScore=0
         
-        
-        #mower.timeToSendMqttMowPattern=time.time()+200
         
         
     
 mymower=mower()
 myRobot=robot()
 myDate=datetime()
+cpu = CPUTemperature()
+
 if myOS == "Linux":
     myps4 = PS4Controller()
 
@@ -617,6 +648,7 @@ def checkSerial():  #the main loop is that
                     decode_message(message)
 
     except Exception:
+        ConsolePage.tkraise()
         DueConnectedOnPi=False
         exc_type, exc_value, exc_traceback = sys.exc_info()
         #consoleInsertText("*** print_tb:")
@@ -626,21 +658,24 @@ def checkSerial():  #the main loop is that
         formatted_lines = traceback.format_exc().splitlines()
         consoleInsertText(formatted_lines[0])
         consoleInsertText(formatted_lines[-1])
-
-        
-        
         consoleInsertText(repr(traceback.format_exception(exc_type, exc_value,exc_traceback)))
-        print ("*** extract_tb:")
-        
+        print ("*** extract_tb:") 
         print (repr(traceback.extract_tb(exc_traceback)))
         print ("*** format_tb:")
         print (repr(traceback.format_tb(exc_traceback)))
         print ("*** tb_lineno:", exc_traceback.tb_lineno)
-        
-        
-        
         print("ERROR PLEASE CHECK TRACEBACK INFO")
         consoleInsertText("ERROR PLEASE CHECK TRACEBACK INFO" + '\n')
+        
+        if (mymower.visionRunning):
+            mymower.visionRunning=False
+        if(useMqtt):
+            consoleInsertText('Close Mqtt Connection'+ '\n')
+            Mqqt_DisConnection() 
+        consoleInsertText('Start to save all Console Data'+ '\n')
+        ButtonSaveReceived_click()  #save the console txt
+        
+        
         
 
 
@@ -697,13 +732,77 @@ def checkSerial():  #the main loop is that
                 consoleInsertText("MQTT not connected retry each 2 minutes" + '\n')
                 Mqqt_Connection()
                 mymower.timeToReconnectMqtt=time.time()+120
-               
+                
+    #vision detect something
+    if (mymower.visionDetect==True):
+        
+        search_object=mymower.objectDetectedID
+        areaThreshold=100
+        scoreThreshold=0
+        
+        for i in range(0,len(vision_list)):
+            
+            if (str(vision_list[i][1])== str(search_object)):
+                areaThreshold=int(vision_list[i][3])
+                scoreThreshold=int(vision_list[i][2])
+                #print(vision_list[i])
+                break
+        if(scoreThreshold==0):
+            consoleInsertText("Can't find object ID into setting vision list ID : " + str(search_object) + '\n')
+        else:
+            consoleInsertText("Detected : " + str(vision_list[i][0]) + '\n')
+            consoleInsertText("Detected Score : " + str(int(mymower.visionScore)) + " Treshold setting : " + str(scoreThreshold) + '\n')
+            consoleInsertText("Detected Area : " + str(int(mymower.surfaceDetected)) + " Treshold setting : " + str(areaThreshold) + '\n')
+        
+        #only stop if area and score area are OK    
+        if ((int(mymower.surfaceDetected) >= areaThreshold) and (int(mymower.visionScore) >= scoreThreshold)):
+            mymower.visionDetectAt = time.time()
+            mymower.userOut2=True
+            send_pfo_message('re1','1','2','3','4','5','6',)
+
+
+
+            
+            if(mymower.VisionRollRight == 1):
+                send_var_message('w','bumperRight','1','bumperLeft','0','0','0','0','0','0')
+            else:
+                send_var_message('w','bumperRight','0','bumperLeft','1','0','0','0','0','0')
+
+
+        else:
+            consoleInsertText("Object detected but size or score not enough for thresold" + '\n')
+            
+                
+        mymower.visionDetect=False
+        
+    if((mymower.userOut2==True) and (time.time()>=mymower.visionDetectAt+2)):
+            mymower.userOut2=False
+            send_pfo_message('re0','1','2','3','4','5','6',)
     
-    fen1.after(20,checkSerial)  # here is the main loop each 50ms
 
+    if (time.time() > mymower.oneMinuteTrigger):
+        #consoleInsertText("CPU Température : " + str(cpu.temperature) + '\n')
+        #start or stop the Raspberry fan
+        if (cpu.temperature>=60.0):
+            mymower.cpuFan=True
+            send_pfo_message('rd1','1','2','3','4','5','6',)
+        else:
+            if(mymower.cpuFan==True):
+                mymower.cpuFan=False
+                send_pfo_message('rd0','1','2','3','4','5','6',)
 
-
-
+        if (mymower.visionRunning==True) and (myRobot.statusNames[mymower.status]=="IN_STATION"):
+            consoleInsertText("Station detected vision is not needed" + '\n')
+            BtnVisionStop_click()
+  
+            
+            
+        mymower.oneMinuteTrigger=time.time()+60
+    
+    
+    fen1.after(10,checkSerial)  # here is the main loop each 10ms
+    
+   
 
 
 
@@ -767,6 +866,8 @@ def decode_message(message):  #decode the nmea message
                     consoleInsertText('TIME TO RESTART'+ '\n')
                     mymower.focusOnPage=4
                     ConsolePage.tkraise()
+                    if (mymower.visionRunning):
+                        mymower.visionRunning=False
                     if(useMqtt):
                         consoleInsertText('Close Mqtt Connection'+ '\n')
                         Mqqt_DisConnection()                        
@@ -781,6 +882,8 @@ def decode_message(message):  #decode the nmea message
                 if message.actuatorname == 'PowerOffPi':
                     mymower.focusOnPage=4
                     ConsolePage.tkraise()
+                    if (mymower.visionRunning):
+                        mymower.visionRunning=False
                     if(useMqtt):
                         consoleInsertText('Close Mqtt Connection'+ '\n')
                         Mqqt_DisConnection() 
@@ -1047,12 +1150,12 @@ def decode_message(message):  #decode the nmea message
                
                 if message.setting_page =='Time':
                                  
-                    myDate.hour = message.val1;
-                    myDate.minute = message.val2;
-                    myDate.dayOfWeek = message.val3;
-                    myDate.day = message.val4;
-                    myDate.month = message.val5;
-                    myDate.year = message.val6;
+                    myDate.hour = message.val1
+                    myDate.minute = message.val2
+                    myDate.dayOfWeek = message.val3
+                    myDate.day = message.val4
+                    myDate.month = message.val5
+                    myDate.year = message.val6
                     tk_date_hour.set(myDate.hour)
                     tk_date_minute.set(myDate.minute)
                     tk_date_dayOfWeek.set(myDate.dayOfWeek)
@@ -1157,7 +1260,7 @@ def decode_message(message):  #decode the nmea message
                         myRobot.perimeterOutRollTimeMin=message.val7
                         myRobot.perimeterOutRevTime=message.val8
                         myRobot.perimeterTrackRollTime =message.val9
-                        myRobot.perimeterTrackRevTime=message.val10
+                        myRobot.sonarLikeBumper=message.val10
                     if message.pageNr =='5':     
                         myRobot.perimeterPID_Kp=message.val1
                         myRobot.perimeterPID_Ki=message.val2
@@ -1414,6 +1517,10 @@ def ButtonSetSonarApply_click():
     myRobot.sonarRightUse='0'
     if SonVar3.get()==1:
         myRobot.sonarRightUse='1'
+    myRobot.sonarLikeBumper='0'
+    if SonVar4.get()==1:
+        myRobot.sonarLikeBumper='1'
+        
     ButtonSendSettingToDue_click()   
     
 
@@ -1581,7 +1688,7 @@ def BtnImuPlotStartRec_click():
     f.write("{};{};{}\n".format("0","0","0"))
     f.close()
     ImuPlotterKst.start('/home/pi/Documents/PiArdumower/plotImu.kst')
-    send_req_message('IMU',''+str(SldMainBatRefresh.get())+'','1','10000','0','0','0',)    
+    send_req_message('IMU',''+str(SldMainImuRefresh.get())+'','1','10000','0','0','0',)    
 
 def BtnImuPlotStopRec_click():
     global firstplotImux
@@ -1700,18 +1807,19 @@ def refreshSonarSettingPage():
     
     slidersonarTriggerBelow.set(myRobot.sonarTriggerBelow)
     slidersonarToFront.set(myRobot.sonarToFrontDist)
-    
-        
+            
     ChkBtnsonarRightUse.deselect()
     if myRobot.sonarRightUse=='1':
         ChkBtnsonarRightUse.select()
-    
     ChkBtnsonarLeftUse.deselect()
     if myRobot.sonarLeftUse=='1':
         ChkBtnsonarLeftUse.select()
     ChkBtnsonarCenterUse.deselect()
     if myRobot.sonarCenterUse=='1':
         ChkBtnsonarCenterUse.select()
+    ChkBtnsonarLikeBumper.deselect()
+    if myRobot.sonarLikeBumper=='1':
+        ChkBtnsonarLikeBumper.select()
 
 def refreshImuSettingPage():
     sliderimuDirPID_Kp.set(myRobot.imuDirPID_Kp)
@@ -1970,7 +2078,18 @@ def ButtonReadSettingFromDue_click():
 
 
 def ButtonSendSettingByLaneToDue_click():
-       
+    myRobot.yawSet1=slideryawSet1.get()
+    myRobot.yawSet2=slideryawSet2.get()
+    myRobot.yawSet3=slideryawSet3.get()
+    myRobot.yawOppositeLane1RollRight=slideryawOppositeLane1RollRight.get()
+    myRobot.yawOppositeLane2RollRight=slideryawOppositeLane2RollRight.get()
+    myRobot.yawOppositeLane3RollRight=slideryawOppositeLane3RollRight.get()
+    myRobot.yawOppositeLane1RollLeft=slideryawOppositeLane1RollLeft.get()
+    myRobot.yawOppositeLane2RollLeft=slideryawOppositeLane2RollLeft.get()
+    myRobot.yawOppositeLane3RollLeft=slideryawOppositeLane3RollLeft.get()
+    myRobot.DistBetweenLane=sliderDistBetweenLane.get()
+    myRobot.maxLenghtByLane=slidermaxLenghtByLane.get()
+
     Send_reqSetting_message('ByLane','w','1',''+str(myRobot.yawSet1)+\
                             '',''+str(myRobot.yawSet2)+\
                             '',''+str(myRobot.yawSet3)+\
@@ -2048,7 +2167,7 @@ def ButtonSendSettingToDue_click():
                             '',''+str(myRobot.perimeterOutRollTimeMin)+\
                             '',''+str(myRobot.perimeterOutRevTime)+\
                             '',''+str(myRobot.perimeterTrackRollTime)+\
-                            '',''+str(myRobot.perimeterTrackRevTime)+'',)
+                            '',''+str(myRobot.sonarLikeBumper)+'',)
 
  
     Send_reqSetting_message('All','w','5',''+str(myRobot.perimeterPID_Kp)+\
@@ -2170,7 +2289,6 @@ def read_time_setting():
 def send_req_message(val1,val2,val3,val4,val5,val6,val7):
     message = pynmea2.VAR('RM', 'REQ', (val1,val2,val3,val4,val5,val6,val7))
     message=str(message)
-    rpiCheckSum=(message[-2:])
     message=message + '\r' +'\n'
     send_serial_message(message)
    
@@ -2178,14 +2296,12 @@ def send_req_message(val1,val2,val3,val4,val5,val6,val7):
 def send_var_message(val1,val2,val3,val4,val5,val6,val7,val8,val9,val10):
     message = pynmea2.VAR('RM', 'VAR', (val1,val2,val3,val4,val5,val6,val7,val8,val9,val10))
     message=str(message)
-    rpiCheckSum=(message[-2:])
     message=message + '\r' +'\n'
     send_serial_message(message)
     
 def send_cmd_message(val1,val2,val3,val4,val5):
     message = pynmea2.CMD('RM', 'CMD', (val1,val2,val3,val4,val5))
     message=str(message)
-    rpiCheckSum=(message[-2:])
     message=message + '\r' +'\n'
     send_serial_message(message)
 
@@ -2194,14 +2310,12 @@ def send_cmd_message(val1,val2,val3,val4,val5):
 def send_pfo_message(val1,val2,val3,val4,val5,val6,val7):
     message = pynmea2.PFO('RM', 'PFO', (val1,val2,val3,val4,val5,val6,val7))
     message=str(message)
-    rpiCheckSum=(message[-2:])
     message=message + '\r' +'\n'
     send_serial_message(message)
     
 def Send_reqSetting_message(val1,val2,val3,val4,val5,val6,val7,val8,val9,val10,val11,val12,val13):
     message = pynmea2.SET('RM', 'SET', (val1,val2,val3,val4,val5,val6,val7,val8,val9,val10,val11,val12,val13))
     message=str(message)
-    rpiCheckSum=(message[-2:])
     message=message + '\r' +'\n'
     send_serial_message(message)   
                
@@ -2334,7 +2448,7 @@ tabBattery=tk.Frame(TabSetting,width=800,height=380)
 tabOdometry=tk.Frame(TabSetting,width=800,height=380)
 tabDateTime=tk.Frame(TabSetting,width=800,height=380)
 tabByLane=tk.Frame(TabSetting,width=800,height=380)
-#tabRfid=tk.Frame(TabSetting,width=800,height=380)
+tabVision=tk.Frame(TabSetting,width=800,height=380)
 
 
 
@@ -2342,7 +2456,6 @@ tabByLane=tk.Frame(TabSetting,width=800,height=380)
 TabSetting.add(tabMain,text="Main")
 TabSetting.add(tabWheelMotor,text="Wheels Motor")
 TabSetting.add(tabMowMotor,text="Mow Motor")
-#TabSetting.add(tabWheelMotor, Image = img1, text = "Manual",Compound = "top")
 TabSetting.add(tabPerimeter,text="Perimeter")
 TabSetting.add(tabImu,text="Imu")
 TabSetting.add(tabSonar,text="Sonar")
@@ -2350,7 +2463,7 @@ TabSetting.add(tabBattery,text="Battery")
 TabSetting.add(tabOdometry,text="Odometry")
 TabSetting.add(tabDateTime,text="Date Time")
 TabSetting.add(tabByLane,text="ByLane")
-#TabSetting.add(tabRfid,text="Rfid")
+TabSetting.add(tabVision,text="Vision")
 
 
 
@@ -2550,6 +2663,9 @@ ChkBtnsonarLeftUse.place(x=10,y=40,width=250, height=20)
 ChkBtnsonarRightUse=tk.Checkbutton(tabSonar, text="Use Sonar Right",relief=tk.SOLID,variable=SonVar3,anchor='nw')
 ChkBtnsonarRightUse.place(x=10,y=70,width=250, height=20)
 
+ChkBtnsonarLikeBumper=tk.Checkbutton(tabSonar, text="Sonar like a Bumper",relief=tk.SOLID,variable=SonVar4,anchor='nw')
+ChkBtnsonarLikeBumper.place(x=10,y=100,width=250, height=20)
+
 slidersonarTriggerBelow = tk.Scale(tabSonar,orient='horizontal',relief=tk.SOLID, from_=20, to=150, label='Detect Below in CM ')
 slidersonarTriggerBelow.place(x=10,y=130,width=250, height=50)
 
@@ -2692,7 +2808,35 @@ def ButtonSetPerimeterApply_click():
         myRobot.trakBlockInnerWheel='1'
     ButtonSendSettingToDue_click()
      
-
+def ButtonStartArea1_click():
+    ipMessage="curl "+Sender1AdressIP+"/A1"
+    consoleInsertText("Try to Start Area1 Sender" + ipMessage + '\n')
+    sub = subprocess.Popen("curl "+Sender1AdressIP+"/A1", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+    output,error_output = sub.communicate()
+    if str(output)=="b'SENDER IS ON'":
+        mymower.sigAreaOff=False
+        consoleInsertText("Area1 Sender is Running" + '\n')    
+    else:
+        mymower.sigAreaOff=True
+        consoleInsertText("*********** Area1 Sender FAIL To Start ************" + '\n')     
+        #print (error_output)
+        consoleInsertText(str(error_output)+ '\n') 
+    send_var_message('w','areaInMowing','1','0','0','0','0','0','0','0')
+    
+def ButtonStopArea2_click():
+    consoleInsertText("Try to Stop Area1 Sender" + '\n')  
+    sub = subprocess.Popen("curl "+Sender1AdressIP+"/A0", stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True)
+    output, error_output = sub.communicate()   
+    if str(output)=="b'SENDER IS OFF'":
+        mymower.sigAreaOff=True
+        consoleInsertText("Area1 Sender is Stop" + '\n')   
+    else:
+        print ("Area1 Sender FAIL TO response")
+        consoleInsertText("*********** Area1 Sender FAIL To Stop ************" + '\n')   
+        print (error_output)
+        consoleInsertText(str(error_output)+ '\n') 
+    send_var_message('w','areaInMowing','1','0','0','0','0','0','0','0')
+    
 def ButtonStartArea2_click():
     ipMessage="curl "+Sender2AdressIP+"/A1"
     consoleInsertText("Try to Start Area2 Sender" + ipMessage + '\n')
@@ -2867,8 +3011,132 @@ ButtonSetByLaneApply.place(x=300,y=350, height=25, width=150)
 ButtonSetByLaneApply.configure(command = ButtonSendSettingByLaneToDue_click,text="Send By Lane To Mower")
 
 
+"""************* Vision setting *****************************"""
 
 
+#exemple of vision_list=[['person',1,80,15],['chair',52,85,18,]]
+#vision_list=[['person',1,80,15],['chair',52,85,18]]
+#Read the file and create the list
+with open("vision_list.bin","rb") as fp :
+        vision_list=pickle.load(fp)
+        print("Vision file OK")
+        
+      
+def OnClick_vision(app):
+    try:
+        itemVision = treeVision.selection()[0]
+        txtVisionObject.delete('1.0', 'end')
+        txtVisionObject.insert('1.0', vision_list[treeVision.item(itemVision,"text")][0])
+        txtVisionID.delete('1.0', 'end')
+        txtVisionID.insert('1.0', vision_list[treeVision.item(itemVision,"text")][1])
+        txtVisionScore.delete('1.0', 'end')
+        txtVisionScore.insert('1.0', vision_list[treeVision.item(itemVision,"text")][2])
+        txtVisionArea.delete('1.0', 'end')
+        txtVisionArea.insert('1.0', vision_list[treeVision.item(itemVision,"text")][3])
+              
+    except:
+        print("Please click on correct line")
+
+
+    
+#Building the treeVisionView    
+treeVision = ttk.Treeview(tabVision)
+scrollbarVision1 = ttk.Scrollbar(treeVision,orient="vertical",command=treeVision.yview)
+scrollbarVision1.pack(side=tk.RIGHT, fill=tk.Y)
+treeVision.configure(yscrollcommand=scrollbarVision1.set)
+
+minwidth = treeVision.column('#0', option='minwidth')
+treeVision.column('#0', width=minwidth)
+
+treeVision["columns"]=("0","1","2","3")
+treeVision.column("0", width=150)
+treeVision.column("1", width=60,anchor='center')
+treeVision.column("2", width=60,anchor='center')
+treeVision.column("3", width=60,anchor='center')
+
+treeVision.heading("0", text="Name")
+treeVision.heading("1", text="Object ID ")
+treeVision.heading("2", text=" % Score")
+treeVision.heading("3", text=" % Image Area")
+
+treeVision.bind("<ButtonRelease-1>", OnClick_vision)
+treeVision.place(x=0, y=0, height=300, width=520)
+
+
+
+def rebuild_treeVisionview():
+    for i in treeVision.get_children():
+        treeVision.delete(i)   
+    for i in range(0,len(vision_list)):
+        treeVision.insert("" ,'end' ,text=i, values=(vision_list[i][0],vision_list[i][1],vision_list[i][2],vision_list[i][3]))
+    
+
+def save_VisionList():
+    with open("vision_list.bin","wb") as fp :
+        pickle.dump(vision_list,fp)
+            
+def del_vision_line():
+    curr = treeVision.focus()
+    if '' == curr: return
+    search_object=txtVisionObject.get("1.0",'end-1c')
+     
+    for i in range(0,len(vision_list)):
+        if (str(vision_list[i][0])== str(search_object)):
+            for value in vision_list[:]:
+                if (value[0] == search_object):
+                    vision_list.remove(value)
+                    print("remov ok")
+                
+            break
+    
+    rebuild_treeVisionview()
+        
+def add_vision_line(): 
+    maVisionList=[txtVisionObject.get("1.0",'end-1c'),txtVisionID.get("1.0",'end-1c'),txtVisionScore.get("1.0",'end-1c'),txtVisionArea.get("1.0",'end-1c')]
+    vision_list.append(maVisionList)
+    rebuild_treeVisionview()
+
+def test1():
+    search_code=(b'dog')
+    for i in range(0,len(vision_list)):
+        if (str("b'"+vision_list[i][0]+"'")== str(search_code)):
+            print("trouv")
+            print(vision_list[i])   
+
+tk.Label(tabVision,text="Name:",font=("Arial", 10), fg='green').place(x=530,y=5, height=20, width=80)
+tk.Label(tabVision,text="ID:",font=("Arial", 10), fg='green').place(x=530,y=25, height=20, width=80)
+tk.Label(tabVision,text="Score:",font=("Arial", 10), fg='green').place(x=530,y=45, height=20, width=80)
+tk.Label(tabVision,text="Area:",font=("Arial", 10), fg='green').place(x=530,y=65, height=20, width=80)
+
+txtVisionObject = tk.Text(tabVision)
+txtVisionObject.place(x=630,y=5,width=120, height=20)
+txtVisionObject.delete('1.0', 'end')
+txtVisionObject.insert('1.0', vision_list[0][0])
+txtVisionID = tk.Text(tabVision)
+txtVisionID.place(x=630,y=25,width=120, height=20)
+txtVisionID.delete('1.0', 'end')
+txtVisionID.insert('1.0', vision_list[0][1])
+txtVisionScore = tk.Text(tabVision)
+txtVisionScore.place(x=630,y=45,width=120, height=20)
+txtVisionScore.delete('1.0', 'end')
+txtVisionScore.insert('1.0', vision_list[0][2])
+txtVisionArea = tk.Text(tabVision)
+txtVisionArea.place(x=630,y=65,width=120, height=20)
+txtVisionArea.delete('1.0', 'end')
+txtVisionArea.insert('1.0', vision_list[0][3])
+
+
+ButtonVisionAdd = tk.Button(tabVision, text="Add ",command = add_vision_line)
+ButtonVisionAdd.place(x=530, y=170, height=30, width=110)
+ButtonVisionDel = tk.Button(tabVision, text="Delete ",command = del_vision_line)
+ButtonVisionDel.place(x=660, y=170, height=30, width=100)
+ButtonVisionSave = tk.Button(tabVision, text="Save to File",command = save_VisionList)
+ButtonVisionSave.place(x=530, y=210, height=60, width=140)
+
+#ButtonVisionTest = tk.Button(tabVision, text="seek test",command = test1)
+#ButtonVisionTest.place(x=530, y=260, height=60, width=140)
+
+rebuild_treeVisionview()
 
 
 
@@ -2997,7 +3265,7 @@ def ButtonJoystickOFF_click() :
     subprocess.call(["rfkill","block","bluetooth"])
     print ("BlueTooth Stop")
     mymower.useJoystick=False
-    returnval=messagebox.showinfo('Info',"Bluetooth and joystick are OFF")
+    messagebox.showinfo('Info',"Bluetooth and joystick are OFF")
         
 def buttonBlade_stop_click():
     send_var_message('w','stateCurr','17','0','0','0','0','0','0','0') #set the state to Manual before stop the blade
@@ -3091,7 +3359,6 @@ def ButtonConsoleMode_click():
     send_pfo_message('h03','1','2','3','4','5','6',)
 
 def ButtonClearConsole_click():
-    txtRecu=""
     txtConsoleRecu.delete('1.0',tk.END) #delete all
     
 
@@ -3394,8 +3661,8 @@ RfidPage.place(x=0, y=0, height=400, width=800)
 with open("tag_list.bin","rb") as fp :
         #rfid_list=[['01254456700','FR0',60,0,0,0,0,0],['01254456711','FR1',61,1,1,0,0,0]]
         rfid_list=pickle.load(fp)
-        print("RFID file loaded OK")
-        #print(rfid_list)
+        print("RFID file OK")
+        
 
 
 
@@ -3513,9 +3780,7 @@ def add_rfid_tag():
     rebuild_treeview()
 
 def test1():
-        
-    
-                    
+                          
     search_code=(b'01254456722')
     search_status="ALL"
     
@@ -3604,6 +3869,230 @@ ButtonBackHome.place(x=680, y=280, height=120, width=120)
 
 
 """ THE CAMERA PAGE ***************************************************"""
+def visionThread(num):
+    import os
+    import cv2
+    import numpy as np
+    from picamera.array import PiRGBArray
+    from picamera import PiCamera
+    import tensorflow as tf
+    
+
+    import sys
+
+    count=0
+    consoleInsertText("Initialise Vision " + '\n')
+# Set up camera constants
+    #IM_WIDTH = 1280
+    #IM_HEIGHT = 720
+    #IM_WIDTH = 640   # Use smaller resolution for
+    #IM_HEIGHT = 480  # slightly faster framerate
+    IM_WIDTH = 544   # Use smaller resolution for
+    IM_HEIGHT = 400  # slightly faster framerate
+    #IM_WIDTH = 320   # Use smaller resolution for
+    #IM_HEIGHT = 240  # slightly faster framerate
+    
+
+# This is needed for working directory 
+    sys.path.append('..')
+
+# Import utilites
+    from utils import label_map_util
+    from utils import visualization_utils as vis_util
+
+# Name of the directory containing the object detection module we're using
+    MODEL_NAME = 'ssdlite_mobilenet_v2_coco_2018_05_09'
+
+# Grab path to current working directory
+    CWD_PATH = os.getcwd()
+
+# Path to frozen detection graph .pb file, which contains the model that is used
+# for object detection.
+    PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb')
+
+# Path to label map file
+    PATH_TO_LABELS = os.path.join(CWD_PATH,'data','mscoco_label_map.pbtxt')
+    
+# Path to save image
+    folder_name=time.strftime("%Y%m%d%H%M%S")
+    PATH_TO_SAVE_IMG = cwd + "/vision/" + folder_name +"/"
+    os.mkdir(PATH_TO_SAVE_IMG)
+    
+
+
+# Number of classes the object detector can identify
+    NUM_CLASSES = 99
+
+## Load the label map.
+# Label maps map indices to category names, so that when the convolution
+# network predicts `5`, we know that this corresponds to `airplane`.
+# Here we use internal utility functions, but anything that returns a
+# dictionary mapping integers to appropriate string labels would be fine
+    label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
+    categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+    category_index = label_map_util.create_category_index(categories)
+
+# Load the Tensorflow model into memory.
+    detection_graph = tf.Graph()
+    with detection_graph.as_default():
+        od_graph_def = tf.compat.v1.GraphDef()
+        with tf.io.gfile.GFile(PATH_TO_CKPT, 'rb') as fid:
+            serialized_graph = fid.read()
+            od_graph_def.ParseFromString(serialized_graph)
+            tf.import_graph_def(od_graph_def, name='')
+
+        sess = tf.compat.v1.Session(graph=detection_graph)
+
+
+# Define input and output tensors (i.e. data) for the object detection classifier
+
+# Input tensor is the image
+    image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+
+# Output tensors are the detection boxes, scores, and classes
+# Each box represents a part of the image where a particular object was detected
+    detection_boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+
+# Each score represents level of confidence for each of the objects.
+# The score is shown on the result image, together with the class label.
+    detection_scores = detection_graph.get_tensor_by_name('detection_scores:0')
+    detection_classes = detection_graph.get_tensor_by_name('detection_classes:0')
+
+# Number of objects detected
+    num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+
+# Initialize frame rate calculation
+    frame_rate_calc = 1
+    freq = cv2.getTickFrequency()
+    font = cv2.FONT_HERSHEY_SIMPLEX
+
+    # Initialize camera and perform object detection.
+    #print(category_index) 
+##    for index in category_index :
+##        
+##        print(category_index[index]['id'],category_index[index]['name'])
+        
+
+    # Initialize Picamera and grab reference to the raw capture
+    camera = PiCamera()
+    camera.resolution = (IM_WIDTH,IM_HEIGHT)
+    camera.framerate = 10
+    rawCapture = PiRGBArray(camera, size=(IM_WIDTH,IM_HEIGHT))
+    rawCapture.truncate(0)
+    consoleInsertText("Vision Started "+ '\n')
+       #while(1):
+        #videocapture.read(frame1);
+        #cv2.videocapture(0)
+    for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
+        
+        if (time.time() > mymower.visionDetectAt + 2):  #wait before next detection
+            
+        
+            t1 = cv2.getTickCount()
+            
+        # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
+        # i.e. a single-column array, where each item in the column has the pixel RGB value
+            frame = np.copy(frame1.array)
+            frame.setflags(write=1)
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame_expanded = np.expand_dims(frame_rgb, axis=0)
+            
+        # Perform the actual detection by running the model with the image as input
+            #if True:
+            if ((myRobot.stateNames[mymower.state]=="OFF") or (myRobot.stateNames[mymower.state]=="FRWODO") or (myRobot.stateNames[mymower.state]=="PFND")):
+                
+                (boxes, scores, classes, num) = sess.run(
+                    [detection_boxes, detection_scores, detection_classes, num_detections],
+                    feed_dict={image_tensor: frame_expanded})
+
+        # Draw the box and results of the detection inside frame (aka 'visulaize the results')
+                vis_util.visualize_boxes_and_labels_on_image_array(
+                    frame,
+                    np.squeeze(boxes),
+                    np.squeeze(classes).astype(np.int32),
+                    np.squeeze(scores),
+                    category_index,
+                    use_normalized_coordinates=True,
+                    line_thickness=2,
+                    min_score_thresh=0.60)#draw box only if score >60%
+        
+        
+        
+                cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
+
+        # All  results have been drawn on the frame, so it's time to display it.
+                #photo1=ImageTk.PhotoImage(image=Image.fromarray(frame))
+                #Video_canvas.create_image(0,0,image = photo1,anchor=tk.NW)
+                cv2.imshow('Live Video', frame)
+                
+                #multiple detection are possible into one frame
+                #test only index 0 because it's the higher detection score
+                if (scores[0][0] > visionDetectMinScore/100): # see config.py for global min score value
+             
+                     x = int(((boxes[0][0][1]+boxes[0][0][3])/2)*IM_WIDTH)
+                     y = int(((boxes[0][0][0]+boxes[0][0][2])/2)*IM_HEIGHT)
+
+                     lx= int(boxes[0][0][3]*IM_WIDTH-boxes[0][0][1]*IM_WIDTH)
+                     ly= int(boxes[0][0][2]*IM_HEIGHT+boxes[0][0][0]*IM_HEIGHT)
+                     
+                     consoleInsertText("vision detect something here : " + str(x) + "  " + str(y) + '\n')
+                     consoleInsertText("size is : " + str(lx) + "  " + str(ly) + '\n')
+                     mymower.visionScore=100*scores[0][0]
+                     mymower.objectDetectedID=int(classes[0][0])
+                     mymower.surfaceDetected=100*(lx*ly)/(IM_WIDTH*IM_HEIGHT)
+                     #mymower.visionDetectAt = time.time()
+                     mymower.visionDetect=True
+                     if (x > IM_WIDTH/2) :
+                         mymower.VisionRollRight = 1
+                         #consoleInsertText("Mower need to rotate RIGHT" + '\n')
+
+                     else :
+                         mymower.VisionRollRight = 0
+                         #consoleInsertText("Mower need to rotate LEFT" + '\n')
+                                         
+                     fileName1=PATH_TO_SAVE_IMG + str(count) + ".jpg"
+                     print(fileName1)
+
+                     cv2.imwrite(fileName1, frame)
+               #     cv2.imwrite("/home/pi/Documents/PiArdumower/vision/vision/person%d.jpg" % count, frame)
+                     count=count+1
+
+                     photo1=ImageTk.PhotoImage(image=Image.fromarray(frame))
+                
+                     Video_canvas.create_image(0,0,image = photo1,anchor=tk.NW)
+
+            
+
+            else:
+                #t1 = cv2.getTickCount()
+                #photo1=ImageTk.PhotoImage(image=Image.fromarray(frame))
+                #print(1000*(cv2.getTickCount()-t1)/freq)
+                #Video_canvas.create_image(0,0,image = photo1,anchor=tk.NW)
+                     
+                #print(1000*(cv2.getTickCount()-t1)/freq)
+                cv2.imshow('Live Video', frame)
+                #print(1000*(cv2.getTickCount()-t1)/freq)
+
+             
+             
+            t2 = cv2.getTickCount()
+            time1 = (t2-t1)/freq
+            frame_rate_calc = 1/time1
+        
+        # Press 'q' to quit
+            if (cv2.waitKey(1) == ord('q') or not(mymower.visionRunning)):
+                send_pfo_message('rd0','1','2','3','4','5','6',)
+                break
+        #clear frame capture for next loop
+        rawCapture.truncate(0)
+
+    camera.close()
+
+    cv2.destroyAllWindows()
+
+    consoleInsertText("Vision Stopped "+ '\n')
+       
+    
 def BtnStreamVideoStart_click():
     consoleInsertText("Start Video streaming" + '\n')
     if CamVar1.get()==1:
@@ -3617,20 +4106,48 @@ def BtnStreamVideoStart_click():
 def BtnStreamVideoStop_click():
     consoleInsertText("Stop Video streaming" + '\n')
     myStreamVideo.stop()
+
+def BtnVisionStart_click():
+    if not (mymower.visionRunning):
+        BtnVisionStart.place_forget()
+        BtnVisionStop.place(x=650,y=200, height=25, width=80)
+        print("start new thread")
+        mymower.visionRunning=True
+        t1 = threading.Thread(target=visionThread, args=(10,))
+        t1.start() 
     
+def BtnVisionStop_click():
+    if (mymower.visionRunning):
+        mymower.visionRunning=False
+        print("stop vision")
+        BtnVisionStop.place_forget()
+        BtnVisionStart.place(x=650,y=200, height=25, width=80)
+        
+    
+        
 StreamVideoPage =tk.Frame(fen1)
 StreamVideoPage.place(x=0, y=0, height=400, width=800)
 FrameStreamVideo = tk.Frame(StreamVideoPage,borderwidth="1",relief=tk.SOLID)
-FrameStreamVideo.place(x=20, y=30, width=600, height=300)
-OptBtnStreamVideo1=tk.Radiobutton(FrameStreamVideo, text="320*240",relief=tk.SOLID,variable=CamVar1,value=0,anchor='nw').place(x=10,y=10,width=250, height=20)
-OptBtnStreamVideo2=tk.Radiobutton(FrameStreamVideo, text="640*480",relief=tk.SOLID,variable=CamVar1,value=1,anchor='nw').place(x=10,y=30,width=250, height=20)
-tk.Label(FrameStreamVideo, text='To view the vidéo stream use a browser http://(Your PI IP Adress and):8000/index.html').place(x=10,y=180)
-tk.Label(FrameStreamVideo, text='Do not forget to activate the Camera into the RaspiConfig').place(x=10,y=200)
+FrameStreamVideo.place(x=0, y=0, width=544, height=400)
 
-BtnStreamVideoStart= tk.Button(FrameStreamVideo,command = BtnStreamVideoStart_click,text="Start")
-BtnStreamVideoStart.place(x=180,y=250, height=25, width=60)
-BtnStreamVideoStop= tk.Button(FrameStreamVideo,command = BtnStreamVideoStop_click,text="Stop")
-BtnStreamVideoStop.place(x=10,y=250, height=25, width=60)
+Video_canvas=tk.Canvas(FrameStreamVideo,bg='red')
+Video_canvas.place(x=0, y=0, width=544, height=400)
+
+
+OptBtnStreamVideo1=tk.Radiobutton(StreamVideoPage, text="320*240",relief=tk.SOLID,variable=CamVar1,value=0,anchor='nw').place(x=620,y=10,width=100, height=20)
+OptBtnStreamVideo2=tk.Radiobutton(StreamVideoPage, text="640*480",relief=tk.SOLID,variable=CamVar1,value=1,anchor='nw').place(x=620,y=30,width=100, height=20)
+#tk.Label(FrameStreamVideo, text='To view the vidéo stream use a browser http://(Your PI IP Adress and):8000/index.html').place(x=10,y=180)
+#tk.Label(FrameStreamVideo, text='Do not forget to activate the Camera into the RaspiConfig').place(x=10,y=200)
+
+BtnStreamVideoStart= tk.Button(StreamVideoPage,command = BtnStreamVideoStart_click,text="Start Streaming")
+BtnStreamVideoStart.place(x=650,y=100, height=25, width=110)
+BtnStreamVideoStop= tk.Button(StreamVideoPage,command = BtnStreamVideoStop_click,text="Stop Streaming")
+BtnStreamVideoStop.place(x=650,y=130, height=25, width=110)
+
+BtnVisionStart= tk.Button(StreamVideoPage,command = BtnVisionStart_click,text="Start Vision")
+if (useVision):
+    BtnVisionStart.place(x=650,y=200, height=25, width=80)
+BtnVisionStop= tk.Button(StreamVideoPage,command = BtnVisionStop_click,text="Stop Vision")
 
 ButtonBackHome = tk.Button(StreamVideoPage, image=imgBack, command = ButtonBackToMain_click)
 ButtonBackHome.place(x=680, y=280, height=120, width=120)
@@ -3774,6 +4291,36 @@ ButtonStartArea3.configure(command = ButtonStartArea3_click,text="Start Sender A
 ButtonStopArea3 = tk.Button(TestPage)
 ButtonStopArea3.place(x=210,y=350, height=25, width=150)
 ButtonStopArea3.configure(command = ButtonStopArea3_click,text="Stop Sender Area3")
+
+def ButtonStartOut2_click():
+    send_pfo_message('re1','1','2','3','4','5','6',)
+    
+def ButtonStopOut2_click():
+    send_pfo_message('re0','1','2','3','4','5','6',)
+
+ButtonStartOut2 = tk.Button(TestPage)
+ButtonStartOut2.place(x=560,y=115, height=25, width=75)
+ButtonStartOut2.configure(command = ButtonStartOut2_click,text="Start Out2")
+
+ButtonStopOut2 = tk.Button(TestPage)
+ButtonStopOut2.place(x=660,y=115, height=25, width=75)
+ButtonStopOut2.configure(command = ButtonStopOut2_click,text="Stop Out2")
+
+def ButtonStartOut3_click():
+    send_pfo_message('rf1','1','2','3','4','5','6',)
+    
+def ButtonStopOut3_click():
+    send_pfo_message('rf0','1','2','3','4','5','6',)
+
+ButtonStartOut3 = tk.Button(TestPage)
+ButtonStartOut3.place(x=560,y=150, height=25, width=75)
+ButtonStartOut3.configure(command = ButtonStartOut3_click,text="Start Out3")
+
+ButtonStopOut3 = tk.Button(TestPage)
+ButtonStopOut3.place(x=660,y=150, height=25, width=75)
+ButtonStopOut3.configure(command = ButtonStopOut3_click,text="Stop Out3")
+
+
 
 ButtonBackHome = tk.Button(TestPage, image=imgBack, command = ButtonBackToMain_click)
 ButtonBackHome.place(x=680, y=280, height=120, width=120)
@@ -4111,7 +4658,7 @@ if(useMqtt):
 consoleInsertText('Control PI time and PCB1.3 time'+ '\n')
 read_time_setting()
 ButtonAuto_click()
-#BtnGpsRecordStop_click()
+BtnGpsRecordStop_click()
 
 if (streamVideoOnPower):
     BtnStreamVideoStart_click()
