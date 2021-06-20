@@ -43,7 +43,7 @@
 #include "perimeter.h"
 
 // pfodApp state
-enum { PFOD_OFF, PFOD_MENU, PFOD_LOG_SENSORS,
+enum { PFOD_OFF, PFOD_MENU, PFOD_CONSOLE,
        PFOD_PLOT_BAT, PFOD_PLOT_ODO2D, PFOD_PLOT_IMU, PFOD_PLOT_SENSOR_COUNTERS,
        PFOD_PLOT_SENSORS, PFOD_PLOT_PERIMETER, PFOD_PLOT_GPS, PFOD_PLOT_GPS2D,
        PFOD_PLOT_MOTOR
@@ -61,12 +61,14 @@ class RemoteControl
     //bb10
     void processPI(String RpiCmd, float v1, float v2, float v3) ;
     void run();
+    byte pfodState;
+    
   private:
     HardwareSerial* serialPort;
     Robot *robot;
     boolean pfodCmdComplete;
     String pfodCmd;
-    byte pfodState;
+    
     int testmode;
     unsigned long nextPlotTime;
     //bb

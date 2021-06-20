@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.55-Azuritber GY-88/GY-521"
+#define VER "1.60-Azuritber GY-88/GY-521"
 
 
 // sensors
@@ -218,6 +218,7 @@ class Robot
   public:
     String name;
     boolean developerActive;
+    boolean ConsoleToPfod;
     // --------- state machine --------------------------
     byte stateCurr;
     byte stateLast;
@@ -797,6 +798,12 @@ class Robot
     //virtual void RaspberryPISendStat ();
     
     virtual void receivePiPfodCommand (String RpiCmd,float v1,float v2,float v3);
+    
+    virtual void ShowMessage(String message);
+    virtual void ShowMessageln(String message);
+    virtual void ShowMessage(float value);
+    virtual void ShowMessageln(float value);
+    
     virtual void printSettingSerial();
     char* mowPatternNameList(byte mowPatternIndex);
     
