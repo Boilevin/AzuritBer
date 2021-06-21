@@ -879,6 +879,7 @@ class Robot
 
 
     virtual void beeper();
+    virtual void refreshScreen();
 
 
     

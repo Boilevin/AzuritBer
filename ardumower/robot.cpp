@@ -38,6 +38,8 @@
 #include "timer.h"
 #include "DHT.h"
 #include "RpiRemote.h"
+#include "ACROBOTIC_SSD1306.h"
+
 //bber200
 
 
@@ -254,7 +256,7 @@ Robot::Robot() {
   motorRightPID.Kd = motorLeftPID.Kd;
   gpsReady = false;
   MyrpiStatusSync = false;
-  ConsoleToPfod=false;
+  ConsoleToPfod = false;
 }
 
 
@@ -2042,7 +2044,19 @@ void Robot::setup()  {
   PinMan.begin();
   if (RaspberryPIUse) MyRpi.init();
 
-
+  //------------------------  SCREEN parts  ----------------------------------------
+  oled.init();    // Initialze SSD1306 OLED display
+  delay(500);
+  oled.clearDisplay();              // Clear screen
+  delay(500);
+  oled.setTextXY(0, 0);             // Set cursor position, start of line 0
+  oled.putString("ARDUMOWER");
+  oled.setTextXY(1, 1);             // Set cursor position, start of line 1
+  oled.putString(VER);
+  oled.setTextXY(2, 1);             // Set cursor position, start of line 2
+  oled.putString("V3.2");
+  oled.setTextXY(3, 1);           // Set cursor position, line 2 10th character
+  oled.putString("2 LOOPS");
 
 
 
@@ -3986,7 +4000,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
   ShowMessage (F(statusNames[statusCurr]));
   ShowMessage (" / ");
   ShowMessageln (F(stateNames[stateCurr]));
-  
+
 
 
 
@@ -4004,27 +4018,27 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 void Robot::ShowMessage(String message) {
   Console.print (message);
-  if (ConsoleToPfod) { 
-    Bluetooth.print (message);   
+  if (ConsoleToPfod) {
+    Bluetooth.print (message);
   }
 }
 void Robot::ShowMessageln(String message) {
   Console.println(message);
-  if (ConsoleToPfod) { 
-    Bluetooth.println(message);   
+  if (ConsoleToPfod) {
+    Bluetooth.println(message);
   }
 }
 
 void Robot::ShowMessage(float value) {
   Console.print (value);
-  if (ConsoleToPfod) { 
-    Bluetooth.print (value);   
+  if (ConsoleToPfod) {
+    Bluetooth.print (value);
   }
 }
 void Robot::ShowMessageln(float value) {
   Console.println(value);
-  if (ConsoleToPfod) { 
-    Bluetooth.println(value);   
+  if (ConsoleToPfod) {
+    Bluetooth.println(value);
   }
 }
 
@@ -4862,14 +4876,22 @@ void Robot::checkTimeout() {
 }
 
 
+void Robot::refreshScreen() {
+  oled.setTextXY(7, 0);
+  oled.putString("                ");
+  oled.setTextXY(7, 0);
+  oled.putString("Millis : ");
+  oled.setTextXY(7, 10);
+  oled.putFloat(millis(), 0);
 
+}
 
 
 
 void Robot::loop()  {
   stateTime = millis() - stateStartTime;
   int steer;
-
+  
   ADCMan.run();
   if (perimeterUse) perimeter.run();
   if (RaspberryPIUse) {
@@ -4943,6 +4965,7 @@ void Robot::loop()  {
   if (millis() >= nextTimePfodLoop) {
     nextTimePfodLoop = millis() + 200;
     rc.run();
+    refreshScreen();
   }
 
   // state machine - things to do *PERMANENTLY* for current state
