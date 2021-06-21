@@ -3514,22 +3514,22 @@ void Robot::setNextState(byte stateNew, byte dir) {
         ShowMessage("Find Inside roll nb: ");
         ShowMessageln(RollToInsideQty);
       }
+      /*
+            if (mowPatternCurr == MOW_LANES) {
+              //bber201
+              if (autoBylaneToRandom) {
+                mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
+                ShowMessageln("We are in a corner mowPatternCurr change to Random for the next 3 minutes ");
+                mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
+              }
 
-      if (mowPatternCurr == MOW_LANES) {
-        //bber201
-        if (autoBylaneToRandom) {
-          mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
-          ShowMessageln("We are in a corner mowPatternCurr change to Random for the next 3 minutes ");
-          mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
-        }
-
-        laneUseNr = laneUseNr + 1;
-        findedYaw = 999;
-        justChangeLaneDir = true;
-        nextTimeToDmpAutoCalibration = millis(); // so the at the end of the next line a calibration occur
-        if (laneUseNr > 3) laneUseNr = 1;
-      }
-
+              laneUseNr = laneUseNr + 1;
+              findedYaw = 999;
+              justChangeLaneDir = true;
+              nextTimeToDmpAutoCalibration = millis(); // so the at the end of the next line a calibration occur
+              if (laneUseNr > 3) laneUseNr = 1;
+            }
+      */
       AngleRotate = 50;
       Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
       if (dir == RIGHT) {
@@ -4891,7 +4891,7 @@ void Robot::refreshScreen() {
 void Robot::loop()  {
   stateTime = millis() - stateStartTime;
   int steer;
-  
+
   ADCMan.run();
   if (perimeterUse) perimeter.run();
   if (RaspberryPIUse) {
@@ -6174,7 +6174,21 @@ void Robot::loop()  {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the left motor completly stop because rotation is inverted
-            if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            if (!perimeterInside) {
+              if (mowPatternCurr == MOW_LANES) {
+                //bber601
+                mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
+                ShowMessageln("We are in a corner mowPatternCurr change to Random for the next 3 minutes ");
+                mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
+                laneUseNr = laneUseNr + 1;
+                if (laneUseNr > 3) laneUseNr = 1;
+                findedYaw = 999;
+                justChangeLaneDir = true;
+                nextTimeToDmpAutoCalibration = millis(); // so the at the end of the next line a calibration occur
+
+              }
+              setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            }
             else setNextState(STATE_NEXT_LANE_FORW, rollDir);
           }
         }
@@ -6184,7 +6198,24 @@ void Robot::loop()  {
         if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the left motor completly stop because rotation is inverted
-            if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            if (!perimeterInside) {
+              if (mowPatternCurr == MOW_LANES) {
+                //bber601
+
+                mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
+                ShowMessageln("We are in a corner mowPatternCurr change to Random for the next 3 minutes ");
+                mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
+                laneUseNr = laneUseNr + 1;
+                if (laneUseNr > 3) laneUseNr = 1;
+                findedYaw = 999;
+                justChangeLaneDir = true;
+                nextTimeToDmpAutoCalibration = millis(); // so the at the end of the next line a calibration occur
+
+              }
+
+
+              setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
+            }
             else setNextState(STATE_NEXT_LANE_FORW, rollDir);
           }
         }
@@ -6236,7 +6267,7 @@ void Robot::loop()  {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_FORWARD_ODO, rollDir);// forward odo to straight line
-            rollDir = LEFT;//invert the next rotate
+            //rollDir = LEFT;//invert the next rotate
           }
         }
       }
@@ -6248,7 +6279,7 @@ void Robot::loop()  {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_FORWARD_ODO, rollDir);
-            rollDir = RIGHT;// invert the next rotate
+            //rollDir = RIGHT;// invert the next rotate
           }
         }
       }
@@ -6259,13 +6290,13 @@ void Robot::loop()  {
         if (rollDir == RIGHT) {
           if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
           else setNextState(STATE_FORWARD_ODO, rollDir);// forward odo to straight line
-          rollDir = LEFT;//invert the next rotate
+          //rollDir = LEFT;//invert the next rotate
         }
         else
         {
           if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
           else setNextState(STATE_FORWARD_ODO, rollDir);
-          rollDir = RIGHT;// invert the next rotate
+          //rollDir = RIGHT;// invert the next rotate
         }
       }
       break;
