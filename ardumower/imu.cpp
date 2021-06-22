@@ -138,7 +138,7 @@ void IMUClass::begin() {
 
   run();
   Console.print(F("AccelGyro Yaw: "));
-  Console.print(ypr.yaw);
+  Console.println(ypr.yaw);
 
   if (robot.CompassUse) {
     Console.print(F("  Compass Yaw: "));
@@ -153,7 +153,7 @@ void IMUClass::begin() {
     CompassGyroOffset = 0;
   }
 
-  Console.println(F("--------------------------------- IMU READY ------------------------------"));
+  
 }
 
 // weight fusion (w=0..1) of two radiant values (a,b)

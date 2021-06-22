@@ -48,9 +48,7 @@ enum { PFOD_OFF, PFOD_MENU, PFOD_CONSOLE,
        PFOD_PLOT_SENSORS, PFOD_PLOT_PERIMETER, PFOD_PLOT_GPS, PFOD_PLOT_GPS2D,
        PFOD_PLOT_MOTOR
      };
-
 class Robot;
-
 class RemoteControl
 {
   public:

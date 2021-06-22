@@ -667,6 +667,11 @@ class Robot
     boolean userSwitch2       ;       // user-defined switch 2 (default value)
     boolean userSwitch3       ;       // user-defined switch 3 (default value)
 
+
+    
+    
+    
+    
     
     // --------- charging -------------------------------
 
@@ -721,6 +726,8 @@ class Robot
     byte consoleMode ;
     unsigned long nextTimeButtonCheck ;
     unsigned long nextTimeInfo ;
+    unsigned long nextTimeScreen ;
+    
     unsigned long nextTimePrintConsole;
     byte rollDir;
     unsigned long nextTimeButton ;
@@ -879,7 +886,7 @@ class Robot
 
 
     virtual void beeper();
-    virtual void refreshScreen();
+    
 
 
     

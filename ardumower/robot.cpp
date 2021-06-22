@@ -38,7 +38,9 @@
 #include "timer.h"
 #include "DHT.h"
 #include "RpiRemote.h"
-#include "ACROBOTIC_SSD1306.h"
+
+//#include "ACROBOTIC_SSD1306.h"
+#include "Screen.h"
 
 //bber200
 
@@ -62,8 +64,8 @@ DHT dht(DHTPIN, DHTTYPE);
 //Setting for Raspberry -----------------------------------
 RpiRemote MyRpi;
 
-//bber
-
+//Setting for Screen -----------------------------------
+Screen MyScreen;
 
 
 char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "PFND", "PTRK", "PROL", "PREV", "STAT", "CHARG", "STCHK", "STREV",
@@ -205,6 +207,7 @@ Robot::Robot() {
   consoleMode = CONSOLE_OFF;
   nextTimeButtonCheck = 0;
   nextTimeInfo = 0;
+  nextTimeScreen = 0;
   nextTimePrintConsole = 0;
   nextTimeMotorSense = 0;
   nextTimeIMU = 0;
@@ -2033,32 +2036,35 @@ void Robot::setUserSwitches() {
 
 void Robot::setup()  {
 
-  // i don't understand why the mower start before the robot setup ????????????????????????????????????????????
+  //  mower.h start before the robot setup
 
-  Console.print(" --> ++++++++++++++++++++++++++++++++++* Start Robot Setup at ");
+  Console.print("++++++++++++++* Start Robot Setup at ");
   Console.print(millis());
-  Console.println(" --> +++++++++++++++++++++++++++");
+  Console.println(" ++++++++++++");
 
 
   ADCMan.begin();
   PinMan.begin();
   if (RaspberryPIUse) MyRpi.init();
 
+
+
   //------------------------  SCREEN parts  ----------------------------------------
-  oled.init();    // Initialze SSD1306 OLED display
-  delay(500);
-  oled.clearDisplay();              // Clear screen
-  delay(500);
-  oled.setTextXY(0, 0);             // Set cursor position, start of line 0
-  oled.putString("ARDUMOWER");
-  oled.setTextXY(1, 1);             // Set cursor position, start of line 1
-  oled.putString(VER);
-  oled.setTextXY(2, 1);             // Set cursor position, start of line 2
-  oled.putString("V3.2");
-  oled.setTextXY(3, 1);           // Set cursor position, line 2 10th character
-  oled.putString("2 LOOPS");
+  if (Enable_Screen) {
+    MyScreen.init();
+    /*
+      Console.println(" --- Start SCREEN Connection --- ");
+      oled.init();    // Initialze SSD1306 OLED display
+      delay(500);
+      oled.clearDisplay();              // Clear screen
+      delay(500);
+      oled.setTextXY(2, 0);
+      oled.putString("AZURITBER");
+      oled.setTextXY(4, 0);
+      oled.putString(VER);
+    */
 
-
+  }
 
   //setDefaultTime();
   //init of timer for factory setting
@@ -2089,6 +2095,7 @@ void Robot::setup()  {
   if (imuUse) imu.begin();
 
   if (perimeterUse) {
+    Console.println(" ------- Initialize Perimeter Setting ------- ");
     perimeter.changeArea(1);
     perimeter.begin(pinPerimeterLeft, pinPerimeterRight);
   }
@@ -2133,6 +2140,11 @@ void Robot::setup()  {
   }
 
   nextTimeInfo = millis();
+
+  if (Enable_Screen) {
+    MyScreen.erase(); // Clear screen
+
+  }
 
 }
 
@@ -3349,8 +3361,8 @@ void Robot::setNextState(byte stateNew, byte dir) {
       UseBrakeLeft = 1;
       UseAccelRight = 1;
       UseBrakeRight = 1;
-      motorLeftSpeedRpmSet = motorSpeedMaxRpm / 1.5 ;
-      motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5 ;
+      motorLeftSpeedRpmSet = motorSpeedMaxRpm  ;
+      motorRightSpeedRpmSet = -motorSpeedMaxRpm  ;
       stateEndOdometryRight = odometryRight - (int)36000 * (odometryTicksPerCm * PI * odometryWheelBaseCm / 36000);
       stateEndOdometryLeft = odometryLeft + (int)36000 * (odometryTicksPerCm * PI * odometryWheelBaseCm / 36000);
       OdoRampCompute();
@@ -3514,22 +3526,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
         ShowMessage("Find Inside roll nb: ");
         ShowMessageln(RollToInsideQty);
       }
-      /*
-            if (mowPatternCurr == MOW_LANES) {
-              //bber201
-              if (autoBylaneToRandom) {
-                mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
-                ShowMessageln("We are in a corner mowPatternCurr change to Random for the next 3 minutes ");
-                mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
-              }
 
-              laneUseNr = laneUseNr + 1;
-              findedYaw = 999;
-              justChangeLaneDir = true;
-              nextTimeToDmpAutoCalibration = millis(); // so the at the end of the next line a calibration occur
-              if (laneUseNr > 3) laneUseNr = 1;
-            }
-      */
       AngleRotate = 50;
       Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
       if (dir == RIGHT) {
@@ -4876,15 +4873,7 @@ void Robot::checkTimeout() {
 }
 
 
-void Robot::refreshScreen() {
-  oled.setTextXY(7, 0);
-  oled.putString("                ");
-  oled.setTextXY(7, 0);
-  oled.putString("Millis : ");
-  oled.setTextXY(7, 10);
-  oled.putFloat(millis(), 0);
 
-}
 
 
 
@@ -4945,7 +4934,25 @@ void Robot::loop()  {
     gps.run();
   }
 
-
+  if ((Enable_Screen) && (millis() >= nextTimeScreen))   {
+    nextTimeScreen = millis() + 250;
+    
+    if ((statusCurr == WAIT) || (statusCurr == MANUAL) || (statusCurr == REMOTE) || (statusCurr == TESTING) || (statusCurr == WAITSIG2)) {
+      MyScreen.refreshWaitScreen();
+    }
+    if ((statusCurr == NORMAL_MOWING) || (statusCurr == SPIRALE_MOWING) || (statusCurr == WIRE_MOWING)) {
+      MyScreen.refreshMowScreen();
+    }
+    if ((statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START) ) {
+      MyScreen.refreshTrackScreen();
+    }
+    if (statusCurr == IN_ERROR ) {
+      MyScreen.refreshErrorScreen();
+    }
+    if (statusCurr == IN_STATION) {
+      MyScreen.refreshStationScreen();
+    }
+  }
 
   if (millis() >= nextTimeInfo) {
     if ((millis() - nextTimeInfo > 250)) {
@@ -4963,9 +4970,9 @@ void Robot::loop()  {
   }
 
   if (millis() >= nextTimePfodLoop) {
-    nextTimePfodLoop = millis() + 200;
+    nextTimePfodLoop = millis() + 100;
     rc.run();
-    refreshScreen();
+
   }
 
   // state machine - things to do *PERMANENTLY* for current state
