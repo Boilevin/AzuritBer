@@ -18,14 +18,14 @@
 
 /*
   digital PID controller
-*/
-class Robot;
 
+class Robot;
+*/
 class Screen
 {
   public:
-    void setRobot(Robot *aRobot);
-    Screen();
+    //void setRobot(Robot *aRobot);
+    //Screen();
     void init();
     void refreshMowScreen();
     void refreshStationScreen();
@@ -34,7 +34,7 @@ class Screen
     void refreshTrackScreen() ;
     void erase();
   private:
-    Robot *robot;
+    //Robot *robot;
     // ---------screen ----------------------------
     float lastScreenbatVoltage ;
     float lastScreenchgVoltage ;

@@ -2052,18 +2052,6 @@ void Robot::setup()  {
   //------------------------  SCREEN parts  ----------------------------------------
   if (Enable_Screen) {
     MyScreen.init();
-    /*
-      Console.println(" --- Start SCREEN Connection --- ");
-      oled.init();    // Initialze SSD1306 OLED display
-      delay(500);
-      oled.clearDisplay();              // Clear screen
-      delay(500);
-      oled.setTextXY(2, 0);
-      oled.putString("AZURITBER");
-      oled.setTextXY(4, 0);
-      oled.putString(VER);
-    */
-
   }
 
   //setDefaultTime();
@@ -4936,12 +4924,13 @@ void Robot::loop()  {
 
   if ((Enable_Screen) && (millis() >= nextTimeScreen))   {
     nextTimeScreen = millis() + 250;
-    
+    //  StartReadAt = millis();
+
     if ((statusCurr == WAIT) || (statusCurr == MANUAL) || (statusCurr == REMOTE) || (statusCurr == TESTING) || (statusCurr == WAITSIG2)) {
-      MyScreen.refreshWaitScreen();
-    }
+        MyScreen.refreshWaitScreen();
+     }
     if ((statusCurr == NORMAL_MOWING) || (statusCurr == SPIRALE_MOWING) || (statusCurr == WIRE_MOWING)) {
-      MyScreen.refreshMowScreen();
+        MyScreen.refreshMowScreen();
     }
     if ((statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START) ) {
       MyScreen.refreshTrackScreen();
@@ -4952,6 +4941,14 @@ void Robot::loop()  {
     if (statusCurr == IN_STATION) {
       MyScreen.refreshStationScreen();
     }
+    /*
+        EndReadAt = millis();
+        ReadDuration = EndReadAt - StartReadAt;
+        ShowMessage("Screen loop Duration in ms ");
+        ShowMessageln(ReadDuration);
+    */
+
+
   }
 
   if (millis() >= nextTimeInfo) {
