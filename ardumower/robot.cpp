@@ -4924,7 +4924,7 @@ void Robot::loop()  {
 
   if ((Enable_Screen) && (millis() >= nextTimeScreen))   {
     nextTimeScreen = millis() + 250;
-    //  StartReadAt = millis();
+    StartReadAt = millis();
 
     if ((statusCurr == WAIT) || (statusCurr == MANUAL) || (statusCurr == REMOTE) || (statusCurr == TESTING) || (statusCurr == WAITSIG2)) {
         MyScreen.refreshWaitScreen();
@@ -4941,12 +4941,12 @@ void Robot::loop()  {
     if (statusCurr == IN_STATION) {
       MyScreen.refreshStationScreen();
     }
-    /*
+    
         EndReadAt = millis();
         ReadDuration = EndReadAt - StartReadAt;
         ShowMessage("Screen loop Duration in ms ");
         ShowMessageln(ReadDuration);
-    */
+    
 
 
   }

@@ -317,6 +317,7 @@ void Mower::setup() {
   I2Creset();
   Wire.begin();
   Wire1.begin();
+  Wire1.setClock(400000);
   // Flash.test();
 
   /* while (!checkAT24C32()){
