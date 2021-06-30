@@ -2509,14 +2509,35 @@ void Robot::checkButton() {
       }
       if  ((stateCurr == STATE_OFF) || (stateCurr == STATE_STATION)) {
         if (buttonCounter == 1) {
-          // start normal with mowing in lanes
           motorMowEnable = true;
+          ShowMessageln("MANUAL START FROM STATION");
           statusCurr = NORMAL_MOWING;
+          findedYaw = 999;
+          imuDirPID.reset();
           mowPatternCurr = MOW_LANES;
+          laneUseNr = 1;
+          rollDir = 1;
+          whereToStart = 1;
+          areaToGo = 1;
+          actualLenghtByLane = 40;
+          beaconToStart = 0;
+          mowPatternDuration = 0;
+          totalDistDrive = 0;
           buttonCounter = 0;
           if (RaspberryPIUse) MyRpi.SendStatusToPi();
-          setNextState(STATE_ACCEL_FRWRD, 0);
-          return;
+
+          if (stateCurr == STATE_STATION) {
+            setActuator(ACT_CHGRELAY, 0);
+            setNextState(STATE_STATION_REV, 0);
+          }
+
+          else {
+            setNextState(STATE_ACCEL_FRWRD, 0);
+            return;
+          }
+
+
+
         }
         else if (buttonCounter == 2) {
           // start normal with random mowing
@@ -2525,8 +2546,17 @@ void Robot::checkButton() {
           mowPatternCurr = MOW_RANDOM;
           buttonCounter = 0;
           if (RaspberryPIUse) MyRpi.SendStatusToPi();
-          setNextState(STATE_ACCEL_FRWRD, 0);
-          return;
+          if (stateCurr == STATE_STATION) {
+            setActuator(ACT_CHGRELAY, 0);
+            setNextState(STATE_STATION_REV, 0);
+          }
+
+          else {
+            setNextState(STATE_ACCEL_FRWRD, 0);
+            return;
+          }
+
+          
         }
         else if (buttonCounter == 3) {
           if (stateCurr == STATE_STATION) return;
@@ -4927,10 +4957,10 @@ void Robot::loop()  {
     StartReadAt = millis();
 
     if ((statusCurr == WAIT) || (statusCurr == MANUAL) || (statusCurr == REMOTE) || (statusCurr == TESTING) || (statusCurr == WAITSIG2)) {
-        MyScreen.refreshWaitScreen();
-     }
+      MyScreen.refreshWaitScreen();
+    }
     if ((statusCurr == NORMAL_MOWING) || (statusCurr == SPIRALE_MOWING) || (statusCurr == WIRE_MOWING)) {
-        MyScreen.refreshMowScreen();
+      MyScreen.refreshMowScreen();
     }
     if ((statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START) ) {
       MyScreen.refreshTrackScreen();
@@ -4941,12 +4971,12 @@ void Robot::loop()  {
     if (statusCurr == IN_STATION) {
       MyScreen.refreshStationScreen();
     }
-    
-        EndReadAt = millis();
-        ReadDuration = EndReadAt - StartReadAt;
-        ShowMessage("Screen loop Duration in ms ");
-        ShowMessageln(ReadDuration);
-    
+
+    EndReadAt = millis();
+    ReadDuration = EndReadAt - StartReadAt;
+    ShowMessage("Main loop Duration in ms ");
+    ShowMessageln(ReadDuration);
+
 
 
   }

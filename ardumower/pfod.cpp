@@ -1326,6 +1326,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     robot->setNextState(STATE_PERI_FIND, 0);
     sendCommandMenu(true);
   } else if (pfodCmd == "ra") {
+    robot->statusCurr = NORMAL_MOWING;
     robot->mowPatternDuration = 0;
     robot->motorMowEnable = true;
     if ((robot->stateCurr == STATE_STATION) || (robot->stateCurr == STATE_STATION_CHARGING)) {

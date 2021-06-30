@@ -12,6 +12,11 @@
 #include <SPI.h>
 #endif
 
+unsigned long aStartReadAt;
+unsigned long aEndReadAt;
+unsigned long aReadDuration;
+      
+
 // Please UNCOMMENT one of the contructor lines below
 // U8x8 Contructor List
 // The complete list is available here: https://github.com/olikraus/u8g2/wiki/u8x8setupcpp
@@ -228,14 +233,53 @@ void Screen::init() {
   
 }
 void Screen::refreshMowScreen() {
-  if (robot.stateTime < 500) {
-    u8x8.clearDisplay();
-  }
-  else {
+  
    
-    u8x8.drawString(7, 3, String(int(robot.batVoltage)).c_str());
+   // u8x8.drawString(7, 3, String(int(robot.batVoltage)).c_str());
     
-  }
+  if (lastScreenbatVoltage != int(robot.batVoltage)) {
+      lastScreenbatVoltage = int(robot.batVoltage);
+      u8x8.setCursor(7, 2);
+      u8x8.print("     ");
+      u8x8.setCursor(7, 2);
+      u8x8.print(lastScreenbatVoltage);
+      
+      Serial.println(lastScreenbatVoltage);
+      Serial.println(robot.stateName());
+    }
+    if (lastScreenloopsPerSec != int(robot.loopsPerSec)) {
+      lastScreenloopsPerSec = int(robot.loopsPerSec);
+      u8x8.setCursor(10, 3);
+      u8x8.print("      ");
+      u8x8.setCursor(10, 3);
+      u8x8.print(lastScreenloopsPerSec);
+    }
+
+    if (lastScreenstatusName != robot.statusName()) {
+      lastScreenstatusName = robot.statusName();
+      //u8x8.setCursor(1, 5);
+      //u8x8.print("                ");
+      u8x8.clearLine(5);
+      u8x8.setCursor(1, 5);
+      u8x8.print(lastScreenstatusName);
+
+    }
+
+
+    if (lastScreenstateName != robot.stateName()) {
+      aStartReadAt = millis();
+
+      lastScreenstateName = robot.stateName();
+     // u8x8.setCursor(1, 6);
+     // u8x8.print("                ");
+      u8x8.clearLine(6);
+      u8x8.setCursor(1, 6);
+      u8x8.print(lastScreenstateName);
+        aEndReadAt = millis();
+        aReadDuration = aEndReadAt - aStartReadAt;
+        Serial.print("state loop Duration in ms ");
+        Serial.println(aReadDuration);
+    }
 
 
 
@@ -280,8 +324,9 @@ void Screen::refreshWaitScreen() {
 
     if (lastScreenstatusName != robot.statusName()) {
       lastScreenstatusName = robot.statusName();
-      u8x8.setCursor(1, 5);
-      u8x8.print("                ");
+      //u8x8.setCursor(1, 5);
+      //u8x8.print("                ");
+      u8x8.clearLine(5);
       u8x8.setCursor(1, 5);
       u8x8.print(lastScreenstatusName);
 
@@ -290,8 +335,9 @@ void Screen::refreshWaitScreen() {
 
     if (lastScreenstateName != robot.stateName()) {
       lastScreenstateName = robot.stateName();
-      u8x8.setCursor(1, 6);
-      u8x8.print("                ");
+     // u8x8.setCursor(1, 6);
+     // u8x8.print("                ");
+      u8x8.clearLine(6);
       u8x8.setCursor(1, 6);
       u8x8.print(lastScreenstateName);
 
@@ -321,5 +367,5 @@ void Screen::refreshTrackScreen() {
 
 void Screen::erase() {
   u8x8.clearDisplay();
-  // delay(500);
+  
 }
