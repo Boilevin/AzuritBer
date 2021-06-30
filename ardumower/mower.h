@@ -125,8 +125,8 @@
 #define Enable_DueWatchdog true
 //#define Enable_DueWatchdog false
 
-//#define Enable_Screen true
-#define Enable_Screen false
+#define Enable_Screen true
+//#define Enable_Screen false
 
 #define RaspberryPIPort SerialUSB  //The PI is connected on NATIVE USB port over USB cable
 
@@ -141,8 +141,8 @@
 
 // ------- RTC  and EEPROM I2C addresses --------------------------------------------------------------
 #define DS1307_ADDRESS B1101000
-#define AT24C32_ADDRESS B1010000 //0x50 //Standard PCB1.3 RTC ds1307 memory module
-//#define AT24C32_ADDRESS B1010111 //0x57 //Simple PCB RTC ds3231 memory module
+//#define AT24C32_ADDRESS B1010000 //0x50 //Standard PCB1.3 RTC ds1307 memory module
+#define AT24C32_ADDRESS B1010111 //0x57 //Simple PCB RTC ds3231 memory module
 
 // ---- choose only one perimeter signal code ----
 #define SIGCODE_1  // Ardumower default perimeter signal

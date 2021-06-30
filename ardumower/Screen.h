@@ -41,9 +41,10 @@ class Screen
     float lastScreenchgCurrent ;
     byte lastScreenstateCurr;
     byte lastScreenstatusCurr;
+    int lastScreenloopsPerSec;
     //char lastScreenstatusName[16];
     char* lastScreenstatusName;
-    String lastScreenstateName  = "OFF             ";
+    char* lastScreenstateName;
     
 };
 
