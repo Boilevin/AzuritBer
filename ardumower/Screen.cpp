@@ -244,8 +244,8 @@ void Screen::refreshMowScreen() {
       u8x8.setCursor(7, 2);
       u8x8.print(lastScreenbatVoltage);
       
-      Serial.println(lastScreenbatVoltage);
-      Serial.println(robot.stateName());
+     //Serial.println(lastScreenbatVoltage);
+      //Serial.println(robot.stateName());
     }
     if (lastScreenloopsPerSec != int(robot.loopsPerSec)) {
       lastScreenloopsPerSec = int(robot.loopsPerSec);
@@ -277,8 +277,8 @@ void Screen::refreshMowScreen() {
       u8x8.print(lastScreenstateName);
         aEndReadAt = millis();
         aReadDuration = aEndReadAt - aStartReadAt;
-        Serial.print("state loop Duration in ms ");
-        Serial.println(aReadDuration);
+        //Serial.print("state loop Duration in ms ");
+       // Serial.println(aReadDuration);
     }
 
 
@@ -311,8 +311,8 @@ void Screen::refreshWaitScreen() {
       u8x8.setCursor(7, 2);
       u8x8.print(lastScreenbatVoltage);
       
-      Serial.println(lastScreenbatVoltage);
-      Serial.println(robot.stateName());
+      //Serial.println(lastScreenbatVoltage);
+      //Serial.println(robot.stateName());
     }
     if (lastScreenloopsPerSec != int(robot.loopsPerSec)) {
       lastScreenloopsPerSec = int(robot.loopsPerSec);

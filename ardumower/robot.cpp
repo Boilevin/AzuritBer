@@ -4974,8 +4974,8 @@ void Robot::loop()  {
 
     EndReadAt = millis();
     ReadDuration = EndReadAt - StartReadAt;
-    ShowMessage("Main loop Duration in ms ");
-    ShowMessageln(ReadDuration);
+    //ShowMessage("Main loop Duration in ms ");
+    //ShowMessageln(ReadDuration);
 
 
 
@@ -6301,7 +6301,7 @@ void Robot::loop()  {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_FORWARD_ODO, rollDir);// forward odo to straight line
-            //rollDir = LEFT;//invert the next rotate
+            rollDir = LEFT;//invert the next rotate
           }
         }
       }
@@ -6313,7 +6313,7 @@ void Robot::loop()  {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
             else setNextState(STATE_FORWARD_ODO, rollDir);
-            //rollDir = RIGHT;// invert the next rotate
+            rollDir = RIGHT;// invert the next rotate
           }
         }
       }
@@ -6324,13 +6324,13 @@ void Robot::loop()  {
         if (rollDir == RIGHT) {
           if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
           else setNextState(STATE_FORWARD_ODO, rollDir);// forward odo to straight line
-          //rollDir = LEFT;//invert the next rotate
+          rollDir = LEFT;//invert the next rotate
         }
         else
         {
           if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
           else setNextState(STATE_FORWARD_ODO, rollDir);
-          //rollDir = RIGHT;// invert the next rotate
+          rollDir = RIGHT;// invert the next rotate
         }
       }
       break;
