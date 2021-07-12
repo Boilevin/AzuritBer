@@ -45,10 +45,6 @@ Text GLabel 5135 3480 2    50   Input ~ 0
 pinButton
 Text GLabel 5135 3980 2    50   Output ~ 0
 pinBatterySwitch
-Text GLabel 5135 3180 2    50   Input ~ 0
-pinChargeVoltage
-Text GLabel 5135 3280 2    50   Input ~ 0
-pinChargeCurrent
 Text GLabel 5135 3880 2    50   Output ~ 0
 pinChargeEnable
 Text GLabel 5135 3380 2    50   Input ~ 0
@@ -723,8 +719,6 @@ Text GLabel 2935 3280 0    50   BiDi ~ 0
 SDA2
 Text GLabel 2935 3180 0    50   BiDi ~ 0
 SCL2
-Text GLabel 5135 2180 2    50   Input ~ 0
-pinBatteryVoltage
 Text GLabel 10600 1900 0    50   Output ~ 0
 pinBuzzer
 NoConn ~ 5135 3080
@@ -1533,23 +1527,64 @@ Wire Wire Line
 Connection ~ 1000 5800
 Wire Wire Line
 	1000 5800 2050 5800
-Text GLabel 3700 5600 0    50   Output ~ 0
+Text GLabel 3400 5550 0    50   Output ~ 0
 pinChargeEnable
-Text GLabel 3700 5700 0    50   Output ~ 0
+Text GLabel 3400 5650 0    50   Output ~ 0
 pinBatterySwitch
 $Comp
-L Connector:Screw_Terminal_01x06 J?
+L Connector:Screw_Terminal_01x06 J16
 U 1 1 60FD4058
-P 3900 5800
-F 0 "J?" H 3980 5792 50  0000 L CNN
-F 1 "Screw_Terminal_01x06" H 3980 5701 50  0000 L CNN
-F 2 "" H 3900 5800 50  0001 C CNN
-F 3 "~" H 3900 5800 50  0001 C CNN
-	1    3900 5800
+P 3600 5750
+F 0 "J16" H 3680 5742 50  0000 L CNN
+F 1 "Power_Board" H 3680 5651 50  0000 L CNN
+F 2 "Connector_JST:JST_XH_B6B-XH-A_1x06_P2.50mm_Vertical" H 3600 5750 50  0001 C CNN
+F 3 "~" H 3600 5750 50  0001 C CNN
+	1    3600 5750
 	1    0    0    -1  
 $EndComp
-Text GLabel 3700 5900 0    50   BiDi ~ 0
+Text GLabel 3400 5850 0    50   BiDi ~ 0
 SDA2
-Text GLabel 3700 5800 0    50   BiDi ~ 0
+Text GLabel 3400 5750 0    50   BiDi ~ 0
 SCL2
+$Comp
+L power:GND #PWR08
+U 1 1 60FE4B86
+P 3400 5950
+F 0 "#PWR08" H 3400 5700 50  0001 C CNN
+F 1 "GND" V 3405 5822 50  0000 R CNN
+F 2 "" H 3400 5950 50  0001 C CNN
+F 3 "" H 3400 5950 50  0001 C CNN
+	1    3400 5950
+	0    1    1    0   
+$EndComp
+$Comp
+L power:+3.3V #PWR045
+U 1 1 60FE595E
+P 3400 6050
+F 0 "#PWR045" H 3400 5900 50  0001 C CNN
+F 1 "+3.3V" V 3415 6178 50  0000 L CNN
+F 2 "" H 3400 6050 50  0001 C CNN
+F 3 "" H 3400 6050 50  0001 C CNN
+	1    3400 6050
+	0    -1   -1   0   
+$EndComp
+Text GLabel 2935 3480 0    50   Input ~ 0
+pinSonarRightEcho
+Text GLabel 2935 3680 0    50   Output ~ 0
+pinSonarRightTrigger
+Text GLabel 2935 3380 0    50   Input ~ 0
+pinSonarLeftEcho
+$Comp
+L power:GND #PWR?
+U 1 1 60ECBD07
+P 5437 3096
+F 0 "#PWR?" H 5437 2846 50  0001 C CNN
+F 1 "GND" V 5442 2968 50  0000 R CNN
+F 2 "" H 5437 3096 50  0001 C CNN
+F 3 "" H 5437 3096 50  0001 C CNN
+	1    5437 3096
+	0    -1   -1   0   
+$EndComp
+Text GLabel 2935 3580 0    50   Output ~ 0
+pinSonarLeftTrigger
 $EndSCHEMATC
