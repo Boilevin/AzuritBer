@@ -346,7 +346,7 @@ F 3 "" H 9650 900 60  0000 C CNN
 	1    9650 900 
 	1    0    0    -1  
 $EndComp
-Text GLabel 8950 1000 0    50   Input ~ 0
+Text GLabel 9350 1000 0    50   Input ~ 0
 pinBuzzer
 $Comp
 L power:GND #PWR035
@@ -358,17 +358,6 @@ F 2 "" H 9350 800 50  0001 C CNN
 F 3 "" H 9350 800 50  0001 C CNN
 	1    9350 800 
 	0    1    1    0   
-$EndComp
-$Comp
-L Jumper:Jumper_2_Open JP2
-U 1 1 6093522B
-P 9150 1000
-F 0 "JP2" H 9150 1100 50  0000 C CNN
-F 1 "Buzzer OFF" H 9150 900 50  0000 C CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x02_P2.54mm_Vertical" H 9150 1000 50  0001 C CNN
-F 3 "~" H 9150 1000 50  0001 C CNN
-	1    9150 1000
-	1    0    0    -1  
 $EndComp
 $Comp
 L power:+3.3V #PWR024
@@ -1576,4 +1565,36 @@ Text GLabel 2935 3380 0    50   Input ~ 0
 pinSonarLeftEcho
 Text GLabel 2935 3580 0    50   Output ~ 0
 pinSonarLeftTrigger
+$Comp
+L Device:Battery_Cell BT1
+U 1 1 60EE371C
+P 3300 5150
+F 0 "BT1" V 3045 5200 50  0000 C CNN
+F 1 "Battery_Cell" V 3136 5200 50  0000 C CNN
+F 2 "Battery:BatteryHolder_Keystone_103_1x20mm" V 3300 5210 50  0001 C CNN
+F 3 "~" V 3300 5210 50  0001 C CNN
+	1    3300 5150
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR046
+U 1 1 60EE61C7
+P 3200 5150
+F 0 "#PWR046" H 3200 4900 50  0001 C CNN
+F 1 "GND" H 3205 4977 50  0000 C CNN
+F 2 "" H 3200 5150 50  0001 C CNN
+F 3 "" H 3200 5150 50  0001 C CNN
+	1    3200 5150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3500 5150 3735 5150
+Wire Wire Line
+	3735 5118 3735 5130
+Connection ~ 3735 5130
+Wire Wire Line
+	3735 5130 3735 5150
+NoConn ~ 4335 5130
+NoConn ~ 4035 5130
+NoConn ~ 3885 5130
 $EndSCHEMATC
