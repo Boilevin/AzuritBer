@@ -588,13 +588,17 @@ void RemoteControl::sendPerimeterMenu(boolean update) {
   sendYesNo(robot->perimeterUse);
   serialPort->print(F("|e09~Actual Mowing Area"));
   serialPort->print(robot->areaInMowing);
-  serialPort->println(F("|e02~Mag / Smag"));
+  serialPort->println(F("|e02~Left Mag / Smag"));
   serialPort->print(robot->perimeterMag);
   serialPort->print(F("/"));
   serialPort->print(robot->perimeter.getSmoothMagnitude(0));
   //serialPort->print(robot->perimeterMagRight);
   //if (robot->perimeterMag < 0) serialPort->print(" (inside)");
   //else serialPort->print(" (outside)");
+  serialPort->println(F("|e03~Right Mag / Smag"));
+  serialPort->print(robot->perimeterMagRight);
+  serialPort->print(F("/"));
+  serialPort->print(robot->perimeter.getSmoothMagnitude(1));
   sendSlider("e08", F("Mini Smag"), robot->perimeter.timedOutIfBelowSmag, "", 1, 200, 1);
   sendSlider("e14", F("Timeout (s) if Outside"), robot->perimeter.timeOutSecIfNotInside, "", 1, 20, 1);
   sendSlider("e04", F("Big AREA Smag Center"), robot->perimeterTriggerMinSmag, "", 1, 600, 100);

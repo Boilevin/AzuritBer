@@ -566,6 +566,9 @@ class Robot
     unsigned long perimeterTriggerTime; // time to trigger perimeter transition (timeout)
     int perimeterTriggerMinSmag;   // perimeter trigger minimum smag use on center of big area ,the Smag can be 200 and transition can occur
     unsigned long perimeterLastTransitionTime;
+    boolean perimeterRightInside ;      // is inside perimeter?
+    unsigned long perimeterRightTriggerTime; // time to trigger perimeter transition (timeout)
+	
     int perimeterCounter ;         // counts perimeter transitions
     unsigned long nextTimePerimeter ;
     int trackingPerimeterTransitionTimeOut;
@@ -598,6 +601,8 @@ class Robot
     float PeriCoeffAccel;
     float R;
     int smoothPeriMag;
+	int smoothPeriRightMag;
+	
     unsigned long nextTimeReadSmoothPeriMag ; //use when wait for sig2
     boolean reduceSpeedNearPerimeter; //Activate the speed reduction near perimeter
     //End add bb

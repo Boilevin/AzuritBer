@@ -169,7 +169,9 @@ Robot::Robot() {
   perimeterTriggerTime = 0;
   areaInMowing = 1;
   perimeterSpeedCoeff = 1;
-
+  perimeterRightInside = true;
+  perimeterRightTriggerTime = 0;
+  
   lawnSensorCounter = 0;
   lawnSensor = false;
   lawnSensorFront = lawnSensorFrontOld = lawnSensorBack = lawnSensorBackOld = 0;
@@ -2593,7 +2595,17 @@ void Robot::readSensors() {
     nextTimePerimeter = millis() +  15;
     if (perimeter.read2Coil) {
       perimeterMagRight = readSensor(SEN_PERIM_RIGHT);
+		if ((perimeter.isInside(1) != perimeterRightInside)) {
+			perimeterCounter++;
+			perimeterRightInside = perimeter.isInside(1);
+		}
     }
+	else
+	{
+		perimeterRightInside = 1;
+		perimeterRightTriggerTime = 0;
+	}
+	
     perimeterMag = readSensor(SEN_PERIM_LEFT);
     if ((perimeter.isInside(0) != perimeterInside)) {
       perimeterCounter++;
@@ -2616,6 +2628,22 @@ void Robot::readSensors() {
           nextTimePrintConsole = millis() + 1000;
           if ((developerActive) && (stateCurr == STATE_FORWARD_ODO)) {
             Console.println("Bad reading perimeter In/Out, certainly we are very far the wire");
+          }
+        }
+      }
+
+    }
+    if ((!perimeterRightInside) && (perimeterRightTriggerTime == 0)) {
+      smoothPeriRightMag = perimeter.getSmoothMagnitude(1);
+      if (smoothPeriRightMag > perimeterTriggerMinSmag) {
+        perimeterRightTriggerTime = millis();
+      }
+      else
+      {
+        if (millis() >= nextTimePrintConsole) {
+          nextTimePrintConsole = millis() + 1000;
+          if ((developerActive) && (stateCurr == STATE_FORWARD_ODO)) {
+            Console.println("Bad reading perimeter Right In/Out, certainly we are very far the wire");
           }
         }
       }
@@ -3976,6 +4004,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
   stateNext = stateNew;
   stateLast = stateCurr;
   stateCurr = stateNext;
+  perimeterRightTriggerTime = 0;
   perimeterTriggerTime = 0;
   Console.print (F(statusNames[statusCurr]));
   Console.print (" / ");
@@ -4408,6 +4437,18 @@ void Robot::checkPerimeterBoundary() {
     Console.print(millis());
     Console.println(" Rotation direction Left / Right change ");
   }
+  
+  if ((perimeter.read2Coil) && (stateCurr == STATE_FORWARD_ODO) && (mowPatternCurr != MOW_LANES) && (perimeterTriggerTime != perimeterRightTriggerTime)) {// change only when random mode and second coil and not both coils at the same time
+	  if ((perimeterTriggerTime > perimeterRightTriggerTime)) { //Left Coil was first
+		  rollDir = RIGHT;
+	  }
+	  else
+	  {
+		  rollDir = LEFT;
+	  }
+  }
+  
+  
   //bber2
   if ((stateCurr == STATE_FORWARD_ODO) || (stateCurr == STATE_MOW_SPIRALE) ) {
     //bber200
@@ -4427,9 +4468,10 @@ void Robot::checkPerimeterBoundary() {
     }
 
 
-    if (perimeterTriggerTime != 0) {
-      if (millis() >= perimeterTriggerTime) {
+    if ((perimeterTriggerTime != 0) || (perimeterRightTriggerTime !=0)) {
+      if ((millis() >= perimeterTriggerTime) && (millis() >= perimeterRightTriggerTime)){
         perimeterTriggerTime = 0;
+		perimeterRightTriggerTime = 0;
         Console.print(F("Perimeter trigger at : "));
         Console.println(millis());
         //reinit spirale mowing
@@ -4443,9 +4485,10 @@ void Robot::checkPerimeterBoundary() {
   }
 
   if ((stateCurr == STATE_PERI_OBSTACLE_AVOID)) { //when start in auto mode and quit the station
-    if (perimeterTriggerTime != 0) {
-      if (millis() >= perimeterTriggerTime) {
+    if ((perimeterTriggerTime != 0) || (perimeterRightTriggerTime !=0)) {
+      if ((millis() >= perimeterTriggerTime) && (millis() >= perimeterRightTriggerTime)){
         perimeterTriggerTime = 0;
+		perimeterRightTriggerTime = 0;
         setNextState(STATE_PERI_STOP_TOTRACK, rollDir);
         return;
       }
@@ -4454,9 +4497,10 @@ void Robot::checkPerimeterBoundary() {
 
 
   if (stateCurr == STATE_SONAR_TRIG) {  //wire is detected during the sonar braking need to stop immediatly
-    if (perimeterTriggerTime != 0) {
-      if (millis() >= perimeterTriggerTime) {
+    if ((perimeterTriggerTime != 0) || (perimeterRightTriggerTime !=0)) {
+      if ((millis() >= perimeterTriggerTime) && (millis() >= perimeterRightTriggerTime)){
         perimeterTriggerTime = 0;
+		perimeterRightTriggerTime = 0;
         setNextState(STATE_STOP_ON_BUMPER, rollDir);  //use to stop immediatly
         return;
       }
@@ -4464,9 +4508,10 @@ void Robot::checkPerimeterBoundary() {
   }
 
   else if ((stateCurr == STATE_ROLL)) {
-    if (perimeterTriggerTime != 0) {
-      if (millis() >= perimeterTriggerTime) {
+    if ((perimeterTriggerTime != 0) || (perimeterRightTriggerTime !=0)) {
+      if ((millis() >= perimeterTriggerTime) && (millis() >= perimeterRightTriggerTime)){
         perimeterTriggerTime = 0;
+		perimeterRightTriggerTime = 0;
         Console.println("Pourquoi je suis la ?? ?? ?? ?? ?? ?? ?? ?? ");
         setMotorPWM( 0, 0, false );
         setNextState(STATE_PERI_OUT_REV, rollDir);
