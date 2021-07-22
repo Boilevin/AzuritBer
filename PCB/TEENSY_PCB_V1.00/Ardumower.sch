@@ -672,17 +672,6 @@ F 3 "" H 5720 4230 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L teensy:Teensy4.1 U3
-U 1 1 60E23AD3
-P 4035 3830
-F 0 "U3" H 4035 6395 50  0000 C CNN
-F 1 "Teensy4.1" H 4035 6304 50  0000 C CNN
-F 2 "teensy_library-master:Teensy41" H 3635 4230 50  0001 C CNN
-F 3 "" H 3635 4230 50  0001 C CNN
-	1    4035 3830
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:+5V #PWR0101
 U 1 1 60E6CE57
 P 5135 1680
@@ -773,7 +762,6 @@ F 3 "" H 1365 1795 50  0001 C CNN
 	1    1365 1795
 	1    0    0    -1  
 $EndComp
-Connection ~ 1365 2495
 $Comp
 L Device:R R7
 U 1 1 6076D999
@@ -806,10 +794,6 @@ Wire Wire Line
 	715  2295 965  2295
 Wire Wire Line
 	1215 2295 965  2295
-Wire Wire Line
-	1215 2495 1365 2495
-Wire Wire Line
-	1215 2295 1215 2495
 $Comp
 L power:GND #PWR021
 U 1 1 6076CF93
@@ -819,17 +803,6 @@ F 1 "GND" V 720 2167 50  0000 R CNN
 F 2 "" H 715 2295 50  0001 C CNN
 F 3 "" H 715 2295 50  0001 C CNN
 	1    715  2295
-	0    1    1    0   
-$EndComp
-$Comp
-L power:GND #PWR027
-U 1 1 6097F899
-P 1365 2495
-F 0 "#PWR027" H 1365 2245 50  0001 C CNN
-F 1 "GND" V 1370 2367 50  0000 R CNN
-F 2 "" H 1365 2495 50  0001 C CNN
-F 3 "" H 1365 2495 50  0001 C CNN
-	1    1365 2495
 	0    1    1    0   
 $EndComp
 Text GLabel 615  2595 0    50   Output ~ 0
@@ -1528,15 +1501,6 @@ F 3 "" H 3200 5150 50  0001 C CNN
 	1    3200 5150
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3500 5150 3735 5150
-Wire Wire Line
-	3735 5118 3735 5130
-Connection ~ 3735 5130
-Wire Wire Line
-	3735 5130 3735 5150
-NoConn ~ 4335 5130
-NoConn ~ 4035 5130
 NoConn ~ 3885 5130
 $Comp
 L Connector:Screw_Terminal_01x02 J17
@@ -1938,4 +1902,268 @@ F 3 "" H 7550 3200 50  0001 C CNN
 $EndComp
 NoConn ~ 5135 1530
 NoConn ~ 9400 3100
+NoConn ~ 7550 1800
+NoConn ~ 7550 1900
+NoConn ~ 7550 2000
+$Comp
+L Connector:Screw_Terminal_01x04 J?
+U 1 1 60F8890F
+P 6605 2540
+AR Path="/609243F4/60F8890F" Ref="J?"  Part="1" 
+AR Path="/60F8890F" Ref="J28"  Part="1" 
+F 0 "J28" H 6685 2532 50  0000 L CNN
+F 1 "ESP32 FREE" H 6685 2441 50  0000 L CNN
+F 2 "Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical" H 6605 2540 50  0001 C CNN
+F 3 "~" H 6605 2540 50  0001 C CNN
+	1    6605 2540
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6805 2340 7215 2340
+Wire Wire Line
+	7215 2340 7215 2300
+Wire Wire Line
+	7215 2300 7550 2300
+Wire Wire Line
+	6805 2440 7255 2440
+Wire Wire Line
+	7255 2440 7255 2400
+Wire Wire Line
+	7255 2400 7550 2400
+Wire Wire Line
+	6805 2540 7445 2540
+Wire Wire Line
+	7445 2540 7445 2500
+Wire Wire Line
+	7445 2500 7550 2500
+Wire Wire Line
+	6805 2640 7485 2640
+Wire Wire Line
+	7485 2640 7485 2600
+Wire Wire Line
+	7485 2600 7550 2600
+NoConn ~ 7550 2700
+Wire Wire Line
+	1215 2295 1215 2495
+Wire Wire Line
+	1215 2495 1365 2495
+$Comp
+L Device:R R18
+U 1 1 610755DD
+P 7110 715
+F 0 "R18" V 7010 715 50  0000 C CNN
+F 1 "1KO" V 7110 715 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical" V 7040 715 50  0001 C CNN
+F 3 "~" H 7110 715 50  0001 C CNN
+	1    7110 715 
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6960 715  6910 715 
+$Comp
+L Device:R R16
+U 1 1 610755E4
+P 6910 865
+F 0 "R16" V 6810 865 50  0000 C CNN
+F 1 "1.5KO" V 6910 865 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical" V 6840 865 50  0001 C CNN
+F 3 "~" H 6910 865 50  0001 C CNN
+	1    6910 865 
+	1    0    0    -1  
+$EndComp
+Connection ~ 6910 715 
+Wire Wire Line
+	6510 715  6910 715 
+Wire Wire Line
+	6660 1015 6910 1015
+$Comp
+L power:GND #PWR064
+U 1 1 610755EF
+P 6910 1015
+F 0 "#PWR064" H 6910 765 50  0001 C CNN
+F 1 "GND" V 6915 887 50  0000 R CNN
+F 2 "" H 6910 1015 50  0001 C CNN
+F 3 "" H 6910 1015 50  0001 C CNN
+	1    6910 1015
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR027
+U 1 1 610755F6
+P 6510 915
+F 0 "#PWR027" H 6510 765 50  0001 C CNN
+F 1 "+5V" H 6525 1088 50  0000 C CNN
+F 2 "" H 6510 915 50  0001 C CNN
+F 3 "" H 6510 915 50  0001 C CNN
+	1    6510 915 
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:Screw_Terminal_01x03 J27
+U 1 1 610755FC
+P 6310 815
+F 0 "J27" H 6390 857 50  0000 L CNN
+F 1 "ESP32 Sens1" H 6390 766 50  0000 L CNN
+F 2 "Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical" H 6310 815 50  0001 C CNN
+F 3 "~" H 6310 815 50  0001 C CNN
+	1    6310 815 
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6660 1015 6660 815 
+Wire Wire Line
+	6660 815  6510 815 
+Connection ~ 6910 1015
+$Comp
+L Device:R R19
+U 1 1 610BBF4F
+P 7115 1400
+F 0 "R19" V 7015 1400 50  0000 C CNN
+F 1 "1KO" V 7115 1400 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical" V 7045 1400 50  0001 C CNN
+F 3 "~" H 7115 1400 50  0001 C CNN
+	1    7115 1400
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6965 1400 6915 1400
+$Comp
+L Device:R R17
+U 1 1 610BBF56
+P 6915 1550
+F 0 "R17" V 6815 1550 50  0000 C CNN
+F 1 "1.5KO" V 6915 1550 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical" V 6845 1550 50  0001 C CNN
+F 3 "~" H 6915 1550 50  0001 C CNN
+	1    6915 1550
+	1    0    0    -1  
+$EndComp
+Connection ~ 6915 1400
+Wire Wire Line
+	6515 1400 6915 1400
+Wire Wire Line
+	6665 1700 6915 1700
+$Comp
+L power:GND #PWR065
+U 1 1 610BBF5F
+P 6915 1700
+F 0 "#PWR065" H 6915 1450 50  0001 C CNN
+F 1 "GND" V 6920 1572 50  0000 R CNN
+F 2 "" H 6915 1700 50  0001 C CNN
+F 3 "" H 6915 1700 50  0001 C CNN
+	1    6915 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR063
+U 1 1 610BBF65
+P 6515 1600
+F 0 "#PWR063" H 6515 1450 50  0001 C CNN
+F 1 "+5V" H 6530 1773 50  0000 C CNN
+F 2 "" H 6515 1600 50  0001 C CNN
+F 3 "" H 6515 1600 50  0001 C CNN
+	1    6515 1600
+	-1   0    0    1   
+$EndComp
+$Comp
+L Connector:Screw_Terminal_01x03 J32
+U 1 1 610BBF6B
+P 6315 1500
+F 0 "J32" H 6395 1542 50  0000 L CNN
+F 1 "ESP32 Sens2" H 6395 1451 50  0000 L CNN
+F 2 "Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical" H 6315 1500 50  0001 C CNN
+F 3 "~" H 6315 1500 50  0001 C CNN
+	1    6315 1500
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6665 1700 6665 1500
+Wire Wire Line
+	6665 1500 6515 1500
+Connection ~ 6915 1700
+Wire Wire Line
+	7265 1400 7265 2200
+Wire Wire Line
+	7265 2200 7550 2200
+Wire Wire Line
+	7550 2100 7365 2100
+Wire Wire Line
+	7365 2100 7365 715 
+Wire Wire Line
+	7365 715  7260 715 
+NoConn ~ 9400 2500
+$Comp
+L Connector:Screw_Terminal_01x04 J?
+U 1 1 610E2E93
+P 9790 2025
+AR Path="/609243F4/610E2E93" Ref="J?"  Part="1" 
+AR Path="/610E2E93" Ref="J33"  Part="1" 
+F 0 "J33" H 9870 2017 50  0000 L CNN
+F 1 "ESP32 I2C/SER" H 9870 1926 50  0000 L CNN
+F 2 "Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical" H 9790 2025 50  0001 C CNN
+F 3 "~" H 9790 2025 50  0001 C CNN
+	1    9790 2025
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9400 1900 9505 1900
+Wire Wire Line
+	9505 1900 9505 2225
+Wire Wire Line
+	9505 2225 9590 2225
+Wire Wire Line
+	9400 2200 9475 2200
+Wire Wire Line
+	9475 2200 9475 2125
+Wire Wire Line
+	9475 2125 9590 2125
+Wire Wire Line
+	9400 2100 9475 2100
+Wire Wire Line
+	9475 2100 9475 2025
+Wire Wire Line
+	9475 2025 9590 2025
+Wire Wire Line
+	9400 2000 9540 2000
+Wire Wire Line
+	9540 2000 9540 1925
+Wire Wire Line
+	9540 1925 9590 1925
+$Comp
+L teensy:Teensy4.1 U3
+U 1 1 60E23AD3
+P 4035 3830
+F 0 "U3" H 4035 6395 50  0000 C CNN
+F 1 "Teensy4.1" H 4035 6304 50  0000 C CNN
+F 2 "teensy_library-master:Teensy41" H 3635 4230 50  0001 C CNN
+F 3 "" H 3635 4230 50  0001 C CNN
+	1    4035 3830
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3735 5130 3735 5150
+Wire Wire Line
+	3735 5150 3500 5150
+NoConn ~ 9400 2900
+$Comp
+L Connector:Screw_Terminal_01x02 J34
+U 1 1 611A7697
+P 4705 5110
+F 0 "J34" H 4785 5102 50  0000 L CNN
+F 1 "Teensy On/Off" H 4785 5011 50  0000 L CNN
+F 2 "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical" H 4705 5110 50  0001 C CNN
+F 3 "~" H 4705 5110 50  0001 C CNN
+	1    4705 5110
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4035 5210 4505 5210
+Wire Wire Line
+	4335 5130 4430 5130
+Wire Wire Line
+	4430 5130 4430 5110
+Wire Wire Line
+	4430 5110 4505 5110
+Wire Wire Line
+	4035 5130 4035 5210
 $EndSCHEMATC
