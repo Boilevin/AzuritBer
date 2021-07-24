@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include "U8x8lib.h"
+#include "U8g2lib.h"
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
@@ -15,7 +16,7 @@
 unsigned long aStartReadAt;
 unsigned long aEndReadAt;
 unsigned long aReadDuration;
-      
+int batLevel = 0;
 
 // Please UNCOMMENT one of the contructor lines below
 // U8x8 Contructor List
@@ -35,7 +36,10 @@ unsigned long aReadDuration;
 //U8X8_SSD1306_128X64_VCOMH0_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);    // same as the NONAME variant, but maximizes setContrast() range
 //U8X8_SSD1306_128X64_ALT0_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);    // same as the NONAME variant, but may solve the "every 2nd line skipped" problem
 //U8X8_SH1106_128X64_NONAME_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
+
 U8X8_SH1106_128X64_NONAME_HW_I2C u8x8(/* reset=*/ U8X8_PIN_NONE);
+U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+
 //U8X8_SH1106_128X64_VCOMH0_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);   // same as the NONAME variant, but maximizes setContrast() range
 //U8X8_SH1106_128X64_WINSTAR_4W_HW_SPI u8x8(/* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);    // same as the NONAME variant, but uses updated SH1106 init sequence
 //U8X8_SH1106_128X32_VISIONOX_HW_I2C u8x8(/* reset=*/ U8X8_PIN_NONE);
@@ -222,140 +226,83 @@ U8X8_SH1106_128X64_NONAME_HW_I2C u8x8(/* reset=*/ U8X8_PIN_NONE);
 
 void Screen::init() {
   Console.println(" --- Start SCREEN Connection --- ");
+
   u8x8.begin();
-  u8x8.setPowerSave(0);
-  u8x8.setFont(u8x8_font_chroma48medium8_r);
-  u8x8.setCursor(0, 0);
-  u8x8.print("ABCDEFGHI0KLMNO6");
-  delay(2000);
-  u8x8.setCursor(2, 2);
-  u8x8.print("AZURITBER");
-  
+
+  u8g2.begin();
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.setCursor(10, 25);
+  u8g2.print("AZURITBER");
+  u8g2.setCursor(0, 60);
+  u8g2.print(VER);
+  u8g2.sendBuffer();
+
 }
 void Screen::refreshMowScreen() {
-  
-   
-   // u8x8.drawString(7, 3, String(int(robot.batVoltage)).c_str());
-    
-  if (lastScreenbatVoltage != int(robot.batVoltage)) {
-      lastScreenbatVoltage = int(robot.batVoltage);
-      u8x8.setCursor(7, 2);
-      u8x8.print("     ");
-      u8x8.setCursor(7, 2);
-      u8x8.print(lastScreenbatVoltage);
-      
-     //Serial.println(lastScreenbatVoltage);
-      //Serial.println(robot.stateName());
-    }
-    if (lastScreenloopsPerSec != int(robot.loopsPerSec)) {
-      lastScreenloopsPerSec = int(robot.loopsPerSec);
-      u8x8.setCursor(10, 3);
-      u8x8.print("      ");
-      u8x8.setCursor(10, 3);
-      u8x8.print(lastScreenloopsPerSec);
-    }
 
-    if (lastScreenstatusName != robot.statusName()) {
-      lastScreenstatusName = robot.statusName();
-      //u8x8.setCursor(1, 5);
-      //u8x8.print("                ");
-      u8x8.clearLine(5);
-      u8x8.setCursor(1, 5);
-      u8x8.print(lastScreenstatusName);
+  // bettery icon
+  batLevel = map(int(robot.batVoltage), int(robot.batSwitchOffIfBelow), int(robot.batFull), 0, 25);
+  batLevel = constrain(batLevel, 0, 25);
+  u8g2.drawFrame(99, 0, 27, 10);
+  u8g2.drawBox(101, 2, batLevel, 6);
+  u8g2.drawBox(126, 3, 2, 4);
 
-    }
+  u8g2.setFont(u8g2_font_ncenB10_tr);
+  //u8g2.setCursor(80, 24);
+  //u8g2.print(int(robot.loopsPerSec));
+  u8g2.setCursor(20, 24);
+  u8g2.print(robot.mowPatternName());
+  u8g2.setFont(u8g2_font_ncenB14_tr);
 
+  //u8g2.setCursor(0, 45);
+  //u8g2.print(robot.statusName());
 
-    if (lastScreenstateName != robot.stateName()) {
-      aStartReadAt = millis();
+  u8g2.setCursor(0, 64);
+  u8g2.print(robot.stateName());
 
-      lastScreenstateName = robot.stateName();
-     // u8x8.setCursor(1, 6);
-     // u8x8.print("                ");
-      u8x8.clearLine(6);
-      u8x8.setCursor(1, 6);
-      u8x8.print(lastScreenstateName);
-        aEndReadAt = millis();
-        aReadDuration = aEndReadAt - aStartReadAt;
-        //Serial.print("state loop Duration in ms ");
-       // Serial.println(aReadDuration);
-    }
-
-
-
+  u8g2.sendBuffer();
+  u8g2.clearBuffer();
 
 }
 void Screen::refreshStationScreen() {
-  u8x8.setCursor(7, 2);
-  u8x8.print(int(robot.batVoltage), 0);
+  //u8x8.setCursor(7, 2);
+  //u8x8.print(int(robot.batVoltage), 0);
 }
 
 void Screen::refreshWaitScreen() {
-  if ((millis() < 10000) || (robot.stateTime < 350)) { // canvas of the screen only draw on startup and first refresh
-    u8x8.clearDisplay();
-    u8x8.setCursor(1, 2);
-    u8x8.print("Bat :         ");
-    u8x8.setCursor(7, 2);
-    u8x8.print(int(robot.batVoltage));
-    u8x8.setCursor(1, 3);
-    u8x8.print("Loops :        ");
-    u8x8.setCursor(10, 3);
-    u8x8.print(int(robot.loopsPerSec));
-  }
-  else
-  {
-    if (lastScreenbatVoltage != int(robot.batVoltage)) {
-      lastScreenbatVoltage = int(robot.batVoltage);
-      u8x8.setCursor(7, 2);
-      u8x8.print("     ");
-      u8x8.setCursor(7, 2);
-      u8x8.print(lastScreenbatVoltage);
-      
-      //Serial.println(lastScreenbatVoltage);
-      //Serial.println(robot.stateName());
-    }
-    if (lastScreenloopsPerSec != int(robot.loopsPerSec)) {
-      lastScreenloopsPerSec = int(robot.loopsPerSec);
-      u8x8.setCursor(10, 3);
-      u8x8.print("      ");
-      u8x8.setCursor(10, 3);
-      u8x8.print(lastScreenloopsPerSec);
-    }
+  // battery icon
+  batLevel = map(int(robot.batVoltage), int(robot.batSwitchOffIfBelow), int(robot.batFull), 0, 25);
+  batLevel = constrain(batLevel, 0, 25);
+  u8g2.drawFrame(99, 0, 27, 10);
+  u8g2.drawBox(101, 2, batLevel, 6);
+  u8g2.drawBox(126, 3, 2, 4);
 
-    if (lastScreenstatusName != robot.statusName()) {
-      lastScreenstatusName = robot.statusName();
-      //u8x8.setCursor(1, 5);
-      //u8x8.print("                ");
-      u8x8.clearLine(5);
-      u8x8.setCursor(1, 5);
-      u8x8.print(lastScreenstatusName);
+  //bumper test
 
-    }
+  if (robot.readSensor(SEN_BUMPER_LEFT) == 0) u8g2.drawBox(0, 30, 10, 10);
+  if (robot.readSensor(SEN_BUMPER_RIGHT) == 0) u8g2.drawBox(117, 30, 10, 10);
 
 
-    if (lastScreenstateName != robot.stateName()) {
-      lastScreenstateName = robot.stateName();
-     // u8x8.setCursor(1, 6);
-     // u8x8.print("                ");
-      u8x8.clearLine(6);
-      u8x8.setCursor(1, 6);
-      u8x8.print(lastScreenstateName);
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.setCursor(60, 10);
+  u8g2.print(int(robot.loopsPerSec));
+  u8g2.setFont(u8g2_font_ncenB10_tr);
+  u8g2.setCursor(0, 12);
+  u8g2.print(robot.perimeterMag);
 
-    }
+  //u8g2.setCursor(0, 24);
+  //u8g2.print(robot.mowPatternName());
+  u8g2.setCursor(40, 40);
+  u8g2.print(robot.imu.ypr.yaw / PI * 180);
 
+  u8g2.setFont(u8g2_font_ncenB14_tr);
+  u8g2.setCursor(0, 64);
+  u8g2.print(robot.statusName());
+  u8g2.setCursor(64, 64);
+  u8g2.print(robot.stateName());
 
-
-    /*if ((sizeof(lastScreenstatusName)) < 16) {
-      lastScreenstatusName = lastScreenstatusName + ' ';
-      }
-      Serial.println(sizeof(lastScreenstatusName)/sizeof(char));
-      //lastScreenstatusName.substring(0,16);
-    */
-
-
-  }
-
-
+  u8g2.sendBuffer();
+  u8g2.clearBuffer();
 }
 
 void Screen::refreshErrorScreen() {
@@ -366,6 +313,6 @@ void Screen::refreshTrackScreen() {
 }
 
 void Screen::erase() {
-  u8x8.clearDisplay();
-  
+  //u8x8.clearDisplay();
+
 }

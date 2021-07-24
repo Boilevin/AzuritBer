@@ -4974,8 +4974,8 @@ void Robot::loop()  {
 
     EndReadAt = millis();
     ReadDuration = EndReadAt - StartReadAt;
-    //ShowMessage("Main loop Duration in ms ");
-    //ShowMessageln(ReadDuration);
+    ShowMessage("Main loop screen Duration in ms ");
+    ShowMessageln(ReadDuration);
 
 
 

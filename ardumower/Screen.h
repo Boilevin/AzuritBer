@@ -36,15 +36,8 @@ class Screen
   private:
     //Robot *robot;
     // ---------screen ----------------------------
-    float lastScreenbatVoltage ;
-    float lastScreenchgVoltage ;
-    float lastScreenchgCurrent ;
-    byte lastScreenstateCurr;
-    byte lastScreenstatusCurr;
-    int lastScreenloopsPerSec;
-    //char lastScreenstatusName[16];
-    char* lastScreenstatusName;
-    char* lastScreenstateName;
+    
+    
     
 };
 
