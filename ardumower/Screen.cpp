@@ -240,23 +240,40 @@ void Screen::init() {
 }
 void Screen::refreshMowScreen() {
 
-  // bettery icon
+  // battery icon
   batLevel = map(int(robot.batVoltage), int(robot.batSwitchOffIfBelow), int(robot.batFull), 0, 25);
   batLevel = constrain(batLevel, 0, 25);
   u8g2.drawFrame(99, 0, 27, 10);
   u8g2.drawBox(101, 2, batLevel, 6);
   u8g2.drawBox(126, 3, 2, 4);
 
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.setCursor(60, 10);
+  u8g2.print(int(robot.loopsPerSec));
   u8g2.setFont(u8g2_font_ncenB10_tr);
-  //u8g2.setCursor(80, 24);
-  //u8g2.print(int(robot.loopsPerSec));
+  u8g2.setCursor(0, 12);
+  u8g2.print(robot.perimeterMag);
+
+  u8g2.setFont(u8g2_font_ncenB10_tr);
+
   u8g2.setCursor(20, 24);
   u8g2.print(robot.mowPatternName());
   u8g2.setFont(u8g2_font_ncenB14_tr);
 
-  //u8g2.setCursor(0, 45);
-  //u8g2.print(robot.statusName());
-
+  if (robot.statusCurr == NORMAL_MOWING) {
+    u8g2.setCursor(5, 45);
+    u8g2.print("Normal");
+  }
+  if (robot.statusCurr == SPIRALE_MOWING) {
+    u8g2.setCursor(5, 45);
+    u8g2.print("Spirale");
+  }
+  if (robot.statusCurr == WIRE_MOWING) {
+    u8g2.setCursor(5, 45);
+    u8g2.print("Wire");
+  }
+  u8g2.setCursor(70, 45);
+  u8g2.print(robot.imu.ypr.yaw / PI * 180);
   u8g2.setCursor(0, 64);
   u8g2.print(robot.stateName());
 
@@ -265,8 +282,61 @@ void Screen::refreshMowScreen() {
 
 }
 void Screen::refreshStationScreen() {
-  //u8x8.setCursor(7, 2);
-  //u8x8.print(int(robot.batVoltage), 0);
+  /*
+
+  */
+  u8g2.setFont(u8g2_font_ncenB14_tr);
+  if (robot.stateName() == "CHARG") {
+    u8g2.setFont(u8g2_font_ncenB08_tr);
+    u8g2.setCursor(10, 20);
+    u8g2.print("Bat Volt :");
+    u8g2.setCursor(80, 20);
+    u8g2.print(robot.batVoltage, 1);
+    u8g2.setCursor(10, 32);
+    u8g2.print("Chg Volt :");
+    u8g2.setCursor(80, 32);
+    u8g2.print(robot.chgVoltage, 1);
+    u8g2.setCursor(10, 45);
+    u8g2.print("Chg Sens :");
+    u8g2.setCursor(80, 45);
+    u8g2.print(robot.chgCurrent, 1);
+    u8g2.setCursor(10, 62);
+    u8g2.print("Chg Duration :");
+    u8g2.setCursor(80, 62);
+    u8g2.print((millis() - robot.stateStartTime)/60000);
+   
+    u8g2.setFont(u8g2_font_ncenB14_tr);
+
+
+    
+    //battery icon flashing
+    batLevel = batLevel + 1;
+    if (batLevel >= 25) batLevel = 0;
+    u8g2.drawFrame(99, 0, 27, 10);
+    u8g2.drawBox(101, 2, batLevel, 6);
+    u8g2.drawBox(126, 3, 2, 4);
+  }
+  else
+  {
+    batLevel = map(int(robot.batVoltage), int(robot.batSwitchOffIfBelow), int(robot.batFull), 0, 25);
+    batLevel = constrain(batLevel, 0, 25);
+    u8g2.drawFrame(99, 0, 27, 10);
+    u8g2.drawBox(101, 2, batLevel, 6);
+    u8g2.drawBox(126, 3, 2, 4);
+
+    u8g2.setFont(u8g2_font_ncenB08_tr);
+    u8g2.setCursor(0, 10);
+    u8g2.print(int(robot.loopsPerSec));
+    u8g2.setFont(u8g2_font_ncenB14_tr);
+    u8g2.setCursor(10, 44);
+    u8g2.print("STATION");
+
+
+  }
+
+  u8g2.sendBuffer();
+  u8g2.clearBuffer();
+
 }
 
 void Screen::refreshWaitScreen() {
@@ -293,7 +363,7 @@ void Screen::refreshWaitScreen() {
   //u8g2.setCursor(0, 24);
   //u8g2.print(robot.mowPatternName());
   u8g2.setCursor(40, 40);
-  u8g2.print(robot.imu.ypr.yaw / PI * 180);
+  u8g2.print((robot.imu.ypr.yaw / PI * 180), 1);
 
   u8g2.setFont(u8g2_font_ncenB14_tr);
   u8g2.setCursor(0, 64);

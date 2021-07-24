@@ -4952,7 +4952,7 @@ void Robot::loop()  {
     gps.run();
   }
 
-  if ((Enable_Screen) && (millis() >= nextTimeScreen))   {
+  if ((Enable_Screen) && (millis() >= nextTimeScreen))   { // warning : refresh screen take 40 ms 
     nextTimeScreen = millis() + 250;
     StartReadAt = millis();
 
@@ -4961,9 +4961,11 @@ void Robot::loop()  {
     }
     if ((statusCurr == NORMAL_MOWING) || (statusCurr == SPIRALE_MOWING) || (statusCurr == WIRE_MOWING)) {
       MyScreen.refreshMowScreen();
+      nextTimeScreen = millis() + 500; // in mowing mode don't need a big refresh rate and avoid trouble on loop 
     }
     if ((statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START) ) {
       MyScreen.refreshTrackScreen();
+      nextTimeScreen = millis() + 500;
     }
     if (statusCurr == IN_ERROR ) {
       MyScreen.refreshErrorScreen();
@@ -4974,8 +4976,8 @@ void Robot::loop()  {
 
     EndReadAt = millis();
     ReadDuration = EndReadAt - StartReadAt;
-    ShowMessage("Main loop screen Duration in ms ");
-    ShowMessageln(ReadDuration);
+    //ShowMessage("Main loop screen Duration in ms ");
+    //ShowMessageln(ReadDuration);
 
 
 
