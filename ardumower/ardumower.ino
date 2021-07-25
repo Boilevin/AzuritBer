@@ -31,6 +31,7 @@
  *      
  *      ------------------------- OLED SCREEN -------------------------------------------------------
  *      Into mower.h line 128 Enable_Screen if you want to connect a 128*64 OLED screen to mower      
+ *      Connect the screen to I2C1 DUE port 
  *      #define Enable_Screen true
  *      //#define Enable_Screen false
  *          

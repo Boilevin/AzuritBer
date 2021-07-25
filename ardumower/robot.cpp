@@ -2129,10 +2129,7 @@ void Robot::setup()  {
 
   nextTimeInfo = millis();
 
-  if (Enable_Screen) {
-    MyScreen.erase(); // Clear screen
-
-  }
+ 
 
 }
 
@@ -4976,7 +4973,7 @@ void Robot::loop()  {
 
     EndReadAt = millis();
     ReadDuration = EndReadAt - StartReadAt;
-    //ShowMessage("Main loop screen Duration in ms ");
+    //ShowMessage("Screen Duration ");
     //ShowMessageln(ReadDuration);
 
 

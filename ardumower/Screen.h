@@ -15,29 +15,17 @@
 
 #include <Arduino.h>
 
-
-/*
-  digital PID controller
-
-class Robot;
-*/
 class Screen
 {
   public:
-    //void setRobot(Robot *aRobot);
-    //Screen();
     void init();
     void refreshMowScreen();
     void refreshStationScreen();
     void refreshWaitScreen() ;
     void refreshErrorScreen() ;
     void refreshTrackScreen() ;
-    void erase();
-  private:
-    //Robot *robot;
-    // ---------screen ----------------------------
-    
-    
+   
+  
     
 };
 
