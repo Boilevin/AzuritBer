@@ -33,13 +33,8 @@
 #define DRIVER_MC33926
 //#define DRIVER_L298N
 
-
-// DO NOT CHANGE - Due or Mega is detected automatically (based on Arduino IDE settings)
-#ifdef __AVR__
-#define IOREF 5.0  // I/O reference voltage for Mega 2560
-#else
 #define IOREF 3.3   // I/O reference voltage for Due
-#endif
+
 
 
 
@@ -111,36 +106,27 @@
 #define pinUserSwitch3 48          // user-defined switch 3
 #define pinRain 44                 // rain sensor
 
-// IMU (compass/gyro/accel): I2C  (SCL, SDA)
-
-
-
-
-// ------- baudrates---------------------------------
-
-
-
-// ------ used serial ports for console, Bluetooth, ESP8266 -----------------------------
-
-// Due has two serial ports: Native (SerialUSB) and Programming (Serial) -
-// we use 'SerialUSB' for 'Console' so the Raspberry PI receive all data
-// we use 'Serial' for 'Console' so the PC receive all data
-
-
-
+// ---------------- COMPASS Selection ---------------------------
 //#define COMPASS_IS HMC5883L
 #define COMPASS_IS QMC5883L
- 
-#define Console Serial
-//#define CONSOLE_BAUDRATE    115200       // baudrate used for PC
 
-//#define Console SerialUSB
+
+
+// ------ serial ports for console, Bluetooth, ESP8266 -----------------------------
+
+// Due has two serial ports: Native (SerialUSB) and Programming (Serial) -
+// redirect 'Console' to -->'SerialUSB' so the Raspberry PI receive all message console data
+// redirect 'Console' to -->'Serial' so the Raspberry PI receive all message console data
+
+//#define Console Serial
+#define Console SerialUSB
 #define CONSOLE_BAUDRATE    115200       // baudrate used for Raspberry PI console
 
 #define Enable_DueWatchdog true
 //#define Enable_DueWatchdog false
 
-#define autoBylaneToRandom true
+//#define Enable_Screen true
+#define Enable_Screen false
 
 #define RaspberryPIPort SerialUSB  //The PI is connected on NATIVE USB port over USB cable
 
@@ -153,11 +139,7 @@
 
 #define GpsPort Serial3  // GPS do not forget workarround if PCB1.3 use
 
-
-// ------- ultrasonic config ---------------------------------------------------------
-#define NO_ECHO 0
-
-// ------- I2C addresses --------------------------------------------------------------
+// ------- RTC  and EEPROM I2C addresses --------------------------------------------------------------
 #define DS1307_ADDRESS B1101000
 #define AT24C32_ADDRESS B1010000 //0x50 //Standard PCB1.3 RTC ds1307 memory module
 //#define AT24C32_ADDRESS B1010111 //0x57 //Simple PCB RTC ds3231 memory module
@@ -167,6 +149,8 @@
 //#define SIGCODE_2  // Ardumower alternative perimeter signal
 //#define SIGCODE_3  // Ardumower alternative perimeter signal
 
+// ------- ultrasonic config ---------------------------------------------------------
+#define NO_ECHO 0
 
 /*
   Ardumower robot chassis

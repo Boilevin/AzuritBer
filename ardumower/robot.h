@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.55-Azuritber GY-88/GY-521"
+#define VER "1.61-Azuritber GY-521"
 
 
 // sensors
@@ -218,6 +218,7 @@ class Robot
   public:
     String name;
     boolean developerActive;
+    boolean ConsoleToPfod;
     // --------- state machine --------------------------
     byte stateCurr;
     byte stateLast;
@@ -666,6 +667,11 @@ class Robot
     boolean userSwitch2       ;       // user-defined switch 2 (default value)
     boolean userSwitch3       ;       // user-defined switch 3 (default value)
 
+
+    
+    
+    
+    
     
     // --------- charging -------------------------------
 
@@ -720,6 +726,8 @@ class Robot
     byte consoleMode ;
     unsigned long nextTimeButtonCheck ;
     unsigned long nextTimeInfo ;
+    unsigned long nextTimeScreen ;
+    
     unsigned long nextTimePrintConsole;
     byte rollDir;
     unsigned long nextTimeButton ;
@@ -797,6 +805,12 @@ class Robot
     //virtual void RaspberryPISendStat ();
     
     virtual void receivePiPfodCommand (String RpiCmd,float v1,float v2,float v3);
+    
+    virtual void ShowMessage(String message);
+    virtual void ShowMessageln(String message);
+    virtual void ShowMessage(float value);
+    virtual void ShowMessageln(float value);
+    
     virtual void printSettingSerial();
     char* mowPatternNameList(byte mowPatternIndex);
     
@@ -872,6 +886,7 @@ class Robot
 
 
     virtual void beeper();
+    
 
 
     
