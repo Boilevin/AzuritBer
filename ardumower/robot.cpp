@@ -4396,8 +4396,8 @@ void Robot::checkBumpers() {
       setMotorPWM( 0, 0, false );
       if (stateCurr == STATE_PERI_OUT_STOP)
       {
-        odometryRight = stateEndOdometryRight + 1;
-        odometryLeft = stateEndOdometryLeft + 1;
+        odometryRight = stateEndOdometryRight;
+        odometryLeft = stateEndOdometryLeft;
       }
       else
       {
