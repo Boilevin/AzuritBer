@@ -4403,11 +4403,11 @@ void Robot::checkBumpers() {
       {
         if (bumperLeft)
         {
-          Console.println("Bumper left trigger");
+          ShowMessageln("Bumper left trigger");
           reverseOrBidir(LEFT);
         } else {
-        Console.println("Bumper right trigger");
-        reverseOrBidir(RIGHT);
+          ShowMessageln("Bumper right trigger");
+          reverseOrBidir(RIGHT);
       }
       }
     }
