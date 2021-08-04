@@ -4394,12 +4394,20 @@ void Robot::checkBumpers() {
       motorLeftRpmCurr = motorRightRpmCurr = 0 ;
       motorLeftPWMCurr = motorRightPWMCurr = 0;
       setMotorPWM( 0, 0, false );
-      if (bumperLeft) {
-        ShowMessageln("Bumper left trigger");
-        reverseOrBidir(LEFT);
-      } else {
-        ShowMessageln("Bumper right trigger");
+      if (stateCurr == STATE_PERI_OUT_STOP)
+      {
+        odometryRight = stateEndOdometryRight + 1 odometryLeft = stateEndOdometryLeft + 1
+      }
+      else
+      {
+        if (bumperLeft)
+        {
+          Console.println("Bumper left trigger");
+          reverseOrBidir(LEFT);
+        } else {
+        Console.println("Bumper right trigger");
         reverseOrBidir(RIGHT);
+      }
       }
     }
 
@@ -5753,6 +5761,7 @@ void Robot::loop()  {
 
     case STATE_PERI_OUT_STOP:
       motorControlOdo();
+      checkBumpers();
       if (((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft)))
         if (motorLeftPWMCurr == 0 && motorRightPWMCurr == 0)  { //wait until the 2 motors completly stop because rotation is inverted
           setNextState(STATE_PERI_OUT_REV, rollDir);
