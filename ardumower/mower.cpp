@@ -501,13 +501,14 @@ void checkMotorFault() {
     return;
     
   }
+  /*
   if (digitalRead(pinMotorMowFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_MOW);
     Console.println(F("Error: motor mow fault"));
     robot.setNextState(STATE_ERROR, 0);
-    return;
-    
+    return;   
   }
+  */
 }
 
 
