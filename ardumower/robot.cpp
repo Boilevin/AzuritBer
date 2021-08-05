@@ -4525,9 +4525,9 @@ void Robot::checkSonarPeriTrack() {
   if (!sonarUse) return;
   if (millis() < nextTimeCheckSonar) return;
   nextTimeCheckSonar = millis() + 200;
-
-
-  if (track_ClockWise) { //use the right sonar
+  sonarDistRight = NO_ECHO;
+  sonarDistLeft = NO_ECHO;
+  if (track_ClockWise) { //Track CW
     if (sonarRightUse) {
       sonarDistRight = readSensor(SEN_SONAR_RIGHT);
       if (sonarDistRight < 20 || sonarDistRight > 110) sonarDistRight = NO_ECHO; // Object is too close to the sensor JSN SR04T can't read <20 CM . Sensor value is useless
@@ -4535,7 +4535,7 @@ void Robot::checkSonarPeriTrack() {
 
     else sonarDistRight = NO_ECHO;
   }
-  else {
+  else {//track CCW
     if (sonarLeftUse) { //use the left sonar
       sonarDistLeft = readSensor(SEN_SONAR_LEFT);
       if (sonarDistLeft < 20 || sonarDistLeft  > 110) sonarDistLeft = NO_ECHO;
