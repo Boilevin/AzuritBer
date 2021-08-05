@@ -2119,7 +2119,7 @@ void Robot::setup()  {
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
     Console.println ("Watchdog is enable and set to 3 secondes");
-    watchdogEnable(8000);// Watchdog trigger after  3 sec if not reseted.
+    watchdogEnable(3000);// Watchdog trigger after  3 sec if not reseted.
 
   }
   else
@@ -5752,6 +5752,9 @@ void Robot::loop()  {
       break;
 
     case STATE_PERI_OUT_STOP:
+    //RonPeeters request
+      checkCurrent();
+      checkBumpers();
       motorControlOdo();
       if (((odometryRight >= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft)))
         if (motorLeftPWMCurr == 0 && motorRightPWMCurr == 0)  { //wait until the 2 motors completly stop because rotation is inverted
