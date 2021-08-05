@@ -2094,7 +2094,9 @@ void Robot::setup()  {
     setNextState(STATE_FORWARD_ODO, 0);
   }
 
+if(DHT22Use){
   dht.begin();
+}
   nextTimeReadDHT22 = millis() + 15000; //read only after all the setting of the mower are OK
 
   stateStartTime = millis();
