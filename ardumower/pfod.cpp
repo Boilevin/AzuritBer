@@ -947,21 +947,19 @@ void RemoteControl::processStationMenu(String pfodCmd) {
 
 void RemoteControl::sendOdometryMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Odometry2D`1000"));
-  //serialPort->print(F("|l00~Use "));
-  //sendYesNo(robot->odometryUse);
   serialPort->print(F("|l01~Value l, r "));
   serialPort->print(robot->odometryLeft);
   serialPort->print(", ");
   serialPort->println(robot->odometryRight);
   sendSlider("l04", F("Ticks per one full revolution"), robot->odometryTicksPerRevolution, "", 1, 2800, 500);
-  sendSlider("l01", F("Ticks per cm"), robot->odometryTicksPerCm, "", 0.1, 60, 10);
+  sendSlider("l03", F("Ticks per cm"), robot->odometryTicksPerCm, "", 0.1, 60, 10);
   sendSlider("l02", F("Wheel base cm"), robot->odometryWheelBaseCm, "", 0.1, 50, 5);
   serialPort->println("}");
 }
 
 void RemoteControl::processOdometryMenu(String pfodCmd) {
-  // if (pfodCmd == "l00") robot->odometryUse = !robot->odometryUse;
-  if (pfodCmd.startsWith("l01")) processSlider(pfodCmd, robot->odometryTicksPerCm, 0.1);
+
+  if (pfodCmd.startsWith("l03")) processSlider(pfodCmd, robot->odometryTicksPerCm, 0.1);
   else if (pfodCmd.startsWith("l02")) processSlider(pfodCmd, robot->odometryWheelBaseCm, 0.1);
   else if (pfodCmd.startsWith("l04")) processSlider(pfodCmd, robot->odometryTicksPerRevolution, 1);
 
