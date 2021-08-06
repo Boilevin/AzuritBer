@@ -2094,7 +2094,9 @@ void Robot::setup()  {
     setNextState(STATE_FORWARD_ODO, 0);
   }
 
+if(DHT22Use){
   dht.begin();
+}
   nextTimeReadDHT22 = millis() + 15000; //read only after all the setting of the mower are OK
 
   stateStartTime = millis();
@@ -4848,6 +4850,10 @@ void Robot::readDHT22() {
   //read only the temperature when no motor control.
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  if (!DHT22Use)
+  {
+    return;
+  }
   if ((DHT22Use) && (millis() > nextTimeReadDHT22)) { //read only each 60 Secondes
     nextTimeReadDHT22 = nextTimeReadDHT22 + 60000;
     humidityDht = dht.readHumidity();
