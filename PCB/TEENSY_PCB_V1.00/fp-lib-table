@@ -1,4 +1,0 @@
-(fp_lib_table
-  (lib (name teensy_library-master)(type KiCad)(uri ${KIPRJMOD}/teensy_library-master)(options "")(descr ""))
-  (lib (name doit-esp32-devkit-kicad-master)(type KiCad)(uri ${KIPRJMOD}/doit-esp32-devkit-kicad-master.pretty)(options "")(descr ""))
-)

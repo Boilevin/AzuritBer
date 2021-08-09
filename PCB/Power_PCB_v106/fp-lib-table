@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name Current_sense)(type KiCad)(uri ${KIPRJMOD}/Current_sense.pretty)(options "")(descr ""))
-)
