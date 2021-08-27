@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.61-Azuritber GY-521"
+#define VER "1.62-Azuritber GY-521"
 
 
 // sensors
@@ -686,7 +686,7 @@ class Robot
     float batFullCurrent   ; // current flowing when battery is fully charged
     float startChargingIfBelow; // start charging if battery Voltage is below
     unsigned long chargingTimeout; // safety timer for charging
-    float chgSenseZero    ;       // charge current sense zero point NOT USE
+    float stationHeading    ;       // station heading to init the YAW when leave station (in radian)
     float batSenseFactor       ;     // charge current conversion factor
     float chgSense        ;       // mV/A empfindlichkeit des Ladestromsensors in mV/A (FÃ¼r ACS712 5A = 185)
     char chgChange        ;       // messwertumkehr von - nach +         1oder 0

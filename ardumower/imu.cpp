@@ -101,6 +101,7 @@ void IMUClass::begin() {
       delay(500); //    wait  before doing the first reading
     }
   }
+  
 
   loadCalib();
   printCalib();
@@ -379,11 +380,7 @@ void IMUClass::run() {
 
     comYaw = scalePI( atan2(comTilt.y, comTilt.x)  ); // the compass yaw not accurate but reliable
   }
-  else
-  {
-    CompassGyroOffset = 0;
-  }
-
+  
   // / CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
   ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
 

@@ -244,6 +244,7 @@ Robot::Robot() {
   nextTimeAddYawMedian = 0;
   nextTimeRobotStats = 0;
   delayToReadVoltageStation = 0;
+
   //bb
   // nextTimeImuUse = 0;
   statsMowTimeMinutesTripCounter = 0;
@@ -419,7 +420,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, batSwitchOffIfIdle);
   eereadwrite(readflag, addr, batFactor);
   eereadwrite(readflag, addr, batChgFactor);
-  eereadwrite(readflag, addr, chgSenseZero);  //float adress free for something else
+  eereadwrite(readflag, addr, stationHeading);
   eereadwrite(readflag, addr, batSenseFactor);
   eereadwrite(readflag, addr, batFullCurrent);
   eereadwrite(readflag, addr, startChargingIfBelow);
@@ -780,8 +781,8 @@ void Robot::printSettingSerial() {
   ShowMessageln(startChargingIfBelow);
   ShowMessage  (F("chargingTimeout      : "));
   ShowMessageln(chargingTimeout);
-  ShowMessage  (F("chgSenseZero         : "));
-  ShowMessageln(chgSenseZero);
+  ShowMessage  (F("stationHeading         : "));
+  ShowMessageln(stationHeading);
   ShowMessage  (F("batSenseFactor       : "));
   ShowMessageln( batSenseFactor);
   ShowMessage  (F("chgSense             : "));
@@ -2094,9 +2095,9 @@ void Robot::setup()  {
     setNextState(STATE_FORWARD_ODO, 0);
   }
 
-if(DHT22Use){
-  dht.begin();
-}
+  if (DHT22Use) {
+    dht.begin();
+  }
   nextTimeReadDHT22 = millis() + 15000; //read only after all the setting of the mower are OK
 
   stateStartTime = millis();
@@ -2131,7 +2132,7 @@ if(DHT22Use){
 
   nextTimeInfo = millis();
 
- 
+
 
 }
 
@@ -2555,7 +2556,7 @@ void Robot::checkButton() {
             return;
           }
 
-          
+
         }
         else if (buttonCounter == 3) {
           if (stateCurr == STATE_STATION) return;
@@ -2892,6 +2893,14 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_STATION_REV: //when start in auto mode the mower first reverse to leave the station
+
+      if (!CompassUse) { //set the yaw heading to zero when mower leave station if compass is not use
+        ShowMessageln("Imu Heading is reset to Station Heading");
+        //CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
+        imu.CompassGyroOffset = scalePI(-imu.ypr.yaw + stationHeading / 180 * PI);
+
+      }
+
       statusCurr = TRACK_TO_START;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
       UseAccelLeft = 1;
@@ -4955,7 +4964,7 @@ void Robot::loop()  {
     gps.run();
   }
 
-  if ((Enable_Screen) && (millis() >= nextTimeScreen))   { // warning : refresh screen take 40 ms 
+  if ((Enable_Screen) && (millis() >= nextTimeScreen))   { // warning : refresh screen take 40 ms
     nextTimeScreen = millis() + 250;
     StartReadAt = millis();
 
@@ -4964,7 +4973,7 @@ void Robot::loop()  {
     }
     if ((statusCurr == NORMAL_MOWING) || (statusCurr == SPIRALE_MOWING) || (statusCurr == WIRE_MOWING)) {
       MyScreen.refreshMowScreen();
-      nextTimeScreen = millis() + 500; // in mowing mode don't need a big refresh rate and avoid trouble on loop 
+      nextTimeScreen = millis() + 500; // in mowing mode don't need a big refresh rate and avoid trouble on loop
     }
     if ((statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START) ) {
       MyScreen.refreshTrackScreen();
@@ -5758,7 +5767,7 @@ void Robot::loop()  {
       break;
 
     case STATE_PERI_OUT_STOP:
-    //RonPeeters request
+      //RonPeeters request
       checkCurrent();
       checkBumpers();
       motorControlOdo();
@@ -5918,10 +5927,7 @@ void Robot::loop()  {
           if (CompassUse) {
             imu.CompassGyroOffset = distancePI( scalePI(accelGyroYawMedian.getMedian() -  imu.CompassGyroOffset), compassYawMedian.getMedian()); //change the Gyro offset according to Compass Yaw
           }
-          else
-          {
-            imu.CompassGyroOffset = 0;
-          }
+
           ShowMessageln("Drift is OK");
           setBeeper(0, 0, 0, 0, 0); //stop sound immediatly
 
