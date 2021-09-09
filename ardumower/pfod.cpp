@@ -881,7 +881,7 @@ void RemoteControl::sendBatteryMenu(boolean update) {
   if (robot->developerActive) {
     sendSlider("j09", F("Charge Factor"), robot->batChgFactor, "", 0.01, 12, 9);
     sendSlider("j05", F("Battery Factor "), robot->batFactor, "", 0.01, 12, 9);
-    sendSlider("j08", F("Sense factor"), robot->batSenseFactor, "", 0.01, 12, 9);
+    sendSlider("j08", F("Sense factor"), robot->batSenseFactor, "", 0.01,2, 1);
   }
   //end add
   //Console.print("batFactor=");
