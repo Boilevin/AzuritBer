@@ -5811,23 +5811,23 @@ void Robot::loop()  {
         setNextState(STATE_PERI_OUT_REV, rollDir);//if the motor can't rech the odocible in slope
       }
       break;
-      
+
     case STATE_ENDLANE_STOP:
       motorControlOdo();
-        if ((moveRightFinish) && (moveLeftFinish) ) {
-          if (rollDir == RIGHT) {
-            if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) { //wait until the 2 motor completly stop because need precision
-              setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
-            }
+      if ((moveRightFinish) && (moveLeftFinish) ) {
+        if (rollDir == RIGHT) {
+          if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) { //wait until the 2 motor completly stop because need precision
+            setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
           }
-          else
-          {
-            if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) {
-              setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
-            }
+        }
+        else
+        {
+          if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) {
+            setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
           }
-        }    
-    
+        }
+      }
+
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {
         if (developerActive) {
           ShowMessageln ("Warning can t end lane in time ");
@@ -5835,7 +5835,7 @@ void Robot::loop()  {
         setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);//if the motor can't reach the odocible in slope
       }
 
-     
+
 
     case STATE_SONAR_TRIG:
       motorControlOdo();
@@ -6300,6 +6300,9 @@ void Robot::loop()  {
       //bber14
       //if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
       if (!perimeterInside) {
+        mowPatternDuration = mowPatternDurationMax - 3; //change only for 3 mins
+        mowPatternCurr = MOW_RANDOM;
+        ShowMessageln ("Find Corner change to Random Mowing ");
         setNextState(STATE_PERI_OUT_STOP, rollDir);
         return;
       }
