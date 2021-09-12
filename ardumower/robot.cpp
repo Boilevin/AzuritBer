@@ -3562,7 +3562,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_OUT_ROLL_TOINSIDE:  //roll left or right in normal mode
-      //bber2
+
       perimeter.lastInsideTime[0] = millis(); //use to avoid perimetertimeout when mower outside perimeter
       if (stateCurr == STATE_WAIT_AND_REPEAT) {
         RollToInsideQty = RollToInsideQty + 1;
@@ -3574,7 +3574,17 @@ void Robot::setNextState(byte stateNew, byte dir) {
         ShowMessage("Find Inside roll nb: ");
         ShowMessageln(RollToInsideQty);
       }
-
+      if (mowPatternCurr == MOW_LANES) {
+        //bber201
+        mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
+        ShowMessageln("Find a corner change to Random for 3 minutes ");
+        mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
+        laneUseNr = laneUseNr + 1;
+        findedYaw = 999;
+        justChangeLaneDir = true;
+        nextTimeToDmpAutoCalibration = millis(); // so the at the end of the next line a calibration occur
+        if (laneUseNr > 3) laneUseNr = 1;
+      }
       AngleRotate = 50;
       Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
       if (dir == RIGHT) {
@@ -6296,13 +6306,15 @@ void Robot::loop()  {
       motorControlOdo();
       checkCurrent();
       checkBumpers();
-
-      //bber14
-      //if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
       if (!perimeterInside) {
         mowPatternDuration = mowPatternDurationMax - 3; //change only for 3 mins
         mowPatternCurr = MOW_RANDOM;
         ShowMessageln ("Find Corner change to Random Mowing ");
+        laneUseNr = laneUseNr + 1;
+        findedYaw = 999;
+        justChangeLaneDir = true;
+        nextTimeToDmpAutoCalibration = millis(); // so the at the end of the next line a calibration occur
+        if (laneUseNr > 3) laneUseNr = 1;
         setNextState(STATE_PERI_OUT_STOP, rollDir);
         return;
       }
