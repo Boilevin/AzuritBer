@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.63-Azuritber GY-521"
+#define VER "1.64-Azuritber GY-521"
 
 
 // sensors
@@ -190,8 +190,8 @@ enum {
   STATE_PERI_OUT_STOP_ROLL_TOTRACK, // after the mower rool to track we need to stop the right motor because it's reverse and the track is forward
   STATE_PERI_STOP_TO_FAST_START,  // after the mower find a tag for find a new start entry point
   STATE_CALIB_MOTOR_SPEED,  // we need to know how may ticks the motor can do in 1 ms to compute the maxododuration 
-  STATE_ACCEL_FRWRD // when start from calib or off need to accel before motorodo
-  
+  STATE_ACCEL_FRWRD, // when start from calib or off need to accel before motorodo
+  STATE_ENDLANE_STOP //when mower is at the end of the lane avoid to reverse before roll
 };
 
 // status mode
@@ -415,6 +415,8 @@ class Robot
     boolean UseBrakeLeft;
     boolean moveRightFinish;
     boolean moveLeftFinish;
+    boolean motorRightOverload;
+    boolean motorLeftOverload;
     boolean odoLeftRightCorrection;
     boolean autoAdjustSlopeSpeed;
     int AngleRotate;

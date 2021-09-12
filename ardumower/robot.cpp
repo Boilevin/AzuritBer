@@ -74,7 +74,7 @@ char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "P
                       "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                       "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
                       "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK",
-                      "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD"
+                      "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD", "ENDLANESTOP"
                      };
 
 char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT" , "WIREMOWING"
@@ -3082,6 +3082,21 @@ void Robot::setNextState(byte stateNew, byte dir) {
       stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * DistPeriOutStop);
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * DistPeriOutStop);
       OdoRampCompute();
+      break;
+
+
+    case STATE_ENDLANE_STOP: //in auto mode and forward slow down before stop and reverse
+      //-------------------------------Verify if it's time to change mowing pattern
+      justChangeLaneDir = !justChangeLaneDir;  //use to know if the lane is not limit distance
+      UseAccelLeft = 0;
+      UseBrakeLeft = 1;
+      UseAccelRight = 0;
+      UseBrakeRight = 1;
+      motorLeftSpeedRpmSet = motorRightSpeedRpmSet = motorSpeedMaxRpm; //perimeterSpeedCoeff reduce speed near the wire to 70%
+      stateEndOdometryRight = odometryRight + (int)(odometryTicksPerCm * 2 * DistPeriOutStop);
+      stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 2 * DistPeriOutStop);
+      OdoRampCompute();
+
 
       break;
 
@@ -4279,6 +4294,7 @@ void Robot::checkCurrent() {
     if (motorRightPower >= 0.8 * motorPowerMax)
     {
       motorRightSenseCounter++;
+      motorRightOverload = true;
       setBeeper(1000, 50, 50, 200, 100);
       setMotorPWM( 0, 0, false );
       ShowMessage("Motor Right power is 80 % of the max, value --> ");
@@ -4292,8 +4308,14 @@ void Robot::checkCurrent() {
         }
         else
         {
-          if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
-          else reverseOrBidir(LEFT);
+          if (mowPatternCurr == MOW_LANES)
+          {
+            reverseOrBidir(rollDir);
+          }
+          else
+          {
+            reverseOrBidir(LEFT);
+          }
         }
       }
     }
@@ -4305,9 +4327,7 @@ void Robot::checkCurrent() {
     //Second test at powerMax by increase the counter to stop to error
     if (motorRightPower >= motorPowerMax) {
       motorRightSenseCounter++;
-      //setMotorPWM( 0, 0, false );
-      //addErrorCounter(ERR_MOTOR_RIGHT);
-      //setNextState(STATE_ERROR, 0);
+      motorRightOverload = true;
       ShowMessage("Warning: Motor Right power over 100% , Max possible 10 time in 1 seconde. Actual count --> ");
       ShowMessageln(motorRightSenseCounter);
 
@@ -4319,6 +4339,7 @@ void Robot::checkCurrent() {
     if (motorLeftPower >= 0.8 * motorPowerMax)
     {
       motorLeftSenseCounter++;
+      motorLeftOverload = true;
       setBeeper(1000, 50, 50, 100, 50);
       setMotorPWM( 0, 0, false );
       ShowMessage("Motor Left power is 80 % of the max, value --> ");
@@ -4332,8 +4353,14 @@ void Robot::checkCurrent() {
         }
         else
         {
-          if (mowPatternCurr == MOW_LANES) reverseOrBidir(rollDir);
-          else reverseOrBidir(RIGHT);
+          if (mowPatternCurr == MOW_LANES)
+          {
+            reverseOrBidir(rollDir);
+          }
+          else
+          {
+            reverseOrBidir(RIGHT);
+          }
         }
       }
     }
@@ -4345,12 +4372,11 @@ void Robot::checkCurrent() {
     //Second test at powerMax by increase the counter to stop to error
     if (motorLeftPower >= motorPowerMax) {
       motorLeftSenseCounter++;
-      //setMotorPWM( 0, 0, false );
-      //addErrorCounter(ERR_MOTOR_LEFT);
-      //setNextState(STATE_ERROR, 0);
+      motorLeftOverload = true;
       ShowMessage("Warning: Motor Left power over 100% , Max possible 10 time in 1 seconde. Actual count --> ");
       ShowMessageln(motorLeftSenseCounter);
     }
+
     //final test on the counter to generate the error and stop the mower
     if (motorLeftSenseCounter >= 10) { //the motor is stuck for more than 1 seconde 10 * 100 ms go to error.
       ShowMessage("Fatal Error: Motor Left power over 100% for more than 1 seconde last power --> ");
@@ -4367,7 +4393,7 @@ void Robot::checkCurrent() {
       setNextState(STATE_ERROR, 0);
     }
 
-  } //motorpower ignore time
+  }
 
 }
 
@@ -5101,12 +5127,7 @@ void Robot::loop()  {
 
     case STATE_FORWARD_ODO:
       // driving forward with odometry control
-
-
-
       motorControlOdo();
-
-
       //manage the imu////////////////////////////////////////////////////////////
       if (imuUse ) {
         //when findedYaw = 999 it's mean that the lane is changed and the imu need to be adjusted to the compass
@@ -5114,7 +5135,6 @@ void Robot::loop()  {
           setNextState(STATE_STOP_TO_FIND_YAW, rollDir);
           return;
         }
-
         //-----------here and before reverse the mower is stop so mark a pause to autocalibrate DMP-----------
         if ((millis() > nextTimeToDmpAutoCalibration) && (mowPatternCurr == MOW_LANES) && (imu.ypr.yaw > 0) && ((millis() - stateStartTime) > 4000) && ((millis() - stateStartTime) < 5000)  ) {
           setNextState(STATE_STOP_TO_FIND_YAW, rollDir);
@@ -5129,13 +5149,15 @@ void Robot::loop()  {
       if ((odometryRight > stateEndOdometryRight) || (odometryLeft > stateEndOdometryLeft))
       {
         if ((mowPatternCurr == MOW_LANES) && (!justChangeLaneDir)) {
-          ShowMessageln("MAX LANE LENGHT TRIGGER time to reverse");
-          setNextState(STATE_PERI_OUT_STOP, rollDir);
+          //ShowMessageln("LANE LENGHT TRIGGER");
+          setNextState(STATE_ENDLANE_STOP, rollDir);
+
         }
         else {
-          ShowMessageln("more than 300 ML in straight line ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ? ");
+          ShowMessageln("more than 300 ML in straight line ?? ?? ?? ?? ? ");
           setBeeper(300, 150, 150, 160, 0);
-          setNextState(STATE_PERI_OUT_STOP, rollDir);
+          setNextState(STATE_ENDLANE_STOP, rollDir);
+
         }
       }
 
@@ -5789,7 +5811,31 @@ void Robot::loop()  {
         setNextState(STATE_PERI_OUT_REV, rollDir);//if the motor can't rech the odocible in slope
       }
       break;
+      
+    case STATE_ENDLANE_STOP:
+      motorControlOdo();
+        if ((moveRightFinish) && (moveLeftFinish) ) {
+          if (rollDir == RIGHT) {
+            if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) { //wait until the 2 motor completly stop because need precision
+              setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
+            }
+          }
+          else
+          {
+            if ((motorLeftPWMCurr == 0) && (motorRightPWMCurr == 0)) {
+              setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);
+            }
+          }
+        }    
+    
+      if (millis() > (stateStartTime + MaxOdoStateDuration)) {
+        if (developerActive) {
+          ShowMessageln ("Warning can t end lane in time ");
+        }
+        setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);//if the motor can't reach the odocible in slope
+      }
 
+     
 
     case STATE_SONAR_TRIG:
       motorControlOdo();
@@ -6228,7 +6274,7 @@ void Robot::loop()  {
       break;
 
     case STATE_PERI_OUT_LANE_ROLL1:
-       motorControlOdo();
+      motorControlOdo();
       checkCurrent();
       checkBumpers();
       if ((moveRightFinish) && (moveLeftFinish))
@@ -6245,7 +6291,7 @@ void Robot::loop()  {
         setNextState(STATE_NEXT_LANE_FORW, rollDir);//if the motor can't reach the odocible in slope
       }
       break;
-      
+
     case STATE_NEXT_LANE_FORW:
       motorControlOdo();
       checkCurrent();
@@ -6278,7 +6324,7 @@ void Robot::loop()  {
       checkBumpers();
 
       if (rollDir == RIGHT) {
-       if ((moveRightFinish) && (moveLeftFinish))
+        if ((moveRightFinish) && (moveLeftFinish))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
             if (!perimeterInside) setNextState(STATE_PERI_OUT_ROLL_TOINSIDE, rollDir);
@@ -6376,7 +6422,7 @@ void Robot::loop()  {
     case STATE_STATION_REV:
 
       motorControlOdo();
-     if ((moveRightFinish) && (moveLeftFinish) ) {
+      if ((moveRightFinish) && (moveLeftFinish) ) {
         if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
           setNextState(STATE_STATION_ROLL, 1);
         }
