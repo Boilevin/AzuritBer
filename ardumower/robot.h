@@ -413,6 +413,8 @@ class Robot
     boolean UseBrakeRight;
     boolean UseAccelLeft;
     boolean UseBrakeLeft;
+    boolean moveRightFinish;
+    boolean moveLeftFinish;
     boolean odoLeftRightCorrection;
     boolean autoAdjustSlopeSpeed;
     int AngleRotate;
