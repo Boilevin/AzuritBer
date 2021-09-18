@@ -4983,8 +4983,9 @@ void Robot::loop()  {
     checkTimer();
   }
   beeper();
-  if (stateCurr != STATE_PERI_TRACK) {
-    //if ((stateCurr != STATE_STATION_CHARGING) || (stateCurr != STATE_STATION) || (stateCurr != STATE_PERI_TRACK)) {
+  //if (stateCurr != STATE_PERI_TRACK) {
+  //do not read imu into station ??
+  if ((stateCurr != STATE_STATION_CHARGING) && (stateCurr != STATE_STATION) && (stateCurr != STATE_PERI_TRACK)) {
     if ((imuUse) && (millis() >= nextTimeImuLoop)) {
       nextTimeImuLoop = millis() + 50;
       StartReadAt = millis();
