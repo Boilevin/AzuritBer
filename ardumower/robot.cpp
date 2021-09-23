@@ -4074,26 +4074,48 @@ void Robot::setNextState(byte stateNew, byte dir) {
 void Robot::ShowMessage(String message) {
   Console.print (message);
   if (ConsoleToPfod) {
-    Bluetooth.print (message);
+    if (bluetoothUse) {
+      Bluetooth.print (message);
+    }
+    else {
+      ESP8266port.print(message);
+    }
   }
 }
 void Robot::ShowMessageln(String message) {
   Console.println(message);
   if (ConsoleToPfod) {
-    Bluetooth.println(message);
+    if (bluetoothUse) {
+      Bluetooth.println (message);
+    }
+    else {
+      ESP8266port.println(message);
+    }
   }
 }
 
 void Robot::ShowMessage(float value) {
   Console.print (value);
   if (ConsoleToPfod) {
-    Bluetooth.print (value);
+
+    if (bluetoothUse) {
+      Bluetooth.print(value);
+    }
+    else {
+      ESP8266port.print(value);
+    }
+
   }
 }
 void Robot::ShowMessageln(float value) {
   Console.println(value);
   if (ConsoleToPfod) {
-    Bluetooth.println(value);
+    if (bluetoothUse) {
+      Bluetooth.println (value);
+    }
+    else {
+      ESP8266port.println(value);
+    }
   }
 }
 
