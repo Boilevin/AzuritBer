@@ -6548,7 +6548,17 @@ void Robot::loop()  {
         if ((odometryRight <= stateEndOdometryRight) && (odometryLeft >= stateEndOdometryLeft))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
-            setNextState(STATE_STATION_FORW, rollDir);
+            smoothPeriMag = perimeter.getSmoothMagnitude(0);
+
+            if ((perimeterInside) && (smoothPeriMag > 250)) //check if signal here and inside need a big value to be sure it is not only noise
+            {
+              setNextState(STATE_STATION_FORW, rollDir);
+            }
+            else {
+              Console.print("ERROR No SIGNAL SmoothMagnitude =  ");
+              Console.println(smoothPeriMag);
+              setNextState(STATE_ERROR, 0);
+            }
           }
         }
       }
@@ -6557,7 +6567,16 @@ void Robot::loop()  {
         if ((odometryRight >= stateEndOdometryRight) && (odometryLeft <= stateEndOdometryLeft))
         {
           if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
-            setNextState(STATE_STATION_FORW, rollDir);
+            smoothPeriMag = perimeter.getSmoothMagnitude(0);
+            if ((perimeterInside) && (smoothPeriMag > 250)) //check if signal here and inside need a big value to be sure it is not only noise
+            {
+              setNextState(STATE_STATION_FORW, rollDir);
+            }
+            else {
+              Console.print("ERROR No SIGNAL SmoothMagnitude =  ");
+              Console.println(smoothPeriMag);
+              setNextState(STATE_ERROR, 0);
+            }
           }
         }
       }
@@ -6566,7 +6585,17 @@ void Robot::loop()  {
         if (developerActive) {
           Console.println ("Warning can t make the station roll in time ");
         }
-        setNextState(STATE_STATION_FORW, rollDir);//if the motor can't reach the odocible in slope
+        smoothPeriMag = perimeter.getSmoothMagnitude(0);
+
+        if ((perimeterInside) && (smoothPeriMag > 250)) //check if signal here and inside need a big value to be sure it is not only noise
+        {
+          setNextState(STATE_STATION_FORW, rollDir);
+        }
+        else {
+          Console.print("ERROR No SIGNAL SmoothMagnitude =  ");
+          Console.println(smoothPeriMag);
+          setNextState(STATE_ERROR, 0);
+        }
       }
       break;
 
