@@ -22,23 +22,23 @@
 #include <WiFi.h>
 
 //********************* user setting **********************************
-const char* ssid     = "your acces point ssid";   // put here your acces point ssid
-const char* password = "password";  // put here the password
+const char* ssid     = "your ssid";   // put here your acces point ssid
+const char* password = "your password";  // put here the password
 //********************* setting for current sensor **********************************
 float DcDcOutVoltage = 9.0;  //Use to have a correct value on perricurrent (Need to change the value each time you adjust the DC DC )
 
-IPAddress staticIP(10, 0, 0, 154); // put here the static IP
+IPAddress staticIP(10, 0, 0, 150); // put here the static IP
 IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
 
-#define USE_STATION     0 // a station is connected and is used to charge the mower
+#define USE_STATION     1 // a station is connected and is used to charge the mower
 #define USE_PERI_CURRENT      1     // use Feedback for perimeter current measurements? (set to '0' if not connected!)
-#define USE_BUTTON      1     // use button to start mowing or send mower to station not finish to dev
+#define USE_BUTTON      0     // use button to start mowing or send mower to station not finish to dev
 #define USE_RAINFLOW    0     // check the amount of rain not finish to dev on 31/08/2020
 #define WORKING_TIMEOUT_MINS 300  // timeout for perimeter switch-off if robot not in station (minutes)
 #define PERI_CURRENT_MIN    100    // minimum milliAmpere for cutting wire detection
-
+#define AUTO_START_SIGNAL   0 //use to start sender when mower leave station
 
 
 #define I2C_SDA 4
@@ -72,7 +72,7 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 
 // code version
-#define VER "ESP32 2.1"
+#define VER "ESP32 2.2"
 
 volatile int step = 0;
 boolean enableSenderA = false; //OFF on start to autorise the reset
@@ -441,7 +441,7 @@ void loop()
       PeriCurrent = PeriCurrent - 100.0; //the DC/DC,ESP32,LN298N drain 100 ma when nothing is ON and a wifi access point is found (To confirm ????)
       if (PeriCurrent <= 5) PeriCurrent = 0; //
       PeriCurrent = PeriCurrent * busvoltage1 / DcDcOutVoltage; // it's 3.2666 = 29.4/9.0 the power is read before the DC/DC converter so the current change according : 29.4V is the Power supply 9.0V is the DC/DC output voltage (Change according your setting)
-     
+
 
       if ((enableSenderA) && (PeriCurrent < PERI_CURRENT_MIN)) {
         oled.setTextXY(5, 0);
@@ -520,21 +520,22 @@ void loop()
       }
       else
       {
-        //always start to send a signal when mower leave station
-        if (!enableSenderB) {
-          workTimeMins = 0;
-          enableSenderA = true;
-          digitalWrite(pinEnableA, HIGH);
-          digitalWrite(pinIN1, LOW);
-          digitalWrite(pinIN2, LOW);
-        }
-        else {
-          workTimeMins = 0;
-          enableSenderB = true;
-          digitalWrite(pinEnableB, HIGH);
-          digitalWrite(pinIN3, LOW);
-          digitalWrite(pinIN4, LOW);
-
+        if (AUTO_START_SIGNAL) {
+          //always start to send a signal when mower leave station
+          if (!enableSenderB) {
+            workTimeMins = 0;
+            enableSenderA = true;
+            digitalWrite(pinEnableA, HIGH);
+            digitalWrite(pinIN1, LOW);
+            digitalWrite(pinIN2, LOW);
+          }
+          else {
+            workTimeMins = 0;
+            enableSenderB = true;
+            digitalWrite(pinEnableB, HIGH);
+            digitalWrite(pinIN3, LOW);
+            digitalWrite(pinIN4, LOW);
+          }
         }
       }
     }
