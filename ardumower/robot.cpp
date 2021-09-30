@@ -6531,6 +6531,7 @@ void Robot::loop()  {
       {
         if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
           setNextState(STATE_STATION_ROLL, 1);
+          return;
         }
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {//the motor have not enought power to reach the cible
@@ -6538,6 +6539,7 @@ void Robot::loop()  {
           Console.print ("Warning station rev not in time ");
         }
         setNextState(STATE_STATION_ROLL, 1);//if the motor can't reach the odocible in slope
+        return;
       }
       break;
 
@@ -6552,12 +6554,16 @@ void Robot::loop()  {
 
             if ((perimeterInside) && (smoothPeriMag > 250)) //check if signal here and inside need a big value to be sure it is not only noise
             {
+              Console.print("SIGNAL OK SmoothMagnitude =  ");
+              Console.println(smoothPeriMag);
               setNextState(STATE_STATION_FORW, rollDir);
+              return;
             }
             else {
               Console.print("ERROR No SIGNAL SmoothMagnitude =  ");
               Console.println(smoothPeriMag);
               setNextState(STATE_ERROR, 0);
+              return;
             }
           }
         }
@@ -6571,11 +6577,13 @@ void Robot::loop()  {
             if ((perimeterInside) && (smoothPeriMag > 250)) //check if signal here and inside need a big value to be sure it is not only noise
             {
               setNextState(STATE_STATION_FORW, rollDir);
+              return;
             }
             else {
               Console.print("ERROR No SIGNAL SmoothMagnitude =  ");
               Console.println(smoothPeriMag);
               setNextState(STATE_ERROR, 0);
+              return;
             }
           }
         }
