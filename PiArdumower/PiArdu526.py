@@ -350,7 +350,10 @@ def find_rfid_tag():
             send_var_message('w','newtagRotAngle2',''+str(mymower.newtagRotAngle2)+'','0','0','0','0','0','0','0')
             send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
             send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
-            send_pfo_message('ry','1','2','3','4','5','6',) 
+            send_pfo_message('ry','1','2','3','4','5','6',)
+            ButtonStopArea1_click()
+            ButtonStartArea2_click()
+            
         
         if((mymower.newtagToDo=="AREA3") & (mymower.areaToGo==3)):
             consoleInsertText('Go to area ---> '+ str(mymower.areaToGo) + '\n')
@@ -360,10 +363,12 @@ def find_rfid_tag():
             send_var_message('w','newtagDistance1',''+str(mymower.newtagDistance1)+'','0','0','0','0','0','0','0')
             send_var_message('w','newtagDistance2',''+str(mymower.newtagDistance2)+'','0','0','0','0','0','0','0')
             send_pfo_message('ry','1','2','3','4','5','6',)    
+            ButtonStopArea1_click()
+            ButtonStartArea3_click()
         
         if((mymower.newtagToDo=="AREA1")):
             mymower.areaToGo=1
-            consoleInsertText('Return to Station area ---> ' + '\n')
+            consoleInsertText('Return to Station area' + '\n')
             send_var_message('w','motorSpeedMaxPwm',''+str(mymower.newtagSpeed)+'','0','0','0','0','0','0','0')
             send_var_message('w','newtagRotAngle1',''+str(mymower.newtagRotAngle1)+'','0','0','0','0','0','0','0')
             send_var_message('w','newtagRotAngle2',''+str(mymower.newtagRotAngle2)+'','0','0','0','0','0','0','0')
@@ -1132,18 +1137,17 @@ def decode_message(message):  #decode the nmea message
                
                 tk_date_Now.set(time.strftime('%d/%m/%y %H:%M:%S',time.localtime()))
                 tk_time_Now.set(time.strftime('%H:%M:%S',time.localtime()))
-
+                #stop sender1 if we are into station
                 if ((mymower.sigAreaOff==False) and (myRobot.stateNames[mymower.state]=='STAT')):
                     ButtonStopArea1_click()
                     mymower.sigAreaOff=True
+                
 
-
+                #Start sender 1 when leaving station
                 if ((mymower.sigAreaOff) and (myRobot.stateNames[mymower.state]=='STREV')):
-                    if(time.time() >= mower.timeToStartAreaSignal):
-                        mower.timeToStartAreaSignal=time.time()+5  #try to communicate with sender each 5 secondes
                         ButtonStartArea1_click()
 
-
+                #start the sender of the area we use
                 if ((mymower.sigAreaOff) and (myRobot.stateNames[mymower.state]=='WAITSIG2')):
                     if(time.time() >= mower.timeToStartAreaSignal):
                         mower.timeToStartAreaSignal=time.time()+5  #try to communicate with sender each 5 secondes
@@ -2837,8 +2841,10 @@ def ButtonStartArea1_click():
         mymower.sigAreaOff=True
         consoleInsertText("*********** Area1 Sender FAIL To Start ************" + '\n')     
         #print (error_output)
-        consoleInsertText(str(error_output)+ '\n') 
-    send_var_message('w','areaInMowing','1','0','0','0','0','0','0','0')
+        consoleInsertText(str(error_output)+ '\n')
+    #avoid when start from station to change the area to go ??
+    if (myRobot.stateNames[mymower.state]!='STREV'):
+        send_var_message('w','areaInMowing','1','0','0','0','0','0','0','0')
     
 def ButtonStopArea1_click():
     ipMessage="curl "+Sender1AdressIP+"/A0"
