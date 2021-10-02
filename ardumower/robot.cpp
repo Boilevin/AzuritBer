@@ -6479,9 +6479,10 @@ void Robot::loop()  {
       {
         if ((motorLeftPWMCurr == 0 ) && (motorRightPWMCurr == 0 )) { //wait until the 2 motor completly stop
           smoothPeriMag = perimeter.getSmoothMagnitude(0);
-
           if ((perimeterInside) && (smoothPeriMag > 250)) //check if signal here and inside need a big value to be sure it is not only noise
           {
+            ShowMessage("SIGNAL OK SmoothMagnitude =  ");
+            ShowMessageln(smoothPeriMag);
             setNextState(STATE_STATION_FORW, rollDir);
           }
           else {
@@ -6489,10 +6490,6 @@ void Robot::loop()  {
             ShowMessageln(smoothPeriMag);
             setNextState(STATE_ERROR, 0);
           }
-
-
-
-
         }
       }
       if (millis() > (stateStartTime + MaxOdoStateDuration)) {//the motor have not enought power to reach the cible
@@ -6555,7 +6552,6 @@ void Robot::loop()  {
 
     //bber50
     case STATE_ACCEL_FRWRD:
-
       motorControlOdo();
       if (!perimeterInside) {
         ShowMessageln("Try to start at other location : We are not inside perimeter");
