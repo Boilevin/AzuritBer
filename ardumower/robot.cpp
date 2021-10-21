@@ -321,6 +321,45 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   ShowMessageln(addr);
 }
 
+
+
+void Robot::insert_rfid_list(String TagNr, byte TagMowerState, String TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2) {
+ShowMessageln("start add");
+  struct rfid_list *node = (struct rfid_list*) malloc(sizeof(struct rfid_list));
+  *node={TagNr,TagMowerState,TagToDo,TagSpeed,TagAngle1,TagDist1,TagAngle2,TagDist2,head};
+  if (node == NULL) {
+    ShowMessageln(F("New Rfid tag list insert error "));
+    return;
+  }
+  /*
+  node->TagNr = TagNr;
+  node->TagMowerState = TagMowerState;
+  node->TagToDo = TagToDo;
+  node->TagSpeed = TagSpeed;
+  node->TagAngle1 = TagAngle1;
+  node->TagDist1 = TagDist1;
+  node->TagAngle2 = TagAngle2;
+  node->TagDist2 = TagDist2;
+  node->next = head;
+  head = node;
+  */
+  //ShowMessageln(node);
+}
+
+void Robot::print_rfid_list() {
+  struct rfid_list *ptr = head;
+  ShowMessageln("ok");
+  while (ptr != NULL) {
+    ShowMessage(ptr->TagNr);
+    ShowMessage(",");
+    ShowMessageln(ptr->TagMowerState);
+    ptr = ptr->next;
+  }
+  ShowMessageln("fin");
+}
+
+
+
 void Robot::loadSaveErrorCounters(boolean readflag) {
   if (readflag) ShowMessageln(F("Load ErrorCounters"));
   else ShowMessageln(F("Save ErrorCounters"));
@@ -2138,7 +2177,11 @@ void Robot::setup()  {
 
   nextTimeInfo = millis();
 
+  //bber01
 
+  //insert_rfid_list("210", 22, "3", 240, 7, 8, 9, 10);
+  insert_rfid_list("44907166", 1, "RTS", 240, 7, 8, 9, 10);
+  //insert_rfid_list("44907167", 3, "RTS", 240, 7, 8, 9, 10);
 
 }
 
@@ -2639,15 +2682,17 @@ void Robot::readSensors() {
 
 
   if ((stateCurr != STATE_STATION) && (stateCurr != STATE_STATION_CHARGING) && (perimeterUse) && (millis() >= nextTimePerimeter)) {
-    //bber2
-
-
-
     nextTimePerimeter = millis() +  15;
     if (perimeter.read2Coil) {
       perimeterMagRight = readSensor(SEN_PERIM_RIGHT);
     }
     perimeterMag = readSensor(SEN_PERIM_LEFT);
+    perimeterMedian.add(perimeterMag);
+    if (perimeterMedian.isFull()) {
+      perimeterNoise = perimeterMedian.getHighest() - perimeterMedian.getLowest();
+      perimeterMedian.clear();
+    }
+
     if ((perimeter.isInside(0) != perimeterInside)) {
       perimeterCounter++;
       perimeterLastTransitionTime = millis();

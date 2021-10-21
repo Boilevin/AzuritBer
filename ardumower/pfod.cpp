@@ -238,12 +238,12 @@ void RemoteControl::sendSettingsMenu(boolean update) {
   if ((robot->stateCurr == STATE_OFF) || (robot->stateCurr == STATE_STATION))  //deactivate the save setting if the mower is not OFF to avoid zombie
   {
     serialPort->print(F("|sz~Save settings|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~Raspberry"));
-    serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s15~Drop sensor|s14~GPS RFID|i~Timer|s12~Date/time|sx~Factory settings|s16~ByLane Setting}"));
+    serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s14~GPS|s15~DROP|s16~ByLane Setting|s17~RFID|i~Timer|s12~Date/time|sx~Factory settings}"));
   }
   else
   {
     serialPort->print(F("|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~Raspberry"));
-    serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s15~Drop sensor|s14~GPS RFID|i~Timer|s12~Date/time|sx~Factory settings|s16~ByLane Setting}"));
+    serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s14~GPS|s15~DROP|s16~ByLane Setting|s17~RFID|i~Timer|s12~Date/time|sx~Factory settings}"));
   }
 }
 
@@ -261,9 +261,11 @@ void RemoteControl::processSettingsMenu(String pfodCmd) {
   else if (pfodCmd == "s11") sendOdometryMenu(false);
   else if (pfodCmd == "s12") sendDateTimeMenu(false);
   else if (pfodCmd == "s13") sendRainMenu(false);
-  else if (pfodCmd == "s15") sendDropMenu(false);
   else if (pfodCmd == "s14") sendGPSMenu(false);
+  else if (pfodCmd == "s15") sendDropMenu(false);
   else if (pfodCmd == "s16") sendByLaneMenu(false);
+  else if (pfodCmd == "s17") sendRFIDMenu(false);
+  
   else if (pfodCmd == "sx") sendFactorySettingsMenu(false);
   else if (pfodCmd == "sz") {
     robot->saveUserSettings();
@@ -698,23 +700,31 @@ void RemoteControl::processRainMenu(String pfodCmd) {
   sendRainMenu(true);
 }
 void RemoteControl::sendGPSMenu(boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->print(F("{.GPS RFID`1000"));
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.GPS`1000"));
   serialPort->print(F("|q00~GPS Use(Need Reboot) "));
   sendYesNo(robot->gpsUse);
-  sendSlider("q03", F("GPS Baudrate"), robot->gpsBaudrate, "", 1 , 38400, 9600);
-  serialPort->print(F("|q01~RFID Use : "));
-  sendYesNo(robot->rfidUse);
-  serialPort->print(F("|q02~Last Rfid : "));
-  serialPort->print(robot->rfidTagFind);
   serialPort->println("}");
 }
 
 void RemoteControl::processGPSMenu(String pfodCmd) {
   if (pfodCmd == "q00") robot->gpsUse = !robot->gpsUse;
-  else if (pfodCmd.startsWith("q01")) robot->rfidUse = !robot->rfidUse;
-  else if (pfodCmd.startsWith("q03")) processSlider(pfodCmd, robot->gpsBaudrate, 1);
   sendGPSMenu(true);
 }
+
+void RemoteControl::sendRFIDMenu(boolean update) {
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.RFID`1000"));
+  serialPort->print(F("|yr01~RFID Use : "));
+  sendYesNo(robot->rfidUse);
+  serialPort->print(F("|yr02~Last Rfid : "));
+  serialPort->print(robot->rfidTagFind);
+  serialPort->println("}");
+}
+
+void RemoteControl::processRFIDMenu(String pfodCmd) {
+  if (pfodCmd.startsWith("yr01")) robot->rfidUse = !robot->rfidUse;
+  sendRFIDMenu(true);
+}
+
 
 void RemoteControl::sendByLaneMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.ByLane`500"));
@@ -881,7 +891,7 @@ void RemoteControl::sendBatteryMenu(boolean update) {
   if (robot->developerActive) {
     sendSlider("j09", F("Charge Factor"), robot->batChgFactor, "", 0.01, 12, 9);
     sendSlider("j05", F("Battery Factor "), robot->batFactor, "", 0.01, 12, 9);
-    sendSlider("j08", F("Sense factor"), robot->batSenseFactor, "", 0.01,2, 1);
+    sendSlider("j08", F("Sense factor"), robot->batSenseFactor, "", 0.01, 2, 1);
   }
   //end add
   //Console.print("batFactor=");
@@ -910,7 +920,7 @@ void RemoteControl::processBatteryMenu(String pfodCmd) {
   }
   else if (pfodCmd.startsWith("j03")) processSlider(pfodCmd, robot->batSwitchOffIfBelow, 0.1);
   else if (pfodCmd.startsWith("j05")) processSlider(pfodCmd, robot->batFactor, 0.01);
-  
+
   else if (pfodCmd.startsWith("j08")) processSlider(pfodCmd, robot->batSenseFactor, 0.01);
   else if (pfodCmd.startsWith("j09")) processSlider(pfodCmd, robot->batChgFactor, 0.01);
   else if (pfodCmd.startsWith("j10")) processSlider(pfodCmd, robot->startChargingIfBelow, 0.1);
@@ -931,7 +941,7 @@ void RemoteControl::sendStationMenu(boolean update) {
   sendSlider("k03", F("Station check Distance"), robot->stationCheckDist, "", 1, 20, 0);
   sendSlider("k06", F("Docking Speed % of MaxSpeed"), robot->dockingSpeed, "", 1, 100, 20);
   sendSlider("k04", F("Station Heading"), robot->stationHeading , "", 1, 180, 0);
-  
+
   serialPort->println("}");
 }
 
@@ -1208,6 +1218,8 @@ void RemoteControl::processFactorySettingsMenu(String pfodCmd) {
 
 void RemoteControl::sendInfoMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Info`1000"));
+
+  robot->print_rfid_list();
   serialPort->print(F("|v00~Ardumower "));
   serialPort->print(VER);
   serialPort->print(F("|v01~Developer "));
@@ -1463,19 +1475,23 @@ void RemoteControl::sendTestOdoMenu(boolean update) {
   serialPort->println(F("|yt10~Ticks Right / Left "));
   serialPort->print(robot->odometryRight);
   serialPort->print(F(" / "));
-  serialPort->print(robot->odometryLeft);
-  serialPort->println();
-  //serialPort->print(F("|yt8~Calib Ticks/Second"));  //to compute the ticks per second motor speed
+  serialPort->println(robot->odometryLeft);
+  serialPort->print(F("Peri Mag/Noise "));
+  serialPort->print(robot->perimeterMag);
+  serialPort->print(F("/"));
+  serialPort->print(int(robot->perimeterNoise));
+  serialPort->print(F("|yt12~Mow is "));
+  sendOnOff(robot->motorMowEnable);
   serialPort->print(F("|yt0~1 turn Wheel Fwd"));  //to verify and adjust the TicksPerRevolution
   serialPort->print(F("|yt1~5 turns Wheel Fwd"));  //to verify and adjust the TicksPerRevolution  and PWM right OFFSET the 2 wheel need to stop at the same time
   serialPort->print(F("|yt2~1 turn Wheel Rev"));
   serialPort->print(F("|yt3~5 turns Wheel Rev"));  //to verify the TicksPerRevolution  and PWM right OFFSET the 2 wheel stop at the same time
-  serialPort->print(F("|yt4~3 meter Forward")); //to verify and adjust the TicksPerCM
-  serialPort->print(F("|yt6~Rotate 180Deg"));  //to verify and adjust the odometryWheelBaseCm
+  serialPort->print(F("|yt8~1 turn Left Wheel"));  //to check the correct left/right motor hardware connection
+  serialPort->print(F("|yt4~3 meter Forward")); //to verify and adjust the TicksPerCM 
   serialPort->print(F("|yt5~Rotate 360Deg"));  //to verify and adjust the odometryWheelBaseCm
-  serialPort->println(F("|yt7~Rotate Non Stop"));
-
-
+  serialPort->print(F("|yt6~Rotate 180Deg"));  //to verify and adjust the odometryWheelBaseCm
+  serialPort->print(F("|yt7~Rotate Non Stop"));//to verify and adjust the odometryWheelBaseCm
+  
   serialPort->println("}");
 
 }
@@ -1487,6 +1503,10 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
     robot->stateEndOdometryRight = robot->odometryRight + robot->odometryTicksPerRevolution;
     robot->stateEndOdometryLeft = robot->odometryLeft + robot->odometryTicksPerRevolution;
     robot->setNextState(STATE_TEST_MOTOR, robot->rollDir);
+    sendTestOdoMenu(true);
+  }
+  else if (pfodCmd == "yt10") {
+    robot->odometryRight = robot->odometryLeft = 0;
     sendTestOdoMenu(true);
   }
   else if (pfodCmd == "yt1") {
@@ -1548,7 +1568,20 @@ void RemoteControl::processTestOdoMenu(String pfodCmd) {
     robot->setNextState(STATE_TEST_MOTOR, robot->rollDir);
     sendTestOdoMenu(true);
   }
-
+  if (pfodCmd == "yt8") {
+    robot->odometryRight = robot->odometryLeft = 0;
+    robot->motorLeftSpeedRpmSet = 0;
+    robot->motorRightSpeedRpmSet = robot->motorSpeedMaxRpm ;
+    robot->stateEndOdometryRight = robot->odometryRight + robot->odometryTicksPerRevolution;
+    robot->stateEndOdometryLeft = 0;
+    robot->setNextState(STATE_TEST_MOTOR, robot->rollDir);
+    sendTestOdoMenu(true);
+  }
+  else if (pfodCmd == "yt12") {
+    robot->motorMowEnable = !robot->motorMowEnable;
+    robot->setNextState(STATE_TEST_MOTOR, robot->rollDir);
+    sendTestOdoMenu(true);
+  }
 }
 
 
@@ -1834,6 +1867,7 @@ boolean RemoteControl::readSerial() {
         pfodState = PFOD_PLOT_MOTOR;
       }
       else if (pfodCmd == "yp") sendPlotMenu(false);
+      else if (pfodCmd == "yr") sendRFIDMenu(false);
       else if (pfodCmd == "y4") sendErrorMenu(false);
       else if (pfodCmd == "yt") sendTestOdoMenu(false);
       else if (pfodCmd == "w") sendByLaneMenu(false);
@@ -1863,6 +1897,7 @@ boolean RemoteControl::readSerial() {
       else if (pfodCmd.startsWith("o")) processMowMenu(pfodCmd);
       else if (pfodCmd.startsWith("p")) processTimerDetailMenu(pfodCmd);
       else if (pfodCmd.startsWith("q")) processGPSMenu(pfodCmd);
+      else if (pfodCmd.startsWith("yr")) processRFIDMenu(pfodCmd);
       else if (pfodCmd.startsWith("r")) processCommandMenu(pfodCmd);
       else if (pfodCmd.startsWith("s")) processSettingsMenu(pfodCmd);
       else if (pfodCmd.startsWith("t")) processDateTimeMenu(pfodCmd);

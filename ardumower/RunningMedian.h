@@ -60,6 +60,7 @@ public:
 
     uint8_t getSize() { return _size; };  // returns size of internal buffer
     uint8_t getCount() { return _cnt; };  // returns current used elements, getCount() <= getSize()
+    bool    isFull()     { return (_cnt == _size); };
 #endif
 
 protected:
