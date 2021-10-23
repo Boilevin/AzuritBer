@@ -83,7 +83,7 @@ char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION",
 
 char* mowPatternNames[] = {"RAND", "LANE",  "WIRE" , "ZIGZAG"};
 char* consoleModeNames[] = {"sen_counters", "sen_values", "perimeter", "off", "Tracking"};
-
+char* rfidToDoNames[] = {"NOTHING", "RTS", "FAST_START", "NEW_AREA", "SPEED", "AREA1", "AREA2", "AREA3"};
 
 unsigned long StartReadAt;
 int distance_find;
@@ -274,6 +274,9 @@ char* Robot::statusName() {
   return statusNames[statusCurr];
 }
 
+char* Robot::rfidToDoName() {
+  return rfidToDoNames[rfdiToDoCurr];
+}
 
 char* Robot::mowPatternName() {
   return mowPatternNames[mowPatternCurr];
@@ -321,17 +324,50 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   ShowMessageln(addr);
 }
 
+/*
+  void Robot:: printpgm() {
+  struct pgmnode *ptr = head1;
+  while (ptr != NULL) {
+    Serial.print(ptr->TagNr);
+    Serial.print(" ");
+    Serial.print(ptr->TagMowerState);
+    Serial.print(" ");
+    Serial.println(ptr->TagToDo);
 
 
-void Robot::insert_rfid_list(String TagNr, byte TagMowerState, String TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2) {
-ShowMessageln("start add");
+
+
+
+    ptr = ptr->next;
+  }
+  }
+
+
+  void Robot::insertpgm(int TagNr, byte TagMowerState, int TagToDo, short js, short hd) {
+  struct pgmnode *node = (struct pgmnode*) malloc(sizeof(struct pgmnode));
+  if (node == NULL) {
+    Serial.println("aie");
+    return;
+  }
+  node->TagNr = TagNr;
+  node->TagMowerState = TagMowerState;
+  node->TagToDo = TagToDo;
+  node->next = head;
+  head = node;
+
+  }
+
+*/
+
+
+void Robot::insert_rfid_list(unsigned long TagNr, byte TagMowerState, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2) {
   struct rfid_list *node = (struct rfid_list*) malloc(sizeof(struct rfid_list));
-  *node={TagNr,TagMowerState,TagToDo,TagSpeed,TagAngle1,TagDist1,TagAngle2,TagDist2,head};
+
   if (node == NULL) {
     ShowMessageln(F("New Rfid tag list insert error "));
     return;
   }
-  /*
+
   node->TagNr = TagNr;
   node->TagMowerState = TagMowerState;
   node->TagToDo = TagToDo;
@@ -342,20 +378,33 @@ ShowMessageln("start add");
   node->TagDist2 = TagDist2;
   node->next = head;
   head = node;
-  */
+
   //ShowMessageln(node);
 }
 
 void Robot::print_rfid_list() {
   struct rfid_list *ptr = head;
-  ShowMessageln("ok");
+  // rfid todo list
+  //enum { NOTHING, RTS, FAST_START, NEW_AREA, SPEED, AREA1, AREA2, AREA3 };
   while (ptr != NULL) {
-    ShowMessage(ptr->TagNr);
+    ShowMessage(String(ptr->TagNr, HEX));
     ShowMessage(",");
-    ShowMessageln(ptr->TagMowerState);
+    ShowMessage(statusNames[ptr->TagMowerState]);
+    ShowMessage(",");
+    ShowMessage(rfidToDoNames[ptr->TagToDo]);
+    ShowMessage(",");
+    ShowMessage(ptr->TagSpeed);
+    ShowMessage(",");
+    ShowMessage(ptr->TagAngle1);
+    ShowMessage(",");
+    ShowMessage(ptr->TagDist1);
+    ShowMessage(",");
+    ShowMessage(ptr->TagAngle2);
+    ShowMessage(",");
+    ShowMessageln(ptr->TagDist2);
     ptr = ptr->next;
   }
-  ShowMessageln("fin");
+
 }
 
 
@@ -2178,10 +2227,15 @@ void Robot::setup()  {
   nextTimeInfo = millis();
 
   //bber01
+  // rfid todo list
+  //enum { NOTHING, RTS, FAST_START, NEW_AREA, SPEED, AREA1, AREA2, AREA3 };
 
-  //insert_rfid_list("210", 22, "3", 240, 7, 8, 9, 10);
-  insert_rfid_list("44907166", 1, "RTS", 240, 7, 8, 9, 10);
-  //insert_rfid_list("44907167", 3, "RTS", 240, 7, 8, 9, 10);
+  insert_rfid_list(1924717461, 3, 0, 100, 170, 500, 90, 10);
+  insert_rfid_list(2444483477, 4, 1, 240, -170, 800, -90, 10);
+  insert_rfid_list(2394151829, 11, 2, 200, 27, 8, 9, 10);
+  insert_rfid_list(1082317461, 0, 4, 220, 37, 8, 9, 10);
+
+  print_rfid_list();
 
 }
 

@@ -1220,6 +1220,7 @@ void RemoteControl::sendInfoMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Info`1000"));
 
   robot->print_rfid_list();
+  //robot->printpgm();
   serialPort->print(F("|v00~Ardumower "));
   serialPort->print(VER);
   serialPort->print(F("|v01~Developer "));

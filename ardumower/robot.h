@@ -200,6 +200,9 @@ enum { WAIT, NORMAL_MOWING, SPIRALE_MOWING, BACK_TO_STATION, TRACK_TO_START, MAN
 // roll types
 enum { LEFT, RIGHT };
 
+// rfid todo list
+enum { NOTHING, RTS, FAST_START, NEW_AREA, SPEED, AREA1, AREA2, AREA3 };
+
 // mow patterns
 enum { MOW_RANDOM, MOW_LANES, MOW_WIRE, MOW_ZIGZAG };
 
@@ -225,12 +228,14 @@ class Robot
     byte stateNext;
 
     byte statusCurr;
+    byte rfdiToDoCurr;
     //byte statusLast;
     //byte statusNext;
 
     unsigned long stateTime;
     char* stateName();
     char* statusName();
+    char* rfidToDoName();
 
     unsigned long stateStartTime;
     unsigned long stateEndTime;
@@ -316,10 +321,22 @@ class Robot
     String rfidTagFind;
     boolean rfidUse;
 
-    struct rfid_list {
-      String TagNr;
+   /* 
+    struct pgmnode {
+      int TagNr;
       byte TagMowerState;
-      String TagToDo;
+      int TagToDo;
+      short joursem;
+      short hdebut;
+      struct pgmnode *next;
+    };
+
+    struct pgmnode *head1 = NULL;
+    */
+    struct rfid_list {
+      unsigned long TagNr;
+      byte TagMowerState;
+      byte TagToDo;
       int TagSpeed;
       float TagAngle1;
       int TagDist1;
@@ -328,10 +345,10 @@ class Robot
       struct rfid_list *next;
     };
 
-    typedef struct rfid_list;
+    //typedef struct rfid_list;
 
-    struct rfid_list *head =NULL;
-    
+    struct rfid_list *head = NULL;
+
 
 
     // --------- wheel motor state ----------------------------
@@ -838,9 +855,11 @@ class Robot
     virtual void printSettingSerial();
     char* mowPatternNameList(byte mowPatternIndex);
 
-    virtual void insert_rfid_list(String TagNr,byte TagMowerState,String TagToDo,int TagSpeed,float TagAngle1,int TagDist1,float TagAngle2,int TagDist2);
+    virtual void insert_rfid_list(unsigned long TagNr, byte TagMowerState, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2);
     virtual void print_rfid_list();
-
+    //virtual void printpgm();
+    //virtual void insertpgm(int TagNr, byte TagMowerState, byte TagToDo,short js, short hd) ;
+    
   protected:
     // convert ppm time to RC slider value
     virtual int rcValue(int ppmTime);
