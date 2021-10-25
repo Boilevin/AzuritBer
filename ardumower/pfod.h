@@ -134,6 +134,7 @@ class RemoteControl
     void sendRainMenu(boolean update);
     void sendGPSMenu(boolean update);
     void sendRFIDMenu(boolean update);
+    void sendRfidDetailMenu(int rfidDetailIdx,boolean update);
 
     void sendDateTimeMenu(boolean update);
     void sendFactorySettingsMenu(boolean update);
@@ -152,6 +153,7 @@ class RemoteControl
     void processDropMenu(String pfodCmd);
     void processGPSMenu(String pfodCmd);
     void processRFIDMenu(String pfodCmd);
+    void processRfidDetailMenu(int rfidDetailIdx,String pfodCmd);
     void processImuMenu(String pfodCmd);
     void processRemoteMenu(String pfodCmd);
     void processBatteryMenu(String pfodCmd);

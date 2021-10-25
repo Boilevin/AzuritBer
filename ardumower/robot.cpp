@@ -273,9 +273,16 @@ char* Robot::stateName() {
 char* Robot::statusName() {
   return statusNames[statusCurr];
 }
+char* Robot::statusNameList(byte statusIndex) {
+  return statusNames[statusIndex];
+}
 
 char* Robot::rfidToDoName() {
   return rfidToDoNames[rfdiToDoCurr];
+}
+
+char* Robot::rfidToDoNameList(byte rfidToDoIndex) {
+  return rfidToDoNames[rfidToDoIndex];
 }
 
 char* Robot::mowPatternName() {
@@ -330,7 +337,7 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   while (ptr != NULL) {
     Serial.print(ptr->TagNr);
     Serial.print(" ");
-    Serial.print(ptr->TagMowerState);
+    Serial.print(ptr->TagMowerStatus);
     Serial.print(" ");
     Serial.println(ptr->TagToDo);
 
@@ -343,14 +350,14 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   }
 
 
-  void Robot::insertpgm(int TagNr, byte TagMowerState, int TagToDo, short js, short hd) {
+  void Robot::insertpgm(int TagNr, byte TagMowerStatus, int TagToDo, short js, short hd) {
   struct pgmnode *node = (struct pgmnode*) malloc(sizeof(struct pgmnode));
   if (node == NULL) {
     Serial.println("aie");
     return;
   }
   node->TagNr = TagNr;
-  node->TagMowerState = TagMowerState;
+  node->TagMowerStatus = TagMowerStatus;
   node->TagToDo = TagToDo;
   node->next = head;
   head = node;
@@ -360,36 +367,38 @@ void Robot::loadSaveRobotStats(boolean readflag) {
 */
 
 
-void Robot::insert_rfid_list(unsigned long TagNr, byte TagMowerState, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2) {
-  struct rfid_list *node = (struct rfid_list*) malloc(sizeof(struct rfid_list));
-
+void Robot::insert_rfid_list(unsigned long TagNr, byte TagMowerStatus, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2) {
+  //struct rfid_list *node = (struct rfid_list*) malloc(sizeof(struct rfid_list));
+  struct rfid_list *node = (struct rfid_list*) malloc(sizeof(*node));//allocation dynamique de la memoire
   if (node == NULL) {
     ShowMessageln(F("New Rfid tag list insert error "));
     return;
   }
 
   node->TagNr = TagNr;
-  node->TagMowerState = TagMowerState;
+  node->TagMowerStatus = TagMowerStatus;
   node->TagToDo = TagToDo;
   node->TagSpeed = TagSpeed;
   node->TagAngle1 = TagAngle1;
   node->TagDist1 = TagDist1;
   node->TagAngle2 = TagAngle2;
   node->TagDist2 = TagDist2;
-  node->next = head;
-  head = node;
+  node->next = head;  // def du nouveau noeud au premier
+  head = node; // tete de la liste devient celui que l on a ajouté.
 
   //ShowMessageln(node);
 }
 
 void Robot::print_rfid_list() {
-  struct rfid_list *ptr = head;
+  ptr = head;
+  //struct rfid_list *ptr = head;
+
   // rfid todo list
   //enum { NOTHING, RTS, FAST_START, NEW_AREA, SPEED, AREA1, AREA2, AREA3 };
-  while (ptr != NULL) {
+  while (ptr != NULL) {  //parcours jusqu au dernier
     ShowMessage(String(ptr->TagNr, HEX));
     ShowMessage(",");
-    ShowMessage(statusNames[ptr->TagMowerState]);
+    ShowMessage(statusNames[ptr->TagMowerStatus]);
     ShowMessage(",");
     ShowMessage(rfidToDoNames[ptr->TagToDo]);
     ShowMessage(",");
@@ -2229,12 +2238,12 @@ void Robot::setup()  {
   //bber01
   // rfid todo list
   //enum { NOTHING, RTS, FAST_START, NEW_AREA, SPEED, AREA1, AREA2, AREA3 };
-
-  insert_rfid_list(1924717461, 3, 0, 100, 170, 500, 90, 10);
-  insert_rfid_list(2444483477, 4, 1, 240, -170, 800, -90, 10);
-  insert_rfid_list(2394151829, 11, 2, 200, 27, 8, 9, 10);
-  insert_rfid_list(1082317461, 0, 4, 220, 37, 8, 9, 10);
-
+for (int i = 0; i < 10; i++) {
+  insert_rfid_list(1924717461, 3, 0, 100, 170, i, 90, 10);
+  insert_rfid_list(2444483477, 4, 1, 240, -170, 2*i, -90, 10);
+  insert_rfid_list(2394151829, 11, 2, 200, 27, 3*i, 9, 10);
+  insert_rfid_list(1082317461, 0, 4, 220, 37, 4*i, 9, 10);
+}
   print_rfid_list();
 
 }

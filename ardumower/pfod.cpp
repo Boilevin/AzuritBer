@@ -265,7 +265,7 @@ void RemoteControl::processSettingsMenu(String pfodCmd) {
   else if (pfodCmd == "s15") sendDropMenu(false);
   else if (pfodCmd == "s16") sendByLaneMenu(false);
   else if (pfodCmd == "s17") sendRFIDMenu(false);
-  
+
   else if (pfodCmd == "sx") sendFactorySettingsMenu(false);
   else if (pfodCmd == "sz") {
     robot->saveUserSettings();
@@ -716,14 +716,121 @@ void RemoteControl::sendRFIDMenu(boolean update) {
   serialPort->print(F("|yr01~RFID Use : "));
   sendYesNo(robot->rfidUse);
   serialPort->print(F("|yr02~Last Rfid : "));
-  serialPort->print(robot->rfidTagFind);
+  serialPort->println(robot->rfidTagFind);
+
+
+  int myidx = 0;
+
+  robot->ptr = robot->head;
+  while (robot->ptr != NULL) {  //parcours jusqu au dernier
+    if (myidx < 10) {
+      serialPort->print(F("|yr90"));
+    }
+    else {
+      serialPort->print(F("|yr9"));
+    }
+    serialPort->print(String(myidx));
+    serialPort->print("~");
+    serialPort->print(String(robot->ptr->TagNr, HEX));
+    serialPort->print("/");
+    serialPort->print(String(robot->statusNameList(robot->ptr->TagMowerStatus)));
+    myidx = myidx + 1;
+
+    /*
+      serialPort->print("/");
+      serialPort->println(String(robot->rfidToDoNameList(robot->ptr->TagToDo)));
+
+      ShowMessage(String(ptr->TagNr, HEX));
+      ShowMessage(",");
+      ShowMessage(statusNames[ptr->TagMowerStatus]);
+      ShowMessage(",");
+      ShowMessage(rfidToDoNames[ptr->TagToDo]);
+      ShowMessage(",");
+      ShowMessage(ptr->TagSpeed);
+      ShowMessage(",");
+      ShowMessage(ptr->TagAngle1);
+      ShowMessage(",");
+      ShowMessage(ptr->TagDist1);
+      ShowMessage(",");
+      ShowMessage(ptr->TagAngle2);
+      ShowMessage(",");
+      ShowMessageln(ptr->TagDist2);
+    */
+    robot->ptr = robot->ptr->next;
+  }
   serialPort->println("}");
 }
 
+
+
+
 void RemoteControl::processRFIDMenu(String pfodCmd) {
-  if (pfodCmd.startsWith("yr01")) robot->rfidUse = !robot->rfidUse;
-  sendRFIDMenu(true);
+  if (pfodCmd.startsWith("yr01")) {
+    robot->rfidUse = !robot->rfidUse;
+    sendRFIDMenu(true);
+    return;
+  }
+
+  else if (pfodCmd.startsWith("yr9")) {
+    int rfidDetailIdx = int(pfodCmd[4] - '0') + 10 * int(pfodCmd[3] - '0');
+    sendRfidDetailMenu(rfidDetailIdx, false);
+    //sendRFIDMenu(true);
+  }
+
 }
+
+
+void RemoteControl::sendRfidDetailMenu(int rfidDetailIdx, boolean update) {
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.RFID Detail`1000"));
+  //recherche du bon code
+  
+  int myidx = 0;
+  robot->ptr = robot->head;
+  while (myidx != rfidDetailIdx) { //parcours jusqu au dernier
+    robot->ptr = robot->ptr->next;
+    myidx = myidx + 1;
+  }
+  serialPort->print(F("|yw0~Tag ID : "));
+  serialPort->print(String(robot->ptr->TagNr, HEX));
+  serialPort->print(F("|yw1~Status : "));
+  serialPort->print(String(robot->statusNameList(robot->ptr->TagMowerStatus)));
+  serialPort->print(F("|yw2~ToDo : "));
+  serialPort->print(String(robot->rfidToDoNameList(robot->ptr->TagToDo)));
+  sendSlider("yw3", F("Speed "), robot->ptr->TagSpeed, "", 1, 255, 60);
+  sendSlider("yw4", F("Angle1 "), robot->ptr->TagAngle1, "", 1, 180,-180);
+  sendSlider("yw5", F("Dist 1 "), robot->ptr->TagDist1, "", 1, 255,0);
+  sendSlider("yw6", F("Angle2 "), robot->ptr->TagAngle2, "", 1, 180,-180);
+  sendSlider("yw7", F("Dist 2 "), robot->ptr->TagDist2, "", 1, 255,0);
+  
+  
+
+  /*
+    serialPort->print("/");
+    serialPort->println(String(robot->rfidToDoNameList(robot->ptr->TagToDo)));
+
+    ShowMessage(String(ptr->TagNr, HEX));
+    ShowMessage(",");
+    ShowMessage(statusNames[ptr->TagMowerStatus]);
+    ShowMessage(",");
+    ShowMessage(rfidToDoNames[ptr->TagToDo]);
+    ShowMessage(",");
+    ShowMessage(ptr->TagSpeed);
+    ShowMessage(",");
+    ShowMessage(ptr->TagAngle1);
+    ShowMessage(",");
+    ShowMessage(ptr->TagDist1);
+    ShowMessage(",");
+    ShowMessage(ptr->TagAngle2);
+    ShowMessage(",");
+    ShowMessageln(ptr->TagDist2);
+  */
+
+
+  serialPort->println("}");
+}
+
+
+
 
 
 void RemoteControl::sendByLaneMenu(boolean update) {
@@ -1488,11 +1595,11 @@ void RemoteControl::sendTestOdoMenu(boolean update) {
   serialPort->print(F("|yt2~1 turn Wheel Rev"));
   serialPort->print(F("|yt3~5 turns Wheel Rev"));  //to verify the TicksPerRevolution  and PWM right OFFSET the 2 wheel stop at the same time
   serialPort->print(F("|yt8~1 turn Left Wheel"));  //to check the correct left/right motor hardware connection
-  serialPort->print(F("|yt4~3 meter Forward")); //to verify and adjust the TicksPerCM 
+  serialPort->print(F("|yt4~3 meter Forward")); //to verify and adjust the TicksPerCM
   serialPort->print(F("|yt5~Rotate 360Deg"));  //to verify and adjust the odometryWheelBaseCm
   serialPort->print(F("|yt6~Rotate 180Deg"));  //to verify and adjust the odometryWheelBaseCm
   serialPort->print(F("|yt7~Rotate Non Stop"));//to verify and adjust the odometryWheelBaseCm
-  
+
   serialPort->println("}");
 
 }

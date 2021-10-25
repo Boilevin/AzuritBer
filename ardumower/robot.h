@@ -324,7 +324,7 @@ class Robot
    /* 
     struct pgmnode {
       int TagNr;
-      byte TagMowerState;
+      byte TagMowerStatus;
       int TagToDo;
       short joursem;
       short hdebut;
@@ -335,7 +335,7 @@ class Robot
     */
     struct rfid_list {
       unsigned long TagNr;
-      byte TagMowerState;
+      byte TagMowerStatus;
       byte TagToDo;
       int TagSpeed;
       float TagAngle1;
@@ -345,9 +345,11 @@ class Robot
       struct rfid_list *next;
     };
 
-    //typedef struct rfid_list;
+    typedef struct rfid_list;
 
     struct rfid_list *head = NULL;
+
+    struct rfid_list *ptr = NULL;
 
 
 
@@ -854,12 +856,12 @@ class Robot
 
     virtual void printSettingSerial();
     char* mowPatternNameList(byte mowPatternIndex);
-
-    virtual void insert_rfid_list(unsigned long TagNr, byte TagMowerState, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2);
-    virtual void print_rfid_list();
-    //virtual void printpgm();
-    //virtual void insertpgm(int TagNr, byte TagMowerState, byte TagToDo,short js, short hd) ;
+    char* rfidToDoNameList(byte rfidToDoIndex);
+    char* statusNameList(byte statusIndex);
     
+    virtual void insert_rfid_list(unsigned long TagNr, byte TagMowerStatus, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2);
+    virtual void print_rfid_list();
+      
   protected:
     // convert ppm time to RC slider value
     virtual int rcValue(int ppmTime);
