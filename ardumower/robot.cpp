@@ -2238,12 +2238,12 @@ void Robot::setup()  {
   //bber01
   // rfid todo list
   //enum { NOTHING, RTS, FAST_START, NEW_AREA, SPEED, AREA1, AREA2, AREA3 };
-for (int i = 0; i < 10; i++) {
-  insert_rfid_list(1924717461, 3, 0, 100, 170, i, 90, 10);
-  insert_rfid_list(2444483477, 4, 1, 240, -170, 2*i, -90, 10);
-  insert_rfid_list(2394151829, 11, 2, 200, 27, 3*i, 9, 10);
-  insert_rfid_list(1082317461, 0, 4, 220, 37, 4*i, 9, 10);
-}
+//for (int i = 0; i < 3; i++) {
+  insert_rfid_list(1924717461, 3, 0, 100, 170, 2, 90, 10);
+  insert_rfid_list(2444483477, 4, 1, 240, -170, 2, -90, 10);
+  insert_rfid_list(2394151829, 11, 2, 200, 27, 3, 9, 10);
+  insert_rfid_list(1082317461, 0, 4, 220, 37, 4, 9, 10);
+//}
   print_rfid_list();
 
 }
