@@ -715,8 +715,9 @@ void RemoteControl::sendRFIDMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.RFID`1000"));
   serialPort->print(F("|yr01~RFID Use : "));
   sendYesNo(robot->rfidUse);
-  serialPort->print(F("|yr02~Last Rfid : "));
+  serialPort->print(F("|yr02~Last Rfid read : "));
   serialPort->println(robot->rfidTagFind);
+  serialPort->print(F("|yr03~SAVE LIST"));
 
   int myidx = 0;
 
@@ -735,26 +736,7 @@ void RemoteControl::sendRFIDMenu(boolean update) {
     serialPort->print(String(robot->statusNameList(robot->ptr->TagMowerStatus)));
     myidx = myidx + 1;
 
-    /*
-      serialPort->print("/");
-      serialPort->println(String(robot->rfidToDoNameList(robot->ptr->TagToDo)));
 
-      ShowMessage(String(ptr->TagNr, HEX));
-      ShowMessage(",");
-      ShowMessage(statusNames[ptr->TagMowerStatus]);
-      ShowMessage(",");
-      ShowMessage(rfidToDoNames[ptr->TagToDo]);
-      ShowMessage(",");
-      ShowMessage(ptr->TagSpeed);
-      ShowMessage(",");
-      ShowMessage(ptr->TagAngle1);
-      ShowMessage(",");
-      ShowMessage(ptr->TagDist1);
-      ShowMessage(",");
-      ShowMessage(ptr->TagAngle2);
-      ShowMessage(",");
-      ShowMessageln(ptr->TagDist2);
-    */
     robot->ptr = robot->ptr->next;
   }
   serialPort->println("}");
@@ -769,30 +751,32 @@ void RemoteControl::processRFIDMenu(String pfodCmd) {
     sendRFIDMenu(true);
     return;
   }
-
+  else if (pfodCmd.startsWith("yr03")) {
+    robot->saveRfidList();
+  }
   else if (pfodCmd.startsWith("yr9")) {
     int rfidDetailIdx = int(pfodCmd[4] - '0') + 10 * int(pfodCmd[3] - '0');
     sendRfidDetailMenu(rfidDetailIdx, false);
-    //sendRFIDMenu(true);
+
   }
 
 }
 
 
 void RemoteControl::sendRfidDetailMenu(int rfidDetailIdx, boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->print(F("{.RFID Detail`20000"));
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.RFID Detail`500"));
   //recherche du bon code
 
   int myidx = 0;
   robot->ptr = robot->head;
-  while (myidx != rfidDetailIdx) { //parcours jusqu au dernier
+  while (myidx != rfidDetailIdx) { //parcours 
     robot->ptr = robot->ptr->next;
     myidx = myidx + 1;
   }
+  rfid_pos_into_list = myidx;
 
+  //serialPort->print(F("|yw1~UPDATE"));
 
-  serialPort->print(F("|yw1~UPDATE"));
-  serialPort->print(F("|yw2~INSERT"));
   serialPort->print(F("|yw3~Tag ID : "));
   serialPort->print(String(robot->ptr->TagNr, HEX));
 
@@ -806,6 +790,7 @@ void RemoteControl::sendRfidDetailMenu(int rfidDetailIdx, boolean update) {
   sendSlider("yw8", F("Dist 1 "), robot->ptr->TagDist1, "", 1, 255, 0);
   sendSlider("yw9", F("Angle2 "), robot->ptr->TagAngle2, "", 1, 180, -180);
   sendSlider("yw10", F("Dist 2 "), robot->ptr->TagDist2, "", 1, 255, 0);
+  serialPort->print(F("|yw2~DUPLICATE"));
   serialPort->print(F("|yw0~DELETE THIS TAG"));
 
 
@@ -834,15 +819,30 @@ void RemoteControl::sendRfidDetailMenu(int rfidDetailIdx, boolean update) {
   serialPort->println("}");
 }
 
-void RemoteControl::processRfidDetailMenu(int rfidDetailIdx,String pfodCmd) {
+void RemoteControl::processRfidDetailMenu(int rfidDetailIdx, String pfodCmd) {
   if (pfodCmd.startsWith("yw2")) {
-    Serial.println("insertion");
-    robot->insert_rfid_list(2456483477, 2, 2, 240, 2, 2, 100, 100);
-    sendRfidDetailMenu(rfidDetailIdx,true);
-    
+    robot->insert_rfid_list(robot->ptr->TagNr, 0, 0, 0, 0, 0, 0, 0);
+    robot->sort_rfid_list();
   }
+  else if (pfodCmd.startsWith("yw4")) {
+    robot->ptr->TagMowerStatus = robot->ptr->TagMowerStatus + 1;
+    if (robot->ptr->TagMowerStatus > 11) robot->ptr->TagMowerStatus = 0;
+  }
+  else if (pfodCmd.startsWith("yw5")) {
+    robot->ptr->TagToDo = robot->ptr->TagToDo + 1;
+    if (robot->ptr->TagToDo > 7) robot->ptr->TagToDo = 0;
+  }
+  else if (pfodCmd.startsWith("yw0")) {
+    robot->delete_rfid_list(robot->ptr->TagNr, robot->ptr->TagMowerStatus, rfid_pos_into_list);
+    robot->sort_rfid_list();
+  }
+  else if (pfodCmd.startsWith("yw6")) processSlider(pfodCmd, robot->ptr->TagSpeed, 1);
+  else if (pfodCmd.startsWith("yw7")) processSlider(pfodCmd, robot->ptr->TagAngle1, 1);
+  else if (pfodCmd.startsWith("yw8")) processSlider(pfodCmd, robot->ptr->TagDist1, 1);
+  else if (pfodCmd.startsWith("yw9")) processSlider(pfodCmd, robot->ptr->TagAngle2, 1);
+  else if (pfodCmd.startsWith("yw10")) processSlider(pfodCmd, robot->ptr->TagDist2, 1);
 
-
+  sendRfidDetailMenu(rfidDetailIdx, true);
 }
 
 
@@ -2019,7 +2019,7 @@ boolean RemoteControl::readSerial() {
       else if (pfodCmd.startsWith("p")) processTimerDetailMenu(pfodCmd);
       else if (pfodCmd.startsWith("q")) processGPSMenu(pfodCmd);
       else if (pfodCmd.startsWith("yr")) processRFIDMenu(pfodCmd);
-      else if (pfodCmd.startsWith("yw")) processRfidDetailMenu(1,pfodCmd);
+      else if (pfodCmd.startsWith("yw")) processRfidDetailMenu(1, pfodCmd);
       else if (pfodCmd.startsWith("r")) processCommandMenu(pfodCmd);
       else if (pfodCmd.startsWith("s")) processSettingsMenu(pfodCmd);
       else if (pfodCmd.startsWith("t")) processDateTimeMenu(pfodCmd);

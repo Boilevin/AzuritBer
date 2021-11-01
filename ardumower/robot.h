@@ -321,18 +321,7 @@ class Robot
     String rfidTagFind;
     boolean rfidUse;
 
-   /* 
-    struct pgmnode {
-      int TagNr;
-      byte TagMowerStatus;
-      int TagToDo;
-      short joursem;
-      short hdebut;
-      struct pgmnode *next;
-    };
-
-    struct pgmnode *head1 = NULL;
-    */
+    byte rfidListElementCount=0;
     struct rfid_list {
       unsigned long TagNr;
       byte TagMowerStatus;
@@ -831,6 +820,8 @@ class Robot
     virtual void setActuator(char type, int value) {}
 
     // settings
+    virtual void loadRfidList();
+    virtual void saveRfidList();
     virtual void deleteUserSettings();
     virtual void saveUserSettings();
     virtual void deleteRobotStats();
@@ -861,6 +852,9 @@ class Robot
     
     virtual void insert_rfid_list(unsigned long TagNr, byte TagMowerStatus, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2);
     virtual void print_rfid_list();
+    virtual void sort_rfid_list();
+    virtual void delete_rfid_list(unsigned long TagNr, byte TagMowerStatus,int pos_into_list);
+    
       
   protected:
     // convert ppm time to RC slider value

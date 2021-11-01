@@ -77,6 +77,7 @@ class RemoteControl
     int8_t perimeterCapture[RAW_SIGNAL_SAMPLE_SIZE];
     int perimeterCaptureIdx;
     float stringToFloat(String &s);
+    byte rfid_pos_into_list;
     
     // generic
     void sendYesNo(int value);

@@ -53,6 +53,7 @@
 #define ADDR_ERR_COUNTERS 500 //same adress as azurit
 //carrefull that the  ADDR 600 is used by the IMU calibration
 #define ADDR_ROBOT_STATS 800
+#define ADDR_RFID_LIST 3000 //start adress to rfid list value
 
 //Setting for DHT22------------------------------------
 #define DHTPIN 49                  // temperature sensor DHT22
@@ -331,44 +332,8 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   ShowMessageln(addr);
 }
 
-/*
-  void Robot:: printpgm() {
-  struct pgmnode *ptr = head1;
-  while (ptr != NULL) {
-    Serial.print(ptr->TagNr);
-    Serial.print(" ");
-    Serial.print(ptr->TagMowerStatus);
-    Serial.print(" ");
-    Serial.println(ptr->TagToDo);
-
-
-
-
-
-    ptr = ptr->next;
-  }
-  }
-
-
-  void Robot::insertpgm(int TagNr, byte TagMowerStatus, int TagToDo, short js, short hd) {
-  struct pgmnode *node = (struct pgmnode*) malloc(sizeof(struct pgmnode));
-  if (node == NULL) {
-    Serial.println("aie");
-    return;
-  }
-  node->TagNr = TagNr;
-  node->TagMowerStatus = TagMowerStatus;
-  node->TagToDo = TagToDo;
-  node->next = head;
-  head = node;
-
-  }
-
-*/
-
 
 void Robot::insert_rfid_list(unsigned long TagNr, byte TagMowerStatus, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2) {
-  //struct rfid_list *node = (struct rfid_list*) malloc(sizeof(struct rfid_list));
   struct rfid_list *node = (struct rfid_list*) malloc(sizeof(*node));//allocation dynamique de la memoire
   if (node == NULL) {
     ShowMessageln(F("New Rfid tag list insert error "));
@@ -385,11 +350,91 @@ void Robot::insert_rfid_list(unsigned long TagNr, byte TagMowerStatus, byte TagT
   node->TagDist2 = TagDist2;
   node->next = head;  // def du nouveau noeud au premier
   head = node; // tete de la liste devient celui que l on a ajouté.
+  rfidListElementCount = rfidListElementCount + 1;
+  ShowMessageln(F("1 RFID TAG insertion OK"));
+  ShowMessage(F("NEW RFID LIST COUNT = "));
+  ShowMessageln(rfidListElementCount);
+}
+void Robot::delete_rfid_list(unsigned long TagNr, byte TagMowerStatus, int pos_into_list) {
+  struct rfid_list *supp_element = NULL;
+  ShowMessage(F("Delete element Nr: "));
+  ShowMessageln(int(pos_into_list));
+  ptr = head;  // move at the beginning of the list
+  for (int i = 1; i < pos_into_list; ++i) {
+    ptr = ptr->next; // move just before the one to delete
+  }
 
-  //ShowMessageln(node);
+
+  supp_element = ptr->next; //  the one to delete
+  ptr->next = ptr->next->next; //  rewrite the pointer of element before the supress one to the next next one
+  // if(ptr->next == NULL)
+  //         liste->fin = courant;
+  //free (supp_element->donnee);
+  free (supp_element);  // free memory  need maybe more free for detail element
+  rfidListElementCount = rfidListElementCount - 1;
+  ShowMessageln(F("1 RFID TAG suppression OK"));
+  ShowMessage(F("NEW RFID LIST COUNT = "));
+  ShowMessageln(rfidListElementCount);
 }
 
+void Robot::sort_rfid_list() {
+
+  struct rfid_list *p = NULL;
+  struct rfid_list PR ;
+  struct rfid_list *temp = (struct rfid_list*) malloc(sizeof(rfid_list));
+  ptr = head;
+  if (ptr != NULL) {
+    for (temp = head; temp->next != NULL; temp = temp->next) {
+      for (p = temp->next; p != NULL; p = p->next) {
+
+        if (p->TagNr < temp->TagNr) {
+          PR.TagNr = p->TagNr;
+          PR.TagMowerStatus = p->TagMowerStatus;
+          PR.TagToDo = p->TagToDo;
+          PR.TagSpeed = p->TagSpeed;
+          PR.TagAngle1 = p->TagAngle1;
+          PR.TagDist1 = p->TagDist1;
+          PR.TagAngle2 = p->TagAngle2;
+          PR.TagDist2 = p->TagDist2;
+
+          //p->TagNr = temp->TagNr;
+          p->TagNr = temp->TagNr;
+          p->TagMowerStatus = temp->TagMowerStatus;
+          p->TagToDo = temp->TagToDo;
+          p->TagSpeed = temp->TagSpeed;
+          p->TagAngle1 = temp->TagAngle1;
+          p->TagDist1 = temp->TagDist1;
+          p->TagAngle2 = temp->TagAngle2;
+          p->TagDist2 = temp->TagDist2;
+
+
+          //temp->TagNr = PR.TagNr;
+          temp->TagNr = PR.TagNr;
+          temp->TagMowerStatus = PR.TagMowerStatus;
+          temp->TagToDo = PR.TagToDo;
+          temp->TagSpeed = PR.TagSpeed;
+          temp->TagAngle1 = PR.TagAngle1;
+          temp->TagDist1 = PR.TagDist1;
+          temp->TagAngle2 = PR.TagAngle2;
+          temp->TagDist2 = PR.TagDist2;
+
+
+        }
+      }
+    }
+
+
+
+  }
+
+}
+
+
+
+
+
 void Robot::print_rfid_list() {
+  ShowMessageln("RFID LIST :");
   ptr = head;
   //struct rfid_list *ptr = head;
 
@@ -438,6 +483,75 @@ void Robot::loadSaveErrorCounters(boolean readflag) {
   ShowMessage(F("ErrorCounters address Stop="));
   ShowMessageln(addr);
 }
+
+void Robot::saveRfidList() {
+  boolean readflag = false;
+  int addr = ADDR_RFID_LIST;
+  short magic = MAGIC;
+  eereadwrite(readflag, addr, magic); // magic
+  ShowMessage("RFID LIST COUNT = ");
+  ShowMessageln(rfidListElementCount);
+  eereadwrite(readflag, addr, rfidListElementCount); // magic
+  ptr = head;
+  while (ptr != NULL) {  //parcours jusqu au dernier
+    eereadwrite(readflag, addr, ptr->TagNr);
+    eereadwrite(readflag, addr, ptr->TagMowerStatus);
+    eereadwrite(readflag, addr, ptr->TagToDo);
+    eereadwrite(readflag, addr, ptr->TagSpeed);
+    eereadwrite(readflag, addr, ptr->TagAngle1);
+    eereadwrite(readflag, addr, ptr->TagDist1);
+    eereadwrite(readflag, addr, ptr->TagAngle2);
+    eereadwrite(readflag, addr, ptr->TagDist2);
+    ptr = ptr->next;
+  }
+  ShowMessage(F("RFID LIST address Start="));
+  ShowMessageln(ADDR_RFID_LIST);
+  ShowMessage(F("RFID LIST address Stop="));
+  ShowMessageln(addr);
+}
+
+
+void Robot::loadRfidList() {
+  byte rfidListElementTotal = 0;
+  boolean readflag = true;
+  int addr = ADDR_RFID_LIST;
+  struct rfid_list PR ;
+  short magic = 0;
+  eereadwrite(readflag, addr, magic); // magic
+  if (magic != MAGIC) {
+    ShowMessageln(F("RFID LIST USERDATA: NO EEPROM RFID LIST DATA"));
+    ShowMessageln(F("PLEASE SAVE YOUR RFID LIST ONCE"));
+    addErrorCounter(ERR_EEPROM_DATA);
+    setNextState(STATE_ERROR, 0);
+    return;
+  }
+  eereadwrite(readflag, addr, rfidListElementTotal); // magic
+  ShowMessage("rfidListElementTotal = ");
+  ShowMessageln(rfidListElementTotal);
+  for (int i = 0; i < rfidListElementTotal; i++) {
+    ShowMessage(i);
+    ShowMessageln ("TAG READ");
+    eereadwrite(readflag, addr, PR.TagNr);
+    eereadwrite(readflag, addr, PR.TagMowerStatus);
+    eereadwrite(readflag, addr, PR.TagToDo);
+    eereadwrite(readflag, addr, PR.TagSpeed);
+    eereadwrite(readflag, addr, PR.TagAngle1);
+    eereadwrite(readflag, addr, PR.TagDist1);
+    eereadwrite(readflag, addr, PR.TagAngle2);
+    eereadwrite(readflag, addr, PR.TagDist2);
+    insert_rfid_list(PR.TagNr, PR.TagMowerStatus, PR.TagToDo, PR.TagSpeed, PR.TagAngle1, PR.TagDist1, PR.TagAngle2, PR.TagDist2);
+    
+  }
+  ShowMessage(F("RFID LIST address Start="));
+  ShowMessageln(ADDR_RFID_LIST);
+  ShowMessage(F("RFID LIST address Stop="));
+  ShowMessageln(addr);
+  sort_rfid_list();
+  print_rfid_list();
+}
+
+
+
 
 void Robot::loadSaveUserSettings(boolean readflag) {
 
@@ -2150,14 +2264,10 @@ void Robot::setup()  {
   ADCMan.begin();
   PinMan.begin();
   if (RaspberryPIUse) MyRpi.init();
-
-
-
   //------------------------  SCREEN parts  ----------------------------------------
   if (Enable_Screen) {
     MyScreen.init();
   }
-
   //setDefaultTime();
   //init of timer for factory setting
   for (int i = 0; i < MAX_TIMERS; i++) {
@@ -2182,7 +2292,7 @@ void Robot::setup()  {
   if (!statsOverride) loadSaveRobotStats(true);
   else loadSaveRobotStats(false);
   setUserSwitches();
-
+  if (rfidUse) loadRfidList();
 
   if (imuUse) imu.begin();
 
@@ -2234,18 +2344,17 @@ void Robot::setup()  {
   }
 
   nextTimeInfo = millis();
-
-  //bber01
-  // rfid todo list
-  //enum { NOTHING, RTS, FAST_START, NEW_AREA, SPEED, AREA1, AREA2, AREA3 };
-//for (int i = 0; i < 3; i++) {
+/*
+  rfidListElementCount = 0;
+  for(int i=0;i<10;i++){
   insert_rfid_list(1924717461, 3, 0, 100, 170, 2, 90, 10);
   insert_rfid_list(2444483477, 4, 1, 240, -170, 2, -90, 10);
   insert_rfid_list(2394151829, 11, 2, 200, 27, 3, 9, 10);
   insert_rfid_list(1082317461, 0, 4, 220, 37, 4, 9, 10);
-//}
+  }
+  sort_rfid_list();
   print_rfid_list();
-
+*/
 }
 
 
