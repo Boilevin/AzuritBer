@@ -228,7 +228,7 @@ class Robot
     byte stateNext;
 
     byte statusCurr;
-    byte rfdiToDoCurr;
+    byte rfidToDoCurr;
     //byte statusLast;
     //byte statusNext;
 

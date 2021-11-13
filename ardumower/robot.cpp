@@ -279,7 +279,7 @@ char* Robot::statusNameList(byte statusIndex) {
 }
 
 char* Robot::rfidToDoName() {
-  return rfidToDoNames[rfdiToDoCurr];
+  return rfidToDoNames[rfidToDoCurr];
 }
 
 char* Robot::rfidToDoNameList(byte rfidToDoIndex) {
