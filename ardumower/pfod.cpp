@@ -753,9 +753,11 @@ void RemoteControl::processRFIDMenu(String pfodCmd) {
   }
   else if (pfodCmd.startsWith("yr03")) {
     robot->saveRfidList();
+    sendRFIDMenu(true);
+    return;
   }
   else if (pfodCmd.startsWith("yr9")) {
-    int rfidDetailIdx = int(pfodCmd[4] - '0') + 10 * int(pfodCmd[3] - '0');
+    rfidDetailIdx = int(pfodCmd[4] - '0') + 10 * int(pfodCmd[3] - '0');
     sendRfidDetailMenu(rfidDetailIdx, false);
 
   }
@@ -2019,7 +2021,7 @@ boolean RemoteControl::readSerial() {
       else if (pfodCmd.startsWith("p")) processTimerDetailMenu(pfodCmd);
       else if (pfodCmd.startsWith("q")) processGPSMenu(pfodCmd);
       else if (pfodCmd.startsWith("yr")) processRFIDMenu(pfodCmd);
-      else if (pfodCmd.startsWith("yw")) processRfidDetailMenu(1, pfodCmd);
+      else if (pfodCmd.startsWith("yw")) processRfidDetailMenu(rfidDetailIdx, pfodCmd);
       else if (pfodCmd.startsWith("r")) processCommandMenu(pfodCmd);
       else if (pfodCmd.startsWith("s")) processSettingsMenu(pfodCmd);
       else if (pfodCmd.startsWith("t")) processDateTimeMenu(pfodCmd);

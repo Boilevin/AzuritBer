@@ -66,7 +66,7 @@ class RemoteControl
     Robot *robot;
     boolean pfodCmdComplete;
     String pfodCmd;
-    
+    int rfidDetailIdx;
     int testmode;
     unsigned long nextPlotTime;
     //bb
