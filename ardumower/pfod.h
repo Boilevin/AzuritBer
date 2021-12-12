@@ -110,8 +110,10 @@ class RemoteControl
     void sendManualMenu(boolean update);
     void sendCompassMenu(boolean update);
     void sendTestOdoMenu(boolean update);
+    void sendMainTestMenu(boolean update);
     void processCompassMenu(String pfodCmd);
     void processTestOdoMenu(String pfodCmd);
+    void processMainTestMenu(String pfodCmd);
     void processManualMenu(String pfodCmd);
     void processSettingsMenu(String pfodCmd);
 

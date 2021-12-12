@@ -69,21 +69,22 @@ RpiRemote MyRpi;
 Screen MyScreen;
 
 
-char* stateNames[] = {"OFF ", "RC  ", "FORW", "ROLL", "REV ", "CIRC", "ERR ", "PFND", "PTRK", "PROL", "PREV", "STAT", "CHARG", "STCHK", "STREV",
-                      "STROL", "STFOR", "MANU", "ROLW", "POUTFOR", "POUTREV", "POUTROLL", "POBSREV", "POBSROLL", "POBSFRWD", "POBSCIRC", "NEXTLANE", "POUTSTOP", "LANEROL1", "LANEROL2",
-                      "ROLLTOIN", "WAITREPEAT", "FRWODO", "TESTCOMPAS", "ROLLTOTRACK",
-                      "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
-                      "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
-                      "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK",
-                      "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD", "ENDLANESTOP"
-                     };
 
-char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT" , "WIREMOWING"
-                      };
+const char* stateNames[] = {"OFF", "RC", "FORW", "ROLL", "REV", "CIRC", "ERR", "PFND", "PTRK", "PROL", "PREV", "STAT", "CHARG", "STCHK", "STREV",
+                            "STROL", "STFOR", "MANU", "ROLW", "POUTFOR", "POUTREV", "POUTROLL", "POBSREV", "POBSROLL", "POBSFRWD", "POBSCIRC", "NEXTLANE", "POUTSTOP", "LANEROL1", "LANEROL2",
+                            "ROLLTOIN", "WAITREPEAT", "FRWODO", "TESTCOMPAS", "ROLLTOTRACK",
+                            "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
+                            "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
+                            "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK",
+                            "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD"
+                           };
+
+const char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT" , "WIREMOWING"
+                            };
 
 
-char* mowPatternNames[] = {"RAND", "LANE",  "WIRE" , "ZIGZAG"};
-char* consoleModeNames[] = {"sen_counters", "sen_values", "perimeter", "off", "Tracking"};
+const char* mowPatternNames[] = {"RAND", "LANE",  "WIRE" , "ZIGZAG"};
+const char* consoleModeNames[] = {"sen_counters", "sen_values", "perimeter", "off", "Tracking"};
 char* rfidToDoNames[] = {"NOTHING", "RTS", "FAST_START", "NEW_AREA", "SPEED", "AREA1", "AREA2", "AREA3"};
 
 unsigned long StartReadAt;
@@ -267,16 +268,16 @@ Robot::Robot() {
 }
 
 
-char* Robot::stateName() {
+const char* Robot::stateName() {
   return stateNames[stateCurr];
 }
-
-char* Robot::statusName() {
+const char* Robot::statusName() {
   return statusNames[statusCurr];
 }
-char* Robot::statusNameList(byte statusIndex) {
+const char* Robot::statusNameList(byte statusIndex) {
   return statusNames[statusIndex];
 }
+
 
 char* Robot::rfidToDoName() {
   return rfidToDoNames[rfidToDoCurr];
@@ -286,11 +287,11 @@ char* Robot::rfidToDoNameList(byte rfidToDoIndex) {
   return rfidToDoNames[rfidToDoIndex];
 }
 
-char* Robot::mowPatternName() {
+const char* Robot::mowPatternName() {
   return mowPatternNames[mowPatternCurr];
 }
 
-char* Robot::mowPatternNameList(byte mowPatternIndex) {
+const char* Robot::mowPatternNameList(byte mowPatternIndex) {
   return mowPatternNames[mowPatternIndex];
 }
 /*
@@ -332,6 +333,146 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   ShowMessageln(addr);
 }
 
+
+boolean Robot::search_rfid_list(unsigned long TagNr) {
+
+  boolean tag_exist_in_list = false;
+  ptr = head;
+  if (ptr != NULL) {
+
+
+    for (ptr = head; ptr->next != NULL; ptr = ptr->next) {
+      if (ptr->TagNr == TagNr) tag_exist_in_list = true;
+    }
+  }
+  return tag_exist_in_list;
+}
+
+void Robot::rfidTagTraitement(unsigned long TagNr, byte statusCurr) {
+  boolean tagAndStatus_exist_in_list = false;
+  String line01 = "";
+  //struct rfid_list *temp = (struct rfid_list*) malloc(sizeof(rfid_list));
+  ptr = head;
+  if (ptr != NULL) {
+    for (ptr = head; ptr->next != NULL; ptr = ptr->next) {
+      if ((ptr->TagNr == TagNr) && (ptr->TagMowerStatus == statusCurr)) {
+        tagAndStatus_exist_in_list = true;
+        //ptr is locate on the correct record in the list --> exit from the for loop
+        break;
+      }
+    }
+  }
+  if (tagAndStatus_exist_in_list)
+  {
+    //debut du traitement
+    ShowMessage(F("Tag and Status find to do is "));
+    ShowMessageln(F(rfidToDoNameList(ptr->TagToDo)));
+    switch (ptr->TagToDo) {
+
+      case NOTHING:
+        ShowMessageln(F("nothing to do ???"));
+        break;
+      case RTS:
+        ShowMessage("Fast return tag : Turning ");
+        ShowMessage(ptr->TagAngle1);
+        ShowMessage(" degrees and new speed is ");
+        ShowMessageln(ptr->TagSpeed);
+        newtagRotAngle1 = ptr->TagAngle1;
+        motorSpeedMaxPwm = ptr->TagSpeed;
+        setNextState(STATE_PERI_STOP_TOROLL, 0);
+        break;
+      case FAST_START:
+        ShowMessage("Faster start tag. Turning ");
+        ShowMessage(ptr->TagAngle1);
+        ShowMessage("° and new speed is ");
+        ShowMessageln(ptr->TagSpeed);
+        if (areaToGo != 1) { // if a distance is set for start point we can't use the fast start
+          newtagRotAngle1 = ptr->TagAngle1;
+          motorSpeedMaxPwm = ptr->TagSpeed;
+          setNextState(STATE_PERI_STOP_TO_FAST_START, 0);
+        }
+        else
+        {
+          ShowMessageln("Fast start is only valid to change mowing area");
+        }
+        break;
+      case NEW_AREA:
+        ShowMessageln("Not use better to use AREA1,2 or 3");
+        //not use
+        break;
+      case AREA1:
+        line01 = "#SENDER," + String(area1_ip) + ",A1";
+        Serial1.println(line01);
+        line01 = "#SENDER," + String(area2_ip) + ",B0";
+        Serial1.println(line01);
+        line01 = "#SENDER," + String(area3_ip) + ",B0";
+        Serial1.println(line01);
+
+        areaToGo = 1;
+        ShowMessageln("Return to Station area ");
+        motorSpeedMaxPwm = ptr->TagSpeed;
+        newtagRotAngle1 = ptr->TagAngle1;
+        newtagDistance1 = ptr->TagDist1;
+        newtagRotAngle2 = ptr->TagAngle2;
+        newtagDistance2 = ptr->TagDist2;
+        setNextState(STATE_PERI_STOP_TO_NEWAREA, 0);
+        //#stopsender
+        if (areaInMowing == 2) {
+          //ButtonStopArea2_click()
+        }
+        if (areaInMowing == 3) {
+          //ButtonStopArea3_click()
+        }
+        break;
+      case AREA2:
+        //send data to ESP32 to start AREA2 sender and stop AREA1 one
+        line01 = "#SENDER," + String(area1_ip) + ",A0";
+        Serial1.println(line01);
+        line01 = "#SENDER," + String(area2_ip) + ",B1";
+        Serial1.println(line01);
+        if (areaToGo == 2) {
+          ShowMessageln("Go to AREA2");
+          motorSpeedMaxPwm = ptr->TagSpeed;
+          newtagRotAngle1 = ptr->TagAngle1;
+          newtagDistance1 = ptr->TagDist1;
+          newtagRotAngle2 = ptr->TagAngle2;
+          newtagDistance2 = ptr->TagDist2;
+          setNextState(STATE_PERI_STOP_TO_NEWAREA, 0);
+        }
+        break;
+
+      case AREA3:
+        line01 = "#SENDER," + String(area1_ip) + ",A0";
+        Serial1.println(line01);
+        line01 = "#SENDER," + String(area3_ip) + ",B1";
+        Serial1.println(line01);
+        if (areaToGo == 3) {
+          ShowMessageln("Go to AREA3");
+          motorSpeedMaxPwm = ptr->TagSpeed;
+          newtagRotAngle1 = ptr->TagAngle1;
+          newtagDistance1 = ptr->TagDist1;
+          newtagRotAngle2 = ptr->TagAngle2;
+          newtagDistance2 = ptr->TagDist2;
+          setNextState(STATE_PERI_STOP_TO_NEWAREA, 0);
+        }
+        break;
+
+      case SPEED:
+        motorSpeedMaxPwm = ptr->TagSpeed;
+        newtagDistance1 = ptr->TagDist1;
+        whereToResetSpeed =  totalDistDrive + newtagDistance1; // when a speed tag is read it's where the speed is back to maxpwm value
+        ShowMessage("Change speed for ");
+        ShowMessage(newtagDistance1);
+        ShowMessageln(" centimeters");
+
+        break;
+    }
+  }
+  else
+  {
+    ShowMessageln(F("Tag and Status not match"));
+  }
+}
 
 void Robot::insert_rfid_list(unsigned long TagNr, byte TagMowerStatus, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2) {
   struct rfid_list *node = (struct rfid_list*) malloc(sizeof(*node));//allocation dynamique de la memoire
@@ -461,29 +602,6 @@ void Robot::print_rfid_list() {
 
 }
 
-
-
-void Robot::loadSaveErrorCounters(boolean readflag) {
-  if (readflag) ShowMessageln(F("Load ErrorCounters"));
-  else ShowMessageln(F("Save ErrorCounters"));
-  int addr = ADDR_ERR_COUNTERS;
-  short magic = 0;
-  if (!readflag) magic = MAGIC;
-  eereadwrite(readflag, addr, magic); // magic
-  if ((readflag) && (magic != MAGIC)) {
-    ShowMessageln(F("EEPROM ERR COUNTERS: NO EEPROM ERROR DATA"));
-    ShowMessageln(F("PLEASE CHECK AND SAVE YOUR SETTINGS"));
-    addErrorCounter(ERR_EEPROM_DATA);
-    setNextState(STATE_ERROR, 0);
-    return;
-  }
-  eereadwrite(readflag, addr, errorCounterMax);
-  ShowMessage(F("ErrorCounters address Start="));
-  ShowMessageln(ADDR_ERR_COUNTERS);
-  ShowMessage(F("ErrorCounters address Stop="));
-  ShowMessageln(addr);
-}
-
 void Robot::saveRfidList() {
   boolean readflag = false;
   int addr = ADDR_RFID_LIST;
@@ -540,7 +658,7 @@ void Robot::loadRfidList() {
     eereadwrite(readflag, addr, PR.TagAngle2);
     eereadwrite(readflag, addr, PR.TagDist2);
     insert_rfid_list(PR.TagNr, PR.TagMowerStatus, PR.TagToDo, PR.TagSpeed, PR.TagAngle1, PR.TagDist1, PR.TagAngle2, PR.TagDist2);
-    
+
   }
   ShowMessage(F("RFID LIST address Start="));
   ShowMessageln(ADDR_RFID_LIST);
@@ -550,8 +668,26 @@ void Robot::loadRfidList() {
   print_rfid_list();
 }
 
-
-
+void Robot::loadSaveErrorCounters(boolean readflag) {
+  if (readflag) ShowMessageln(F("Load ErrorCounters"));
+  else ShowMessageln(F("Save ErrorCounters"));
+  int addr = ADDR_ERR_COUNTERS;
+  short magic = 0;
+  if (!readflag) magic = MAGIC;
+  eereadwrite(readflag, addr, magic); // magic
+  if ((readflag) && (magic != MAGIC)) {
+    ShowMessageln(F("EEPROM ERR COUNTERS: NO EEPROM ERROR DATA"));
+    ShowMessageln(F("PLEASE CHECK AND SAVE YOUR SETTINGS"));
+    addErrorCounter(ERR_EEPROM_DATA);
+    setNextState(STATE_ERROR, 0);
+    return;
+  }
+  eereadwrite(readflag, addr, errorCounterMax);
+  ShowMessage(F("ErrorCounters address Start="));
+  ShowMessageln(ADDR_ERR_COUNTERS);
+  ShowMessage(F("ErrorCounters address Stop="));
+  ShowMessageln(addr);
+}
 
 void Robot::loadSaveUserSettings(boolean readflag) {
 
@@ -703,6 +839,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, dockingSpeed);
   eereadwrite(readflag, addr, rfidUse);
   eereadwrite(readflag, addr, compassRollSpeedCoeff);
+  eereadwrite(readflag, addr, useMqtt);
   if (readflag)
   {
     ShowMessage(F("UserSettings are read from EEprom Address : "));
@@ -1056,6 +1193,11 @@ void Robot::printSettingSerial() {
   ShowMessageln(F("---------- RASPBERRY PI------ "));
   ShowMessage  (F("RaspberryPIUse  : "));
   ShowMessageln(RaspberryPIUse);
+
+  // ----- MQTT --------------
+  ShowMessageln(F("---------- MQTT        ------ "));
+  ShowMessage  (F("useMqtt  : "));
+  ShowMessageln(useMqtt);
 
   // ----- other ----------------------------------------------------
   ShowMessageln(F("---------- other ------------"));
@@ -2344,17 +2486,17 @@ void Robot::setup()  {
   }
 
   nextTimeInfo = millis();
-/*
-  rfidListElementCount = 0;
-  for(int i=0;i<10;i++){
-  insert_rfid_list(1924717461, 3, 0, 100, 170, 2, 90, 10);
-  insert_rfid_list(2444483477, 4, 1, 240, -170, 2, -90, 10);
-  insert_rfid_list(2394151829, 11, 2, 200, 27, 3, 9, 10);
-  insert_rfid_list(1082317461, 0, 4, 220, 37, 4, 9, 10);
-  }
-  sort_rfid_list();
-  print_rfid_list();
-*/
+  /*
+    rfidListElementCount = 0;
+    for(int i=0;i<10;i++){
+    insert_rfid_list(1924717461, 3, 0, 100, 170, 2, 90, 10);
+    insert_rfid_list(2444483477, 4, 1, 240, -170, 2, -90, 10);
+    insert_rfid_list(2394151829, 11, 2, 200, 27, 3, 9, 10);
+    insert_rfid_list(1082317461, 0, 4, 220, 37, 4, 9, 10);
+    }
+    sort_rfid_list();
+    print_rfid_list();
+  */
 }
 
 
@@ -2799,18 +2941,29 @@ void Robot::checkButton() {
 
   }
 }
+
 void Robot::newTagFind() {
   if (millis() >= nextTimeSendTagToPi) {
     nextTimeSendTagToPi = millis() + 10000;
     ShowMessage("Find a tag : ");
     ShowMessageln(rfidTagFind);
+    unsigned long rfidTagFind_long = hstol(rfidTagFind);
+
+    //bber200
     if (rfidUse) {
-      if (RaspberryPIUse) MyRpi.SendRfidToPi();
+
+      if (search_rfid_list(rfidTagFind_long)) {
+        rfidTagTraitement(rfidTagFind_long, statusCurr);
+      }
+      else
+      {
+        ShowMessage("Auto insert Wait tag : ");
+        ShowMessageln(rfidTagFind);
+        insert_rfid_list(rfidTagFind_long , 0, 0, 100, 1, 1, 1, 1);
+        sort_rfid_list();
+      }
     }
   }
-
-
-
 }
 
 void Robot::readSensors() {
@@ -5192,7 +5345,13 @@ void Robot::checkTimeout() {
 void Robot::loop()  {
   stateTime = millis() - stateStartTime;
   int steer;
+  if ((useMqtt) && (millis() > next_time_refresh_mqtt)) {
+    next_time_refresh_mqtt = millis() + 3000;
+    String line01 = "#RMSTA," + String(statusNames[statusCurr]) + "," + String(stateNames[stateCurr]) + "," + String(temperatureDht) + "," + String(batVoltage) + "," + String(loopsPerSec)  ;
+    Bluetooth.println(line01);
 
+
+  }
   ADCMan.run();
   if (perimeterUse) perimeter.run();
   if (RaspberryPIUse) {

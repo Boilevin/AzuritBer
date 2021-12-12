@@ -983,8 +983,8 @@ void RemoteControl::processImuMenu(String pfodCmd) {
 
 void RemoteControl::sendRemoteMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Remote R/C or Pi`1000"));
-  //serialPort->print(F("|h00~Use RC "));
-  //sendYesNo(robot->remoteUse);
+  serialPort->print(F("|h00~Use MQTT "));
+  sendYesNo(robot->useMqtt);
   serialPort->print(F("|h01~Use Rasberry(Need Reboot)"));
   sendYesNo(robot->RaspberryPIUse);
 
@@ -993,7 +993,7 @@ void RemoteControl::sendRemoteMenu(boolean update) {
 }
 
 void RemoteControl::processRemoteMenu(String pfodCmd) {
-  //if (pfodCmd == "h00" ) robot->remoteUse = !robot->remoteUse;
+  if (pfodCmd == "h00" ) robot->useMqtt = !robot->useMqtt;
   if (pfodCmd == "h01" ) robot->RaspberryPIUse = !robot->RaspberryPIUse;
   if (pfodCmd == "h02" ) robot->printSettingSerial();  //use by pi to show all the variable in the console
   if (pfodCmd == "h03" ) robot->consoleMode = (robot->consoleMode + 1) % 5;  //use by pi to change the console mode
@@ -1592,6 +1592,28 @@ void RemoteControl::processManualMenu(String pfodCmd) {
   }
 }
 
+void RemoteControl::sendMainTestMenu(boolean update) {
+  if (update) serialPort->print("{:"); else serialPort->println(F("{.MainTest`1000"));
+  sendSlider("ya0", F("mowPatternCurr"), robot->mowPatternCurr, "", 1, 3, 0);
+  sendSlider("ya1", F("laneUseNr"), robot->laneUseNr, "", 1, 3, 0);
+  sendSlider("ya2", F("rollDir"), robot->rollDir, "", 1, 1, 0);
+  sendSlider("ya3", F("whereToStart"), robot->whereToStart, "", 1,9999, 0);
+  sendSlider("ya4", F("areaToGo"), robot->areaToGo, "", 1, 3, 0);
+  sendSlider("ya5", F("actualLenghtByLane"), robot->actualLenghtByLane, "", 1, 255, 0);
+  serialPort->println("}");
+
+}
+void RemoteControl::processMainTestMenu(String pfodCmd) {
+  if (pfodCmd.startsWith("ya0")) processSlider(pfodCmd, robot->mowPatternCurr, 1);
+  else if (pfodCmd.startsWith("ya1")) processSlider(pfodCmd, robot->laneUseNr, 1);
+  else if (pfodCmd.startsWith("ya2")) processSlider(pfodCmd, robot->rollDir, 1);
+  else if (pfodCmd.startsWith("ya3")) processSlider(pfodCmd, robot->whereToStart, 1);
+  else if (pfodCmd.startsWith("ya4")) processSlider(pfodCmd, robot->areaToGo, 1);
+  else if (pfodCmd.startsWith("ya5")) processSlider(pfodCmd, robot->actualLenghtByLane, 1);
+  sendMainTestMenu(true);
+
+
+}
 void RemoteControl::sendTestOdoMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->println(F("{.TestOdo`1000"));
 
@@ -1993,6 +2015,7 @@ boolean RemoteControl::readSerial() {
       else if (pfodCmd == "yr") sendRFIDMenu(false);
       else if (pfodCmd == "y4") sendErrorMenu(false);
       else if (pfodCmd == "yt") sendTestOdoMenu(false);
+      else if (pfodCmd == "ya") sendMainTestMenu(false);
       else if (pfodCmd == "w") sendByLaneMenu(false);
       else if (pfodCmd == "n") sendManualMenu(false);
       else if (pfodCmd == "s") sendSettingsMenu(false);
@@ -2029,6 +2052,7 @@ boolean RemoteControl::readSerial() {
       else if (pfodCmd.startsWith("v")) processInfoMenu(pfodCmd);
       else if (pfodCmd.startsWith("w")) processByLaneMenu(pfodCmd);
       else if (pfodCmd.startsWith("x")) processFactorySettingsMenu(pfodCmd);
+      else if (pfodCmd.startsWith("ya")) processMainTestMenu(pfodCmd);
       else if (pfodCmd.startsWith("yt")) processTestOdoMenu(pfodCmd);
       else if (pfodCmd.startsWith("z")) processErrorMenu(pfodCmd);
       else if (pfodCmd.startsWith("RFID")) {

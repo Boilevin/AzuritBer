@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.71-Azuritber GY-521"
+#define VER "1.8-Azuritber GY-521"
 
 
 // sensors
@@ -233,9 +233,14 @@ class Robot
     //byte statusNext;
 
     unsigned long stateTime;
-    char* stateName();
-    char* statusName();
+    const char* stateName();
+    const char* statusName();
     char* rfidToDoName();
+
+
+    char* area1_ip = "10.0.0.151";
+    char* area2_ip = "10.0.0.150";
+    char* area3_ip = "10.0.0.158";
 
     unsigned long stateStartTime;
     unsigned long stateEndTime;
@@ -254,7 +259,7 @@ class Robot
     String esp8266ConfigString = "";
     // -------- mow pattern -----------------------------
     byte mowPatternCurr;
-    char *mowPatternName();
+    const char *mowPatternName();
     // -------- gps state -------------------------------
     GPS gps;
     boolean gpsUse            ;       // use GPS?
@@ -321,7 +326,7 @@ class Robot
     String rfidTagFind;
     boolean rfidUse;
 
-    byte rfidListElementCount=0;
+    byte rfidListElementCount = 0;
     struct rfid_list {
       unsigned long TagNr;
       byte TagMowerStatus;
@@ -674,9 +679,12 @@ class Robot
     // --------- pfodApp ----------------------------------
     RemoteControl rc; // pfodApp
     unsigned long nextTimePfodLoop ;
+    unsigned long next_time_refresh_mqtt;
+
     // ----- other -----------------------------------------
     boolean buttonUse         ;       // has digital ON/OFF button?
     boolean RaspberryPIUse;  //a raspberryPI is connected to USBNativeport
+    boolean useMqtt; // mqtt work to send dat to homeassistant
     boolean MyrpiStatusSync;
     unsigned long beepOnOFFDuration; //variable use for the beeper
     boolean beepState;//for the beeper true when sound
@@ -846,16 +854,16 @@ class Robot
     virtual void ShowMessageln(float value);
 
     virtual void printSettingSerial();
-    char* mowPatternNameList(byte mowPatternIndex);
+    const char* mowPatternNameList(byte mowPatternIndex);
     char* rfidToDoNameList(byte rfidToDoIndex);
-    char* statusNameList(byte statusIndex);
-    
+    const char* statusNameList(byte statusIndex);
+
     virtual void insert_rfid_list(unsigned long TagNr, byte TagMowerStatus, byte TagToDo, int TagSpeed, float TagAngle1, int TagDist1, float TagAngle2, int TagDist2);
     virtual void print_rfid_list();
     virtual void sort_rfid_list();
-    virtual void delete_rfid_list(unsigned long TagNr, byte TagMowerStatus,int pos_into_list);
-    
-      
+    virtual void delete_rfid_list(unsigned long TagNr, byte TagMowerStatus, int pos_into_list);
+
+
   protected:
     // convert ppm time to RC slider value
     virtual int rcValue(int ppmTime);
@@ -925,13 +933,10 @@ class Robot
     virtual void calcOdometry();
     virtual void menu();
     virtual void configureBluetooth(boolean quick) {};
-
-
     virtual void beeper();
 
-
-
-
+    boolean search_rfid_list(unsigned long TagNr);
+    void rfidTagTraitement(unsigned long TagNr, byte statusCurr);
 
 };
 
