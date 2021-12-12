@@ -31,10 +31,10 @@
 #include <HTTPClient.h>
 #include "PubSubClient.h"
 
-#ifdef BLUETOOTH
+
 #include <BluetoothSerial.h>
 BluetoothSerial SerialBT;
-#endif
+
 
 #include <WiFiClient.h>
 WiFiClient pfodClient;
@@ -46,6 +46,7 @@ uint8_t BTbuf[my_bufferSize];
 uint16_t iBT = 0;
 uint8_t WIFIbuf[my_bufferSize];
 uint16_t inWiFI = 0;
+int reconnect_count = 0;
 
 char msg[20];
 unsigned long next_test_connection;
@@ -98,12 +99,12 @@ void receivedCallback(char* topic, byte* payload, unsigned int payload_length) {
     int count = csvSplit(payloadString);
     for (int j = 0; j < count; ++j)
     {
-      if (SplitResult[j].length() > 0){
+      if (SplitResult[j].length() > 0) {
         if (debug) Serial.print(j);
         if (debug) Serial.print(" ");
         if (debug) Serial.println(SplitResult[j]);
-      }     
-    }  
+      }
+    }
   }
   if (SplitResult[0] == "START") {
     Serial2.println("{ra}");
@@ -129,7 +130,7 @@ void mqttconnect() {
 
   if (!client.connected()) {
     if (debug) Serial.print("MQTT connecting ...");
-   
+
     if (client.connect(mqtt_id, mqtt_user, mqtt_pass)) {
       if (debug) Serial.println("connected");
       //const char* cmd_msg = "/COMMAND/#";
@@ -148,7 +149,7 @@ void mqttconnect() {
   }
 }
 
-void esp32_Sender() {
+void start_stop_AreaSender() {
   //line_receive is a char array separate by ,
   //example to stop sender on ip 15  "#SENDER,10.0.0.15,A0
   //example to start sender on ip 15  "#SENDER,10.0.0.15,A1
@@ -161,7 +162,7 @@ void esp32_Sender() {
 }
 
 void esp32_Mqtt_sta() {
-  //receive from mower msgid,status,state,temp,battery,idle
+  //receive state from mower msgid,status,state,temp,battery,idle
   //message separation
   char val1[6], val2[20], val3[20], val4[20], val5[20], val6[20];
   sscanf(line_receive, "%[^,],%[^,],%[^,],%[^,],%[^,],%[^,]", val1, val2, val3, val4, val5, val6);
@@ -194,45 +195,77 @@ void setup() {
   delay(500);
   Serial.begin(115200);
   Serial2.begin(19200);
-  if (debug) Serial.println("\n\n ESP32 BT and WiFi serial bridge");
+  if (debug) Serial.println("********* ESP32 BT and WiFi serial bridge ******************");
 
-#ifdef MODE_AP
-  if (debug) Serial.println("Open ESP Access Point mode");
-  //AP mode (phone connects directly to ESP) (no router)
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(ssid); // configure ssid and password for softAP
-  delay(2000); // VERY IMPORTANT
-  WiFi.softAPConfig(ip, ip, netmask); // configure ip address for softAP
-  if (debug) Serial.println("ESP Access Point mode started at 192.168.4.1 on port 8881");
-#endif
+  //********************************WIFI init code*************************************
 
+  if (MODE_STA == true) {
+    if (debug) Serial.println("Start ESP32 Station mode");
+    reconnect_count = 0;
+    WiFi.mode(WIFI_STA);
+    WiFi.config(ip, gateway, netmask);
+    WiFi.begin(ssid, pw);
+    if (debug) Serial.print("Try to Connect to your Wireless network: ");
 
-#ifdef MODE_STA
-  if (debug) Serial.println("Start ESP32 Station mode");
-  WiFi.mode(WIFI_STA);
-  WiFi.config(ip, gateway, netmask);
-  WiFi.begin(ssid, pw);
-  if (debug) Serial.print("try to Connect to your Wireless network: ");
-  if (debug) Serial.println(ssid);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    if (debug) Serial.print(".");
-    ///need to count and stop wifi scanning if more than 20 secondes
+    while ((WiFi.status() != WL_CONNECTED) ) {
+      delay(500);
+      if (debug) Serial.print(".");
+      reconnect_count = reconnect_count + 1;
+      if (reconnect_count > 10) {
+        if (debug) {
+          Serial.println(" ");
+          Serial.println("*************************************************");
+          Serial.println("    FAIL to Connect to your Wireless network");
+          Serial.println("    Please check your ssid and pass ");
+          Serial.println("ESP32 Mode ACCES POINT is automaticaly activate ");
+          Serial.println("*************************************************");
+          Serial.println(" ");
+        }
+        MODE_AP = true;
+        useMqtt = false;
+        break;
+      }
+    }
+    if ((debug) && (MODE_AP != true)) {
+      Serial.println(" ");
+      Serial.print("WiFi connected ");
+      Serial.print(WiFi.SSID());
+      Serial.print(" IP= ");
+      Serial.println(ip);
+      Serial.println(" ");
+
+    }
   }
-  if (debug) Serial.println("\nWiFi connected IP fixe see config.h");
-  if (debug) Serial.println("\nUse port 8881");
-#endif
+  if (MODE_AP == true) {
+    useMqtt = false;
+    if (debug) Serial.println("Your ESP32 is the Access Point");
+    //AP mode (phone connects directly to ESP) (no router)
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(ssid_ap); // configure ssid and password for softAP
+    delay(2000); // VERY IMPORTANT
+    WiFi.softAPConfig(ip_ap, ip_ap, netmask_ap); // configure ip address for softAP
+    if (debug) {
+      Serial.print("ESP Access Point mode started SSID : ");
+      Serial.print(ssid_ap);
+      Serial.print(" IP= ");
+      Serial.println(ip_ap);
+    }
+  }
 
-#ifdef BLUETOOTH
-  if (debug) Serial.println("Start Bluetooth Server");
-  SerialBT.begin("Teensy2"); //Bluetooth device name
-#endif
-
-
-  //********************************WIFI code*************************************
-  if (debug) Serial.println("Starting Serveur on port 8881");
+  if (debug) Serial.println("Starting WIFI Serveur on port 8881");
   TheServeur.begin(); // start TCP server
   TheServeur.setNoDelay(true);
+
+  //********************************BT code*************************************
+
+  if (debug) {
+    Serial.println("");
+    Serial.println("Start Bluetooth Server");
+    Serial.print("BT Name : ");
+    Serial.println(mower_name);
+    Serial.println("");
+  }
+  SerialBT.begin(mower_name); //Bluetooth device name
 
 
   //********************************MQTT code*************************************
@@ -301,7 +334,7 @@ void loop() {
     }
   }
 
-#ifdef BLUETOOTH
+
   // receive from Bluetooth:
   if (SerialBT.hasClient())
   {
@@ -313,7 +346,7 @@ void loop() {
     Serial2.write(BTbuf, iBT); // now send to serial2:
     iBT = 0;
   }
-#endif
+
 
   if (TheServeur.hasClient())
   {
@@ -356,15 +389,11 @@ void loop() {
           //here data coming from mqtt or pfod over wifi
           if (debug) Serial.println(line_receive);
           if (strncmp(line_receive, "$SENDER", 7) == 0) {
-            esp32_Sender();
+            start_stop_AreaSender();
           }
           if (strncmp(line_receive, "#RMSTA", 6) == 0) {
             esp32_Mqtt_sta();
           }
-
-
-
-
 
           mon_index = 0;
           line_receive[mon_index] = NULL;
@@ -378,17 +407,15 @@ void loop() {
       }
       if (pfodClient)
         pfodClient.write(WIFIbuf, inWiFI);
-
-#ifdef BLUETOOTH
       // now send to Bluetooth:
       if (SerialBT.hasClient())
         SerialBT.write(WIFIbuf, inWiFI);
-#endif
+
       inWiFI = 0;
     }
 
   }
-  //mqtt refresh
+
   client.loop();
 
 }
