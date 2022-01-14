@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.8-Azuritber GY-521"
+#define VER "1.81-Azuritber GY-521"
 
 
 // sensors
@@ -844,8 +844,6 @@ class Robot
     virtual void resetMotorFault();// {}
     //bb
     virtual void setBeeper(int totalDuration, byte OnDuration, byte OffDuration, byte frequenceOn, byte frequenceOff ); // Set the variable for the beeper
-    //virtual void RaspberryPISendStat ();
-
     virtual void receivePiPfodCommand (String RpiCmd, float v1, float v2, float v3);
 
     virtual void ShowMessage(String message);
