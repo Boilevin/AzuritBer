@@ -1,0 +1,3 @@
+tar xvf LCD_show_35hdmi.tar.gz
+cd LCD_show_35hdmi/
+./LCD35_hdmi
