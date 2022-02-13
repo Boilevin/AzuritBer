@@ -1341,7 +1341,7 @@ void RemoteControl::processFactorySettingsMenu(String pfodCmd) {
 void RemoteControl::sendInfoMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Info`1000"));
 
-  robot->print_rfid_list();
+  //robot->print_rfid_list();
   //robot->printpgm();
   serialPort->print(F("|v00~Ardumower "));
   serialPort->print(VER);
