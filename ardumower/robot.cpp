@@ -3274,8 +3274,12 @@ void Robot::setNextState(byte stateNew, byte dir) {
       if (!CompassUse) { //set the yaw heading to zero when mower leave station if compass is not use
         ShowMessageln("Imu Heading is reset to Station Heading");
         //CompassGyroOffset=distancePI( scalePI(ypr.yaw-CompassGyroOffset), comYaw);
-        imu.CompassGyroOffset = scalePI(-imu.ypr.yaw + stationHeading / 180 * PI);
+        imu.CompassGyroOffset = scalePI((stationHeading / 180 * PI) - imu.ypr.yaw);
 
+        imu.run();
+        ShowMessageln("Imu Heading is reset to Station Heading");
+        ShowMessage("New Heading : ");
+        ShowMessageln(imu.ypr.yaw * 180 / PI);
       }
 
       statusCurr = TRACK_TO_START;

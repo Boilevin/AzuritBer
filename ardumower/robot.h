@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.81-Azuritber GY-521"
+#define VER "1.82-Azuritber GY-521"
 
 
 // sensors
