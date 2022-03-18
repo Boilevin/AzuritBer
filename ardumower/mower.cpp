@@ -90,13 +90,15 @@ Mower::Mower() {
   SpeedOdoMin = 50;
   SpeedOdoMax = 140;
   odoLeftRightCorrection     = true;       // left-right correction for straight lines used in manual mode
+  autoAdjustSlopeSpeed = true;  //adjust the speed on slope to have same speed on uphill and downhill
 
+  
   // ------ mower motor -------------------------------
   motorMowAccel       = 1000;  // motor mower acceleration (warning: do not set too low) 2000 seems to fit best considerating start time and power consumption
   motorMowSpeedMaxPwm   = 200;    // motor mower max PWM
   motorMowSpeedMinPwm = 100;   // motor mower minimum PWM (only for cutter modulation)
   motorMowPowerMax = 18.0;     // motor mower max power (Watt)
-  
+
   motorMowSenseScale = 1.536; // motor mower sense scale (mA=(ADC-zero)/scale)
   motorMowPID.Kp = 0.005;    // motor mower RPM PID controller
   motorMowPID.Ki = 0.01;
@@ -127,6 +129,7 @@ Mower::Mower() {
   sonarCenterUse             = 0;
   sonarTriggerBelow          = 87;       // ultrasonic sensor trigger distance in cm (0=off)
   sonarToFrontDist           = 30;        // ultrasonic sensor distance to front mower in cm
+  sonarLikeBumper            = false;      //ultrasonic reduce speed vs bumper like
 
 
 
@@ -164,7 +167,7 @@ Mower::Mower() {
   lawnSensorUse     = 0;       // use capacitive Sensor
   // ------  IMU (compass/accel/gyro) ----------------------
   imuUse            = 0;       // use IMU?
-  CompassUse = 1;       // activate compass?
+  CompassUse = 0;       // activate compass?
   stopMotorDuringCalib     = 0;       // correct direction by compass?
   imuDirPID.Kp      = 4.4;     // direction PID controller
   imuDirPID.Ki      = 3.3;
@@ -208,8 +211,8 @@ Mower::Mower() {
   batChargingCurrentMax = 2; // maximum current your charger can devliver
   batFullCurrent  = 0.1;      // current flowing when battery is fully charged
   startChargingIfBelow = 25.0; // start charging if battery Voltage is below
-  chargingTimeout = 18000000; // safety timer for charging (ms)  5 hrs
-  chgSenseZero    = 511;        // charge current sense zero point
+  chargingTimeout = 25200000; // safety timer for charging (ms)  7 hrs
+  
   batSenseFactor  = 1.11;         // charge current conversion factor   - Empfindlichkeit nimmt mit ca. 39/V Vcc ab
   chgSense        = 185.0;      // mV/A empfindlichkeit des Ladestromsensors in mV/A (FÃ¼r ACS712 5A = 185)
   chgChange       = 0;          // Messwertumkehr von - nach +         1 oder 0
@@ -222,14 +225,14 @@ Mower::Mower() {
   UseBumperDock = true; //bumper is pressed when docking or not
   dockingSpeed   =  60;   //speed docking is (percent of maxspeed)
   autoResetActive  = 0;       // after charging reboot or not
-
+  stationHeading  = 0;  //heading of the charging station to use when no compass
 
   // ------ odometry ------------------------------------
   odometryUse       = 1;       // use odometry?
   odometryTicksPerRevolution = 1010;   // encoder ticks per one full resolution
   odometryTicksPerCm = 12.9;  // encoder ticks per cm
   odometryWheelBaseCm = 43;    // wheel-to-wheel distance (cm)
-  
+
 
 
   // ----- GPS -------------------------------------------
@@ -249,7 +252,7 @@ Mower::Mower() {
   // ----- timer -----------------------------------------
   timerUse          = 0;       // use RTC and timer?
   // ----- bluetooth -------------------------------------
-  bluetoothUse      = 1;      // use Bluetooth module?
+  bluetoothUse      = 1;      // use Bluetooth module? It's Impossible to use Bluetooth and esp8266 at same time
   // ----- esp8266 ---------------------------------------
   esp8266Use        = 0;       // use ESP8266 Wifi module?
   esp8266ConfigString = "1234567321"; // always use 10 char to avoid eeprom corruption
@@ -314,7 +317,7 @@ void Mower::setup() {
   I2Creset();
   Wire.begin();
   Wire1.begin();
-  
+ // Wire1.setClock(400000);
   // Flash.test();
 
   /* while (!checkAT24C32()){
@@ -442,13 +445,14 @@ void Mower::setup() {
   // Console.println(" --> ******************************************* Back to mower.cpp *********************************");
 
   if (esp8266Use) {
-    Console.println(F("Sending ESP8266 Config"));
+    Console.println(F("ESP8266 in used : Use Arduremote over WIFI"));
     ESP8266port.begin(ESP8266_BAUDRATE);
     ESP8266port.println(esp8266ConfigString);
     ESP8266port.flush();
     ESP8266port.end();
-    rc.initSerial(&Serial1, ESP8266_BAUDRATE);
+    rc.initSerial(&ESP8266port, ESP8266_BAUDRATE);
   } else if (bluetoothUse) {
+    Console.println(F("BT in used : Use Arduremote over Bluetooth"));
     rc.initSerial(&Bluetooth, BLUETOOTH_BAUDRATE);
   }
 

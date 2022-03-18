@@ -43,14 +43,12 @@
 #include "perimeter.h"
 
 // pfodApp state
-enum { PFOD_OFF, PFOD_MENU, PFOD_LOG_SENSORS,
+enum { PFOD_OFF, PFOD_MENU, PFOD_CONSOLE,
        PFOD_PLOT_BAT, PFOD_PLOT_ODO2D, PFOD_PLOT_IMU, PFOD_PLOT_SENSOR_COUNTERS,
        PFOD_PLOT_SENSORS, PFOD_PLOT_PERIMETER, PFOD_PLOT_GPS, PFOD_PLOT_GPS2D,
        PFOD_PLOT_MOTOR
      };
-
 class Robot;
-
 class RemoteControl
 {
   public:
@@ -61,12 +59,14 @@ class RemoteControl
     //bb10
     void processPI(String RpiCmd, float v1, float v2, float v3) ;
     void run();
+    byte pfodState;
+    
   private:
     HardwareSerial* serialPort;
     Robot *robot;
     boolean pfodCmdComplete;
     String pfodCmd;
-    byte pfodState;
+    int rfidDetailIdx;
     int testmode;
     unsigned long nextPlotTime;
     //bb
@@ -77,6 +77,7 @@ class RemoteControl
     int8_t perimeterCapture[RAW_SIGNAL_SAMPLE_SIZE];
     int perimeterCaptureIdx;
     float stringToFloat(String &s);
+    byte rfid_pos_into_list;
     
     // generic
     void sendYesNo(int value);
@@ -109,8 +110,10 @@ class RemoteControl
     void sendManualMenu(boolean update);
     void sendCompassMenu(boolean update);
     void sendTestOdoMenu(boolean update);
+    void sendMainTestMenu(boolean update);
     void processCompassMenu(String pfodCmd);
     void processTestOdoMenu(String pfodCmd);
+    void processMainTestMenu(String pfodCmd);
     void processManualMenu(String pfodCmd);
     void processSettingsMenu(String pfodCmd);
 
@@ -133,7 +136,8 @@ class RemoteControl
     void sendOdometryMenu(boolean update);
     void sendRainMenu(boolean update);
     void sendGPSMenu(boolean update);
-    void sendRfidMenu(boolean update);
+    void sendRFIDMenu(boolean update);
+    void sendRfidDetailMenu(int rfidDetailIdx,boolean update);
 
     void sendDateTimeMenu(boolean update);
     void sendFactorySettingsMenu(boolean update);
@@ -151,7 +155,8 @@ class RemoteControl
     void processRainMenu(String pfodCmd);
     void processDropMenu(String pfodCmd);
     void processGPSMenu(String pfodCmd);
-    void processRfidMenu(String pfodCmd);
+    void processRFIDMenu(String pfodCmd);
+    void processRfidDetailMenu(int rfidDetailIdx,String pfodCmd);
     void processImuMenu(String pfodCmd);
     void processRemoteMenu(String pfodCmd);
     void processBatteryMenu(String pfodCmd);

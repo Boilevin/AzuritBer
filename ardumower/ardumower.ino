@@ -1,22 +1,45 @@
 /*      
  *      DUE and ODOMETRY MANDATORY VERSION 
  *      PCB1.3 
- *      IMU GY-87 MANDATORY 
+ *      COMPATIBLE WITH THIS IMU 
+ *      GY-87 CONNECTED ON P23 I2CDUE
+ *      SO IT'S MPU6050 and HMC5883L or QMC5883L
  *      
  *      Connect DUE programming port to PC for programming and PC console
  *      Connect DUE Native USB port to Raspberry Pi 
  *      
  *      During all test and dev set Enable_DueWatchdog to false
- *      or increase the delay in robot.cpp line : watchdogEnable(2000);// Watchdog trigger after  2 sec if not reseted.
+ *      or increase the delay in robot.cpp line : watchdogEnable(3000);// Watchdog trigger after  3 sec if not reseted.
  *      
- *      --------------------------------- GPS ----------------------------------------------------
- *      GPS You need to change speed into pfod setting according to your module and connected to P44
+ *      -------------------------- COMPASS TYPE --------------------------------------------------
+ *      Into mower.h line 109 select correct configuration
+ *      // ---------------- COMPASS Selection ---------------------------
+ *      //#define COMPASS_IS HMC5883L
+ *      #define COMPASS_IS QMC5883L
+ *      -------------------------- BT or ESP8266 --------------------------------------------------
+ *      Into mower.cpp line 255 select correct configuration
+ *       bluetoothUse      = 1;      // use Bluetooth module? It's Impossible to use Bluetooth and esp8266 at same time
+ *       esp8266Use        = 0;       // use ESP8266 Wifi module?
+ *      
+ *      ------------------------- RTC CHIP -------------------------------------------------------
+ *      Into mower.h line 163 Select the correct RTC.
+ *      #define AT24C32_ADDRESS B1010000 //0x50 //Standard PCB1.3 RTC ds1307 memory module
+ *      //#define AT24C32_ADDRESS B1010111 //0x57 //Simple PCB RTC ds3231 memory module
+ *      
+ *      
+ *      ------------------------- OLED SCREEN -------------------------------------------------------
+ *      Into mower.h line 128 Enable_Screen if you want to connect a 128*64 OLED screen to mower      
+ *      Connect the screen to I2C1 DUE port 
+ *      #define Enable_Screen true
+ *      //#define Enable_Screen false
+ *          
  *     
  *      ------------------------------ RASPBERRY -------------------------------------------------
  *      If Raspberry PI is not connected you need to change into mower.h
+ *      into mower.h line 121
  *          #define Console Serial
  *          //#define Console SerialUSB
- *      and into arduremote setting R/C set raspberryPiuse to NO
+ *      and into arduremote setting Raspberry set raspberryPiuse to NO
  *      then you have access to the Console on the PC 
  *      
  *      If Raspberry PI is connected you need to change into mower.h
