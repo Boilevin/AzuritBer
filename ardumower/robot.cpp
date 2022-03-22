@@ -3441,9 +3441,24 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_PERI_OUT_STOP: //in auto mode and forward slow down before stop and reverse
+    
+      if (mowPatternCurr == MOW_LANES) {  //in lane mowing if the mower run over the wire while nextlane it's a corner
+        if (stateCurr == STATE_NEXT_LANE_FORW) {  // change to mow random if the wire is detected
+          mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
+          ShowMessageln("Find a corner change to Random for 3 minutes ");
+          mowPatternCurr = MOW_RANDOM; //change the pattern each x minutes
+          laneUseNr = laneUseNr + 1;
+          findedYaw = 999;
+          justChangeLaneDir = true;
+          nextTimeToDmpAutoCalibration = millis(); // so the at the end of the next line a calibration occur
+          if (laneUseNr > 3) laneUseNr = 1;
+        }
+      }
+
+
       //-------------------------------Verify if it's time to change mowing pattern
       if (mowPatternDuration > mowPatternDurationMax) {
-        ShowMessageln(" mowPatternCurr  change ");
+        ShowMessageln("mowPatternCurr  change ");
         mowPatternCurr = (mowPatternCurr + 1) % 2; //change the pattern each x minutes
         mowPatternDuration = 0;
       }
