@@ -76,7 +76,7 @@ const char* stateNames[] = {"OFF", "RC", "FORW", "ROLL", "REV", "CIRC", "ERR", "
                             "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                             "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
                             "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK",
-                            "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD"
+                            "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD","ENDLANE"
                            };
 
 const char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT" , "WIREMOWING"
@@ -3441,7 +3441,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_PERI_OUT_STOP: //in auto mode and forward slow down before stop and reverse
-    
+
       if (mowPatternCurr == MOW_LANES) {  //in lane mowing if the mower run over the wire while nextlane it's a corner
         if (stateCurr == STATE_NEXT_LANE_FORW) {  // change to mow random if the wire is detected
           mowPatternDuration = mowPatternDurationMax - 3 ; //set the mow_random for the next 3 minutes
@@ -6263,7 +6263,7 @@ void Robot::loop()  {
         setNextState(STATE_PERI_OUT_LANE_ROLL1, rollDir);//if the motor can't reach the odocible in slope
       }
 
-
+      break;
 
     case STATE_SONAR_TRIG:
       motorControlOdo();

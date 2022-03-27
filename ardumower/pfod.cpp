@@ -1536,7 +1536,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
 }
 
 void RemoteControl::sendManualMenu(boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->println(F("{^Manual navigation`1000"));
+  if (update) serialPort->print("{:"); else serialPort->println(F("{^Manual navigation`500"));
   serialPort->print(F("|nl~Left|nr~Right|nf~Forward"));
   if (   ((robot->motorLeftSpeedRpmSet  < 5)  && (robot->motorLeftSpeedRpmSet  > -5))
          &&  ((robot->motorRightSpeedRpmSet < 5)  && (robot->motorRightSpeedRpmSet > -5))  ) {
