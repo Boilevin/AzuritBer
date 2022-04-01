@@ -76,7 +76,7 @@ const char* stateNames[] = {"OFF", "RC", "FORW", "ROLL", "REV", "CIRC", "ERR", "
                             "STOPTOTRACK", "AUTOCALIB", "ROLLTOFINDYAW", "TESTMOTOR", "FINDYAWSTOP", "STOPONBUMPER",
                             "STOPCALIB", "SONARTRIG", "STOPSPIRAL", "MOWSPIRAL", "ROT360", "NEXTSPIRE", "ESCAPLANE",
                             "TRACKSTOP", "ROLLTOTAG", "STOPTONEWAREA", "ROLL1TONEWAREA", "DRIVE1TONEWAREA", "ROLL2TONEWAREA", "DRIVE2TONEWAREA", "WAITSIG2", "STOPTONEWAREA", "ROLLSTOPTOTRACK",
-                            "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD","ENDLANE"
+                            "STOPTOFASTSTART", "CALIBMOTORSPEED", "ACCELFRWRD", "ENDLANE"
                            };
 
 const char* statusNames[] = {"WAIT", "NORMALMOWING", "SPIRALEMOWING", "BACKTOSTATION", "TRACKTOSTART", "MANUAL", "REMOTE", "ERROR", "STATION", "TESTING", "SIGWAIT" , "WIREMOWING"
@@ -3270,6 +3270,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 
     case STATE_STATION_REV: //when start in auto mode the mower first reverse to leave the station
+      imu.run();
 
       if (!CompassUse) { //set the yaw heading to zero when mower leave station if compass is not use
         ShowMessageln("Imu Heading is reset to Station Heading");
