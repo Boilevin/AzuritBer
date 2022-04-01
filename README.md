@@ -1,17 +1,18 @@
 # AzuritBer
 Ardumower full odometry version
-see https://www.ardumower.de for more info.
+see https://www.ardumower.de  and https://wiki.ardumower.de/index.php?title=AzuritBer_Firmware_(English)# for more info.
 
-Master branch is GY-88 / GY-521  based on MPU6050 version
+Master branch need PCB1.3 or 1.4 ,ODOMETRY on drive motor and IMU : GY-521 / or GY-88  based on MPU6050 version
+
+
+
+OPTIONAL:
+
+        	RFID BOARD PN5180 AS RFID READER and ESP32 dev kit to manage SPI communication with PN5180 and WIFI/BT for arduremote
+	
+		RASPBERRY for vision or camera streaming:
+	
 See other branch for GY-87  or MPU-9250/9255 version
-
-
-OPTIONAL RFID/RASPBERRY:
-	Use for multiple area mowing, Fast start Entry point,Fast return to station,soft docking ,etc....
-	Need PN5180 AS RFID READER
-	Need ESP32 dev kit to manage SPI communication with PN5180 
-	Need Raspberry Pi 3B+ or Pi Zero for setting RFID
-
 
 GY87 version use a GY87 IMU connected on I2C1 to avoid i2c adress conflit with RTC .
 
