@@ -814,7 +814,7 @@ class Robot
     virtual void setNextState(byte stateNew, byte dir);
 
     // motor
-    virtual void setMotorPWM(int pwmLeft, int pwmRight, boolean useAccel);
+    virtual void setMotorPWM(int pwmLeft, int pwmRight);
     virtual void setMotorMowPWM(int pwm, boolean useAccel);
 
     // GPS
