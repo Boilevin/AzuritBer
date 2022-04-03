@@ -25,16 +25,19 @@ if (os.name=='posix'):
     #On multiple area it's the sender IP, Use to start and stop them over HTTP
     #Sender1AdressIP is the station sender 
     
-    Sender1AdressIP="10.0.0.150"
-    Sender2AdressIP="10.0.0.151"
-    Sender3AdressIP="10.0.0.154"
+    #Sender1AdressIP="10.0.0.150"
+    #Sender2AdressIP="10.0.0.151"
+    #Sender3AdressIP="10.0.0.154"
+    Sender1AdressIP="0.0.0.0"
+    Sender2AdressIP="0.0.0.0"
+    Sender3AdressIP="0.0.0.0"
     
     #if camera is rotate in the chassis
     myCamAngle = 0 # Possible value = 0, 90, 180, 270
     streamVideoOnPower = True #auto start of the streaming
 
     #Setting for Mqtt and home automation
-    useMqtt=True
+    useMqtt=False
     Mqtt_Broker_IP="10.0.0.8"
     Mqtt_Port = 1883
     Mqtt_User = "admin"
@@ -46,7 +49,7 @@ if (os.name=='posix'):
     Mqtt_MowerName = "Denna"
 
  #Setting for Vision
-    useVision=False
+    useVision=True
     visionDetectMinScore = 78
 
 
