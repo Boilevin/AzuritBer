@@ -1446,7 +1446,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     robot->mowPatternDuration = 0;
     robot->totalDistDrive = 0;
     robot->setActuator(ACT_CHGRELAY, 0);
-    robot->setNextState(STATE_STATION_REV, 0);
+    robot->setNextState(STATE_START_FROM_STATION, 1);
     sendCommandMenu(true);
   }
   else if (pfodCmd == "rz") { //coming from pi
@@ -1470,7 +1470,6 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
       robot->ActualRunningTimer = 99;
       robot->findedYaw = 999;
       robot->imuDirPID.reset();
-      //robot->mowPatternCurr = 1;
       robot->laneUseNr = 1;
       robot->rollDir = 1;
       robot->whereToStart = 1;
@@ -1481,7 +1480,8 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
       robot->mowPatternDuration = 0;
       robot->totalDistDrive = 0;
       robot->setActuator(ACT_CHGRELAY, 0);
-      robot->setNextState(STATE_STATION_REV, 0);
+      robot->setNextState(STATE_START_FROM_STATION, 1);
+      
     }
     else {
       if (robot->mowPatternName() == "WIRE") {
@@ -1580,13 +1580,12 @@ void RemoteControl::processManualMenu(String pfodCmd) {
     sendManualMenu(true);
   } else if (pfodCmd == "nm") {
     // manual: mower ON/OFF
-    //bber13
     robot->setNextState(STATE_MANUAL, 0);
     robot->motorMowEnable = !robot->motorMowEnable;
     sendManualMenu(true);
   } else if (pfodCmd == "ns") {
     // manual: stop
-    //setNextState(STATE_OFF, 0);
+    robot->setNextState(STATE_MANUAL, 0);
     robot->motorLeftSpeedRpmSet  =  robot->motorRightSpeedRpmSet = 0;
     sendManualMenu(true);
   }

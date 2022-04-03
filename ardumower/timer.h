@@ -69,7 +69,7 @@ void Robot::checkTimer() {
               Console.println(whereToStart);
               
               
-              setNextState(STATE_STATION_REV, 0);
+              setNextState(STATE_START_FROM_STATION, 1);
 
             }
           }

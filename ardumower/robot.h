@@ -51,7 +51,7 @@
 */
 
 // code version
-#define VER "1.83-Azuritber GY-521"
+#define VER "1.84-Azuritber GY-521"
 
 
 // sensors
@@ -191,7 +191,9 @@ enum {
   STATE_PERI_STOP_TO_FAST_START,  // after the mower find a tag for find a new start entry point
   STATE_CALIB_MOTOR_SPEED,  // we need to know how may ticks the motor can do in 1 ms to compute the maxododuration
   STATE_ACCEL_FRWRD, // when start from calib or off need to accel before motorodo
-  STATE_ENDLANE_STOP //when mower is at the end of the lane avoid to reverse before roll
+  STATE_ENDLANE_STOP, //when mower is at the end of the lane avoid to reverse before roll
+  STATE_START_FROM_STATION, //when mower is station and a start command is receive need to start again IMU ,perimeter signal etc....
+  
 };
 
 // status mode
@@ -438,6 +440,7 @@ class Robot
     float OdoStartBrakeLeft;
     float OdoStartBrakeRight;
     float MaxOdoStateDuration;
+    float MaxStateDuration;
     float PrevStateOdoDepassLeft;
     float PrevStateOdoDepassRight;
     boolean UseAccelRight;
@@ -546,7 +549,7 @@ class Robot
     RunningMedian compassYawMedian = RunningMedian(60);
     RunningMedian accelGyroYawMedian = RunningMedian(60);
     RunningMedian motorMowPowerMedian = RunningMedian(30);
-    RunningMedian motorSpeedRpmMedian = RunningMedian(35);
+    //RunningMedian motorSpeedRpmMedian = RunningMedian(35);
     RunningMedian perimeterMedian = RunningMedian(67); //perimeter is read each 15 ms so 1 second
 
 

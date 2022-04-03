@@ -327,6 +327,7 @@ void IMUClass::run() {
 
   if (fifoCount != 0) {
     //Console.println("//////MPU6050 DMP fill the fifo during the reading IMU value are skip //////////////");
+    ypr.yaw = scalePI(gyroAccYaw + CompassGyroOffset) ;
     return;  ///the DMP fill the fifo during the reading , all the value are false but without interrupt it's the only way i have find to make it work ???certainly i am wrong
   }
 
