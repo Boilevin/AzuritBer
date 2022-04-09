@@ -2829,7 +2829,7 @@ void Robot::checkButton() {
       }
       if  ((stateCurr == STATE_OFF) || (stateCurr == STATE_STATION)) {
         if (buttonCounter == 1) {
-          motorMowEnable = true;
+          //motorMowEnable = true;
           ShowMessageln("MANUAL START FROM STATION");
           statusCurr = NORMAL_MOWING;
           findedYaw = 999;
@@ -2861,7 +2861,7 @@ void Robot::checkButton() {
         }
         else if (buttonCounter == 2) {
           // start normal with random mowing
-          motorMowEnable = true;
+          //motorMowEnable = true;
           statusCurr = NORMAL_MOWING;
           mowPatternCurr = MOW_RANDOM;
           buttonCounter = 0;
@@ -6877,6 +6877,7 @@ void Robot::loop()  {
           {
             ShowMessage("SIGNAL OK SmoothMagnitude =  ");
             ShowMessageln(smoothPeriMag);
+            motorMowEnable=true;
             setNextState(STATE_STATION_FORW, rollDir);
           }
           else {
