@@ -6875,7 +6875,7 @@ void Robot::loop()  {
           smoothPeriMag = perimeter.getSmoothMagnitude(0);
           if ((perimeterInside) && (smoothPeriMag > 250)) //check if signal here and inside need a big value to be sure it is not only noise
           {
-            ShowMessage("SIGNAL OK SmoothMagnitude =  ");
+            ShowMessage("SIGNAL OK SmoothMagnitude = ");
             ShowMessageln(smoothPeriMag);
             motorMowEnable=true;
             setNextState(STATE_STATION_FORW, rollDir);
