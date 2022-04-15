@@ -674,23 +674,29 @@ void Robot::loadRfidList() {
 }
 
 void Robot::loadSaveErrorCounters(boolean readflag) {
-  if (readflag) ShowMessageln(F("Load ErrorCounters"));
-  else ShowMessageln(F("Save ErrorCounters"));
+  if (readflag) {
+    ShowMessage(F("Load ErrorData "));
+  }
+  else {
+    ShowMessage(F("Save ErrorData "));
+  }
   int addr = ADDR_ERR_COUNTERS;
   short magic = 0;
   if (!readflag) magic = MAGIC;
   eereadwrite(readflag, addr, magic); // magic
   if ((readflag) && (magic != MAGIC)) {
+    ShowMessageln(F("*****************************************"));
     ShowMessageln(F("EEPROM ERR COUNTERS: NO EEPROM ERROR DATA"));
     ShowMessageln(F("PLEASE CHECK AND SAVE YOUR SETTINGS"));
+    ShowMessageln(F("*****************************************"));
     addErrorCounter(ERR_EEPROM_DATA);
     setNextState(STATE_ERROR, 0);
     return;
   }
   eereadwrite(readflag, addr, errorCounterMax);
-  ShowMessage(F("ErrorCounters address Start="));
-  ShowMessageln(ADDR_ERR_COUNTERS);
-  ShowMessage(F("ErrorCounters address Stop="));
+  ShowMessage(F("Address Start= "));
+  ShowMessage(ADDR_ERR_COUNTERS);
+  ShowMessage(F(" Stop= "));
   ShowMessageln(addr);
 }
 
@@ -704,8 +710,12 @@ void Robot::loadSaveUserSettings(boolean readflag) {
 
   if ((readflag) && (magic != MAGIC)) {
 
-    ShowMessageln(F("EEPROM USERDATA: NO EEPROM USER DATA"));
-    ShowMessageln(F("PLEASE CHECK AND SAVE YOUR SETTINGS"));
+    ShowMessageln(F("************************************"));
+    ShowMessageln(F("       NO EEPROM USER DATA"));
+    ShowMessageln(F("PLEASE CHECK AND SAVE YOUR SETTINGS "));
+    ShowMessageln(F("  FACTORY SETTING ARE USED INSTEAD  "));
+    ShowMessageln(F("************************************"));
+   
     addErrorCounter(ERR_EEPROM_DATA);
     setNextState(STATE_ERROR, 0);
     return;
@@ -847,7 +857,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, useMqtt);
   if (readflag)
   {
-    ShowMessage(F("UserSettings are read from EEprom Address : "));
+    ShowMessage(F("UserSettings OK from Address : "));
     ShowMessage(ADDR_USER_SETTINGS);
     ShowMessage(F(" To "));
     ShowMessageln(addr);
@@ -855,7 +865,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   }
   else
   {
-    ShowMessage(F("UserSettings are saved from EEprom Address : "));
+    ShowMessage(F("UserSettings are saved from Address : "));
     ShowMessage(ADDR_USER_SETTINGS);
     ShowMessage(F(" To "));
     ShowMessageln(addr);
@@ -2271,7 +2281,7 @@ void Robot::motorMowControl() {
     motorMowPowerMedian.add(motorMowPower);
     if (motorMowPowerMedian.getCount() > 10) { //check each 1 secondes
       int prevcoeff =  motorMowPwmCoeff;
-      motorMowPwmCoeff = int((100 * motorMowPowerMedian.getAverage(4)) / (0.5 * motorMowPowerMax));
+      motorMowPwmCoeff = int((100 * motorMowPowerMedian.getAverage(4)) / (0.8 * motorMowPowerMax));
       if (motorMowPwmCoeff < prevcoeff) {
         //filter on speed reduce to keep the mow speed high for longuer duration
         motorMowPwmCoeff = int((0.1) * motorMowPwmCoeff + (0.9) * prevcoeff);// use only 10% of the new value
@@ -2400,11 +2410,11 @@ void Robot::setup()  {
     perimeter.changeArea(1);
     perimeter.begin(pinPerimeterLeft, pinPerimeterRight);
   }
-  //if (perimeterUse) perimeter.begin(pinPerimeterCenter, pinPerimeterRight);
-
+ 
   if (!buttonUse) {
     // robot has no ON/OFF button => start immediately
-    setNextState(STATE_FORWARD_ODO, 0);
+    // remove this option because it's too dangerous to start the mow motor directly on powerup
+    //setNextState(STATE_FORWARD_ODO, 0);
   }
 
   if (DHT22Use) {
@@ -2829,7 +2839,7 @@ void Robot::checkButton() {
       }
       if  ((stateCurr == STATE_OFF) || (stateCurr == STATE_STATION)) {
         if (buttonCounter == 1) {
-          //motorMowEnable = true;
+          motorMowEnable = true;
           ShowMessageln("MANUAL START FROM STATION");
           statusCurr = NORMAL_MOWING;
           findedYaw = 999;
@@ -2861,7 +2871,7 @@ void Robot::checkButton() {
         }
         else if (buttonCounter == 2) {
           // start normal with random mowing
-          //motorMowEnable = true;
+          motorMowEnable = true;
           statusCurr = NORMAL_MOWING;
           mowPatternCurr = MOW_RANDOM;
           buttonCounter = 0;
@@ -2881,6 +2891,7 @@ void Robot::checkButton() {
         else if (buttonCounter == 3) {
           if (stateCurr == STATE_STATION) return;
           //go to station
+          motorMowEnable = false;
           periFindDriveHeading = scalePI(imu.ypr.yaw);
           areaToGo = 1;
           whereToStart = 99999;
