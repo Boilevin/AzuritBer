@@ -715,7 +715,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
     ShowMessageln(F("PLEASE CHECK AND SAVE YOUR SETTINGS "));
     ShowMessageln(F("  FACTORY SETTING ARE USED INSTEAD  "));
     ShowMessageln(F("************************************"));
-   
+
     addErrorCounter(ERR_EEPROM_DATA);
     setNextState(STATE_ERROR, 0);
     return;
@@ -2410,7 +2410,7 @@ void Robot::setup()  {
     perimeter.changeArea(1);
     perimeter.begin(pinPerimeterLeft, pinPerimeterRight);
   }
- 
+
   if (!buttonUse) {
     // robot has no ON/OFF button => start immediately
     // remove this option because it's too dangerous to start the mow motor directly on powerup
@@ -3237,6 +3237,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_START_FROM_STATION: //when start in auto mode the mower first initialize the IMU and perimeter sender
+      motorSpeedMaxPwm = motorInitialSpeedMaxPwm ;
       motorMowEnable = false; //mow motor start later when leave the perimeter wire
       nextTimeToDmpAutoCalibration = millis() + delayBetweenTwoDmpAutocalib * 1000; //set the next time for calib
       readDHT22();
@@ -3254,7 +3255,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_STATION_REV: //when start in auto mode the mower first reverse to leave the station
-     
+
       statusCurr = TRACK_TO_START;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
       UseAccelLeft = 1;
@@ -6888,7 +6889,7 @@ void Robot::loop()  {
           {
             ShowMessage("SIGNAL OK SmoothMagnitude = ");
             ShowMessageln(smoothPeriMag);
-            motorMowEnable=true;
+            motorMowEnable = true;
             setNextState(STATE_STATION_FORW, rollDir);
           }
           else {
