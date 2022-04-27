@@ -22,12 +22,12 @@
 #include <WiFi.h>
 
 //********************* user setting **********************************
-const char* ssid     = "your ssid";   // put here your acces point ssid
-const char* password = "your password";  // put here the password
+const char* ssid     = "WAVLINK-N";   // put here your acces point ssid
+const char* password = "basicsheep713";  // put here the password
 //********************* setting for current sensor **********************************
 float DcDcOutVoltage = 9.0;  //Use to have a correct value on perricurrent (Need to change the value each time you adjust the DC DC )
 
-IPAddress staticIP(10, 0, 0, 150); // put here the static IP
+IPAddress staticIP(10, 0, 0, 155); // put here the static IP
 IPAddress gateway(10, 0, 0, 1); // put here the gateway (IP of your routeur)
 IPAddress subnet(255, 255, 255, 0);
 IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
@@ -427,7 +427,7 @@ static void ScanNetwork()
 void loop()
 {
   if (millis() >= nextTimeControl) {
-    nextTimeControl = millis() + 2000;  //after debug can set this to 10 secondes
+    nextTimeControl = millis() + 1000;  //after debug can set this to 10 secondes
     StartButtonProcess = false;
     oled.setTextXY(4, 0);
     oled.putString("worktime = ");
@@ -647,6 +647,8 @@ void loop()
       sResponse += workTimeMins ;
       sResponse += " PERI CURRENT Milli Amps= ";
       sResponse += PeriCurrent  ;
+      sResponse += " CHARGE CURRENT Milli Amps= ";
+      sResponse += ChargeCurrent  ;
       sResponse += " sigDuration= ";
       sResponse += sigDuration ;
       sResponse += " sigCodeInUse= ";
