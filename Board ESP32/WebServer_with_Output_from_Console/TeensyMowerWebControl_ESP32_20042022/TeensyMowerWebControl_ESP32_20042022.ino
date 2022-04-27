@@ -9,14 +9,14 @@
 
 #define dataSerial Serial2
 #define debugSerial Serial
-#define BAUDRATE 19200  // use 115200 for teensy
+#define BAUDRATE 115200  
 
 IPAddress myIP(10, 0, 0, 168);
 IPAddress network_gateway(10, 0, 0, 1);
 IPAddress network_subnet(255, 255, 255, 0);
 IPAddress network_dns(10, 0, 0, 1);
-char *wifi_network_ssid     = "WAVLINK-N";
-char *wifi_network_password = "basicsheep713";
+char *wifi_network_ssid     = "your ssid";
+char *wifi_network_password = "your pass";
 
 
 #define LED 2
@@ -26,7 +26,7 @@ char *wifi_network_password = "basicsheep713";
 
 #define MAX_CONFIG_LEN  100
 #define MSG_HEADER "[WSB]"
-#define VERSION "vom 15.03.2022"
+#define VERSION "27.04.2022"
 #define CONFIG_MSG_START "config:"
 
 

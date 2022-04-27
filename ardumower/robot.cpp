@@ -270,7 +270,7 @@ Robot::Robot() {
   ConsoleToPfod = false;
   //bber400
   html_line = "";
-  TextMax   = 10000;    //defines the max. number of characters to print in console
+  TextMax   = 5000;    //defines the max. number of characters to print in console
 
 
 
@@ -4446,7 +4446,7 @@ void Robot::ShowMessageln(String message) {
   Console.println(message);
   html_line += " ";
   int html_lineLenght = html_line.length();
-  if ( html_lineLenght >= TextMax) {
+  if (html_lineLenght >= TextMax) {
     int firstLineFeed = html_line.indexOf('/\n');
     html_line.remove(0, firstLineFeed + 1);
     html_line.trim();
