@@ -194,7 +194,7 @@ void esp32_Mqtt_sta() {
 void setup() {
   delay(500);
   Serial.begin(115200);
-  Serial2.begin(19200);
+  Serial2.begin(115200);
   if (debug) Serial.println("********* ESP32 BT and WiFi serial bridge ******************");
 
   //********************************WIFI init code*************************************
@@ -212,17 +212,10 @@ void setup() {
       if (debug) Serial.print(".");
       reconnect_count = reconnect_count + 1;
       if (reconnect_count > 10) {
-        if (debug) {
-          Serial.println(" ");
-          Serial.println("*************************************************");
-          Serial.println("    FAIL to Connect to your Wireless network");
-          Serial.println("    Please check your ssid and pass ");
-          Serial.println("ESP32 Mode ACCES POINT is automaticaly activate ");
-          Serial.println("*************************************************");
-          Serial.println(" ");
-        }
-        MODE_AP = true;
-        useMqtt = false;
+        Serial2.end();
+        delay(500);
+        ESP.restart();
+       
         break;
       }
     }
