@@ -71,8 +71,8 @@ PerimeterClass::PerimeterClass() {
 
 
 void PerimeterClass::changeArea(byte areaInMowing) {
-  Console.print("Change to Area : ");
-  Console.println(areaInMowing);
+  robot.ShowMessage("Change to Area : ");
+  robot.ShowMessageln(areaInMowing);
   for (int uu = 0 ; uu <= 128; uu++) { //clear the area
     sigcode_norm[uu] = 0;
     sigcode_diff[uu] = 0;
@@ -106,13 +106,13 @@ void PerimeterClass::changeArea(byte areaInMowing) {
 
   }
 
-  Console.print("New sigcode in use  : ");
+  robot.ShowMessage("New sigcode in use  : ");
 
   for (int uu = 0 ; uu <= (sigcode_size - 1); uu++) {
-    Console.print(sigcode_norm[uu]);
-    Console.print(",");
+    robot.ShowMessage(sigcode_norm[uu]);
+    robot.ShowMessage(",");
   }
-  Console.println();
+  robot.ShowMessageln("");
 
 }
 
@@ -143,12 +143,12 @@ void PerimeterClass::begin(byte idx0Pin, byte idx1Pin) {
   // ADCMan.setCapture(idx0Pin, adcSampleCount*2, true);
   // ADCMan.setCapture(idx1Pin, adcSampleCount*2, true);
 
-  Console.print(F("matchSignal size="));
-  Console.println(sigcode_size);
-  Console.print(F("subSample="));
-  Console.println((int)subSample);
-  Console.print(F("capture size="));
-  Console.println(ADCMan.getSampleCount(idx0Pin));
+  robot.ShowMessage(F("matchSignal size="));
+  robot.ShowMessageln(sigcode_size);
+  robot.ShowMessage(F("subSample="));
+  robot.ShowMessageln((int)subSample);
+  robot.ShowMessage(F("capture size="));
+  robot.ShowMessageln(ADCMan.getSampleCount(idx0Pin));
 }
 
 void PerimeterClass::speedTest() {
@@ -158,8 +158,8 @@ void PerimeterClass::speedTest() {
     matchedFilter(0);
     loops++;
   }
-  Console.print("Read in 1 sec ");
-  Console.println(loops);
+  robot.ShowMessage("Read in 1 sec ");
+  robot.ShowMessageln(loops);
 
 }
 
@@ -197,10 +197,10 @@ void PerimeterClass::printADCMinMax(int8_t *samples) {
     vmax = max(vmax, samples[i]);
     vmin = min(vmin, samples[i]);
   }
-  Console.print(F("perimter min,max="));
-  Console.print((int)vmin);
-  Console.print(F(","));
-  Console.println((int)vmax);
+  robot.ShowMessage(F("perimter min,max="));
+  robot.ShowMessage((int)vmin);
+  robot.ShowMessage(F(","));
+  robot.ShowMessageln((int)vmax);
 }
 
 // perimeter V2 uses a digital matched filter
@@ -217,14 +217,14 @@ void PerimeterClass::matchedFilter(byte idx) {
     for (int i = 0; i < sampleCount; i++) {
       int8_t v = samples[i];
       
-      //Console.print(v);
-      //Console.print(",");
+      //robot.ShowMessage(v);
+      //robot.ShowMessage(",");
       
       signalAvg[idx] += v;
       signalMin[idx] = min(signalMin[idx], v);
       signalMax[idx] = max(signalMax[idx], v);
     }
-    //Console.println(" ");
+    //robot.ShowMessageln(" ");
     signalAvg[idx] = ((double)signalAvg[idx]) / ((double)(sampleCount));
   }
   // magnitude for tracking (fast but inaccurate)
@@ -317,15 +317,15 @@ boolean PerimeterClass::signalTimedOut(byte idx) {
 
 int16_t PerimeterClass::corrFilter(int8_t *H, int8_t subsample, int16_t M, int8_t *ip, int16_t nPts, float & quality) {
   /*
-    Console.print("H:");
-    Console.print(*H);
-    Console.print(" M:");
-    Console.print(M);
-    Console.print(" *ip:");
-    Console.print(*ip);
-    Console.print(" nPts:");
-    Console.print(nPts);
-    Console.println();
+    robot.ShowMessage("H:");
+    robot.ShowMessage(*H);
+    robot.ShowMessage(" M:");
+    robot.ShowMessage(M);
+    robot.ShowMessage(" *ip:");
+    robot.ShowMessage(*ip);
+    robot.ShowMessage(" nPts:");
+    robot.ShowMessage(nPts);
+    robot.ShowMessageln();
   */
   int16_t sumMax = 0; // max correlation sum
   int16_t sumMin = 0; // min correlation sum

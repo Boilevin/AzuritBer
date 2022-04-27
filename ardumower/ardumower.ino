@@ -20,7 +20,8 @@
  *      #define COMPASS_IS QMC5883L
  *      -------------------------- BT or ESP8266 --------------------------------------------------
  *      Into mower.cpp line 255 select correct configuration
- *       bluetoothUse      = 1;      // use Bluetooth module? It's Impossible to use Bluetooth and esp8266 at same time
+ *       bluetoothUse      = 1;      // use Bluetooth module or ESP32 is connected on BT port. 
+ *       It's not possible to use Bluetooth and esp8266 at same time
  *       esp8266Use        = 0;       // use ESP8266 Wifi module?
  *      
  *      ------------------------- RTC CHIP -------------------------------------------------------
@@ -55,6 +56,7 @@
   Copyright (c) 2014 by Maxime Carpentieri    
   Copyright (c) 2014-2015 by Stefan Manteuffel
   Copyright (c) 2015 by Uwe Zimprich
+  Copyright (c) 2021 by Bernard Boilevin
   
   Private-use only! (you need to ask for a commercial-use)
  

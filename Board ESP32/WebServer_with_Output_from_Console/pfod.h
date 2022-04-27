@@ -37,10 +37,12 @@
 #ifndef PFOD_H
 #define PFOD_H
 
-#include <Arduino.h>
-#include "drivers.h"
+#define FuerstRuprecht true
+
+//#include <Arduino.h>
 #include "pid.h"
-#include "perimeter.h"
+#include "drivers.h"
+//#include "perimeter.h"
 
 // pfodApp state
 enum { PFOD_OFF, PFOD_MENU, PFOD_CONSOLE,
@@ -74,7 +76,7 @@ class RemoteControl
     float value2;
     float value3;
     boolean dataFromPi;
-    int8_t perimeterCapture[RAW_SIGNAL_SAMPLE_SIZE];
+   // int8_t perimeterCapture[RAW_SIGNAL_SAMPLE_SIZE];
     int perimeterCaptureIdx;
     float stringToFloat(String &s);
     byte rfid_pos_into_list;
@@ -96,7 +98,7 @@ class RemoteControl
     void processSlider(String result, int &value, double scale);
     void processSlider(String result, byte &value, double scale);
     void processSlider(String result, short &value, double scale);
-
+    void processSlider(String result, unsigned long &value, double scale);
 
     // send timer menu details
     void sendTimer(ttimer_t timer);
@@ -165,15 +167,18 @@ class RemoteControl
     void processDateTimeMenu(String pfodCmd);
     void processFactorySettingsMenu(String pfodCmd);
     void processInfoMenu(String pfodCmd);
+    
+    #if defined(FuerstRuprecht)
+    void sendStepperMenu(boolean update);
+    void processStepperMenu(String pfodCmd);
+    void sendConsoleMenu(boolean update);
+    #endif;
 
     // timer
     void sendTimerDetailMenu(int timerIdx, boolean update);
     void processTimerDetailMenu(String pfodCmd);
     void sendTimerMenu(boolean update);
     void processTimerMenu(String pfodCmd);
-
-    void sendConsoleMenu(boolean update);
-
 
 };
 

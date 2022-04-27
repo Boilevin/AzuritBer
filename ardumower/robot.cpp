@@ -268,6 +268,12 @@ Robot::Robot() {
   gpsReady = false;
   MyrpiStatusSync = false;
   ConsoleToPfod = false;
+  //bber400
+  html_line = "";
+  TextMax   = 10000;    //defines the max. number of characters to print in console
+
+
+
 }
 
 
@@ -2355,9 +2361,9 @@ void Robot::setup()  {
 
   //  mower.h start before the robot setup
 
-  Console.print("++++++++++++++* Start Robot Setup at ");
-  Console.print(millis());
-  Console.println(" ++++++++++++");
+  ShowMessage("++++++++++++++* Start Robot Setup at ");
+  ShowMessage(millis());
+  ShowMessageln(" ++++++++++++");
 
 
   ADCMan.begin();
@@ -2396,7 +2402,7 @@ void Robot::setup()  {
   if (imuUse) imu.begin();
 
   if (perimeterUse) {
-    Console.println(" ------- Initialize Perimeter Setting ------- ");
+    ShowMessageln(" ------- Initialize Perimeter Setting ------- ");
     perimeter.changeArea(1);
     perimeter.begin(pinPerimeterLeft, pinPerimeterRight);
   }
@@ -2415,31 +2421,31 @@ void Robot::setup()  {
   stateStartTime = millis();
   setBeeper(100, 50, 50, 200, 200 );//beep for 3 sec
   gps.init();
-  Console.println(F("START"));
-  Console.print(F("Ardumower "));
-  Console.println(VER);
+  ShowMessageln(F("START"));
+  ShowMessage(F("Ardumower "));
+  ShowMessageln(VER);
 #ifdef USE_DEVELOPER_TEST
-  Console.println("Warning: USE_DEVELOPER_TEST activated");
+  ShowMessageln("Warning: USE_DEVELOPER_TEST activated");
 #endif
-  Console.print(F("Config: "));
-  Console.println(name);
-  Console.println(F("press..."));
-  Console.println(F("  d for menu"));
-  Console.println(F("  v to change console output (sensor counters, values, perimeter etc.)"));
-  Console.println(consoleModeNames[consoleMode]);
-  Console.println ();
-  // Console.print ("        Free memory is :   ");
-  // Console.println (freeMemory ());
+  ShowMessage(F("Config: "));
+  ShowMessageln(name);
+  ShowMessageln(F("press..."));
+  ShowMessageln(F("  d for menu"));
+  ShowMessageln(F("  v to change console output (sensor counters, values, perimeter etc.)"));
+  ShowMessageln(consoleModeNames[consoleMode]);
+  ShowMessageln ("");
+  // ShowMessage ("        Free memory is :   ");
+  // ShowMessageln (freeMemory ());
 
   // watchdog enable at the end of the setup
   if (Enable_DueWatchdog) {
-    Console.println ("Watchdog is enable and set to 3 secondes");
+    ShowMessageln ("Watchdog is enable and set to 3 secondes");
     watchdogEnable(3000);// Watchdog trigger after  3 sec if not reseted.
 
   }
   else
   {
-    Console.println ("Watchdog is disable");
+    ShowMessageln ("Watchdog is disable");
   }
 
   nextTimeInfo = millis();
@@ -2553,20 +2559,20 @@ void Robot::printInfo(Stream & s) {
 }
 
 void Robot::printMenu() {
-  Console.println(" ");
-  Console.println(F(" MAIN MENU:"));
-  Console.println(F("1=test motors"));
-  Console.println(F("To test odometry --> use Arduremote"));
-  Console.println(F("3=communications menu"));
-  Console.println(F("5=Deactivate and Delete GYRO calibration : To calibrate GYRO --> use Arduremote Do not move IMU during the Calib"));
-  Console.println(F("6=Deactivate and Delete Compass calibration : To calibrate Compass --> use Arduremote start/stop"));
-  Console.println(F("9=save user settings"));
-  Console.println(F("l=load factory settings: Do not save setting before restart the mower"));
-  Console.println(F("r=delete robot stats"));
-  Console.println(F("x=read settings"));
-  Console.println(F("e=delete all errors"));
-  Console.println(F("0=exit"));
-  Console.println(" ");
+  ShowMessageln(" ");
+  ShowMessageln(F(" MAIN MENU:"));
+  ShowMessageln(F("1=test motors"));
+  ShowMessageln(F("To test odometry --> use Arduremote"));
+  ShowMessageln(F("3=communications menu"));
+  ShowMessageln(F("5=Deactivate and Delete GYRO calibration : To calibrate GYRO --> use Arduremote Do not move IMU during the Calib"));
+  ShowMessageln(F("6=Deactivate and Delete Compass calibration : To calibrate Compass --> use Arduremote start/stop"));
+  ShowMessageln(F("9=save user settings"));
+  ShowMessageln(F("l=load factory settings: Do not save setting before restart the mower"));
+  ShowMessageln(F("r=delete robot stats"));
+  ShowMessageln(F("x=read settings"));
+  ShowMessageln(F("e=delete all errors"));
+  ShowMessageln(F("0=exit"));
+  ShowMessageln(" ");
 }
 
 void Robot::delayWithWatchdog(int ms) {
@@ -3243,7 +3249,7 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_STATION_REV: //when start in auto mode the mower first reverse to leave the station
-     
+
       statusCurr = TRACK_TO_START;
       if (RaspberryPIUse) MyRpi.SendStatusToPi();
       UseAccelLeft = 1;
@@ -4424,6 +4430,9 @@ void Robot::setNextState(byte stateNew, byte dir) {
 
 void Robot::ShowMessage(String message) {
   Console.print (message);
+  html_line += " ";
+  html_line += message;
+  html_line += " ";
   if (ConsoleToPfod) {
     if (bluetoothUse) {
       Bluetooth.print (message);
@@ -4435,6 +4444,20 @@ void Robot::ShowMessage(String message) {
 }
 void Robot::ShowMessageln(String message) {
   Console.println(message);
+  html_line += " ";
+  int html_lineLenght = html_line.length();
+  if ( html_lineLenght >= TextMax) {
+    int firstLineFeed = html_line.indexOf('/\n');
+    html_line.remove(0, firstLineFeed + 1);
+    html_line.trim();
+    int html_lineLenght = html_line.length();
+  }
+  html_line += message;
+  String help = " [";
+  help.concat(time2str(datetime.time));
+  html_line += help;
+  html_line += "]";
+  html_line += "\n";
   if (ConsoleToPfod) {
     if (bluetoothUse) {
       Bluetooth.println (message);
@@ -4447,6 +4470,9 @@ void Robot::ShowMessageln(String message) {
 
 void Robot::ShowMessage(float value) {
   Console.print (value);
+  String help = "";
+  help.concat(value);
+  html_line += help;
   if (ConsoleToPfod) {
 
     if (bluetoothUse) {
@@ -4460,6 +4486,19 @@ void Robot::ShowMessage(float value) {
 }
 void Robot::ShowMessageln(float value) {
   Console.println(value);
+  int html_lineLenght = html_line.length();
+  if ( html_lineLenght >= TextMax) {
+    int firstLineFeed = html_line.indexOf('/\n');
+    html_line.remove(0, firstLineFeed + 1);
+    int html_lineLenght = html_line.length();
+  }
+  String help = "";
+  help.concat(value);
+  html_line += help;
+  help = " [";
+  help.concat(time2str(datetime.time));
+  html_line += help;
+  html_line += "]\n";
   if (ConsoleToPfod) {
     if (bluetoothUse) {
       Bluetooth.println (value);

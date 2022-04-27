@@ -321,11 +321,13 @@ void Mower::setup() {
   // Flash.test();
 
   /* while (!checkAT24C32()){
-     Console.println("PCB not powered ON or RTC module missing");
+     ShowMessageln("PCB not powered ON or RTC module missing");
      delay(1000);
     }
   */
-  Console.println("SETUP");
+  //ShowMessageln("SETUP");
+  ShowMessageln ("SETUP");
+       
 
 
   // LED, buzzer, battery
@@ -438,21 +440,21 @@ void Mower::setup() {
   //imu.init();
 
   //gps.init();
-  // Console.print(millis());
-  // Console.println(" --> ******************************************* Start of Robot Setup from mower.cpp *********************************");
+  // ShowMessage(millis());
+  // ShowMessageln(" --> ******************************************* Start of Robot Setup from mower.cpp *********************************");
   Robot::setup();
-  // Console.print(millis());
-  // Console.println(" --> ******************************************* Back to mower.cpp *********************************");
+  // ShowMessage(millis());
+  // ShowMessageln(" --> ******************************************* Back to mower.cpp *********************************");
 
   if (esp8266Use) {
-    Console.println(F("ESP8266 in used : Use Arduremote over WIFI"));
+    ShowMessageln(F("ESP8266 in used : Use Arduremote over WIFI"));
     ESP8266port.begin(ESP8266_BAUDRATE);
     ESP8266port.println(esp8266ConfigString);
     ESP8266port.flush();
     ESP8266port.end();
     rc.initSerial(&ESP8266port, ESP8266_BAUDRATE);
   } else if (bluetoothUse) {
-    Console.println(F("BT in used : Use Arduremote over Bluetooth"));
+    ShowMessageln(F("BT in used : Use Arduremote over Bluetooth"));
     rc.initSerial(&Bluetooth, BLUETOOTH_BAUDRATE);
   }
 
@@ -471,8 +473,8 @@ void Mower::setup() {
 
   //attachInterrupt(pinMotorMowRpm, rpm_interrupt, CHANGE);
   attachInterrupt(pinMotorMowRpm, PCINT2_vect, CHANGE);
-  // Console.print(millis());
-  //Console.println(" --> ******************************************* End of attach interrupt *********************************");
+  // ShowMessage(millis());
+  //ShowMessageln(" --> ******************************************* End of attach interrupt *********************************");
 
 
 }
@@ -483,21 +485,21 @@ void checkMotorFault() {
   if ((robot.stateCurr == STATE_OFF) || (robot.stateCurr == STATE_ERROR)  ) return;  //do not generate error if the state if OFF to avoid Buzzer when PI power the DUE via the USB native port
   if (digitalRead(pinMotorLeftFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_LEFT);
-    Console.println(F("Error: motor left fault"));
+    robot.ShowMessageln("Error: motor left fault");
     robot.setNextState(STATE_ERROR, 0);
     return;
 
   }
   if  (digitalRead(pinMotorRightFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_RIGHT);
-    Console.println(F("Error: motor right fault"));
+    robot.ShowMessageln("Error: motor right fault");
     robot.setNextState(STATE_ERROR, 0);
     return;
 
   }
   if (digitalRead(pinMotorMowFault) == LOW) {
     robot.addErrorCounter(ERR_MOTOR_MOW);
-    Console.println(F("Error: motor mow fault"));
+    robot.ShowMessageln("Error: motor mow fault");
     robot.setNextState(STATE_ERROR, 0);
     return;
 
@@ -554,7 +556,7 @@ int Mower::readSensor(char type) {
     // rtc--------------------------------------------------------------------------------------------------------
     case SEN_RTC:
       if (!readDS1307(datetime)) {
-        Console.println("RTC data error!");
+        ShowMessageln("RTC data error!");
         addErrorCounter(ERR_RTC_DATA);
         setNextState(STATE_ERROR, 0);
       }
@@ -590,7 +592,7 @@ void Mower::setActuator(char type, int value) {
     case ACT_USER_SW3: digitalWrite(pinUserSwitch3, value); break;
     case ACT_RTC:
       if (!setDS1307(datetime)) {
-        Console.println("RTC comm error!");
+        ShowMessageln("RTC comm error!");
         addErrorCounter(ERR_RTC_COMM);
         setNextState(STATE_ERROR, 0);
       }
