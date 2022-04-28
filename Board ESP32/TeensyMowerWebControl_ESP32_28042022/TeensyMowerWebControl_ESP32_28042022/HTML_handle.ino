@@ -11,13 +11,13 @@ void handleWerte() {
         //Parameter vorhanden
 
         if (!PFODclientConnected) {
-          dataSerial.println("{" + server.arg(0) + "}"); //Kommando an Ardumower senden
-          String buf = dataSerial.readStringUntil('}');
+          Serial_ESP_to_PCB.println("{" + server.arg(0) + "}"); //Kommando an Ardumower senden
+          String buf = Serial_ESP_to_PCB.readStringUntil('}');
           //buf = msgTest3;
           if (buf != "") {
             //Daten empfangen
             parse_PFOD(buf);
-            erg = "con=deTHoMAso connection OK...&";
+            erg = "con=TeensyMower connection OK...&";
             for (int i = 0; i < nElemente; i++) {
               if (elemente[i].type == SLIDER) {
                 if (server.arg(1) == "false" || DEBUG == 1) {
@@ -34,7 +34,7 @@ void handleWerte() {
               }
             }//for elemente
           } else {
-            erg = "con=deTHoMAso not connected...";
+            erg = "con=TeensyMower not connected   ";
           }
         }
 
@@ -47,7 +47,7 @@ void handleWerte() {
       server.send(500, "text/plain", "zuwenig Parameter");
     }
   } else {
-    erg = "con=deTHoMAso connected to PFOD-App...";
+    erg = "con=TeensyMower connected to PFOD-App...";
     debugln(erg);
     server.send( 200, "text/plain", erg );
   }
@@ -60,11 +60,11 @@ void handleSet() {
   for (int i = 0; i < anzahl; i++) {
     if (server.arg(i) == "true") {
       //Kommando kommt von einem button
-      dataSerial.println("{" + server.argName(i) + "}"); //Kommando an Ardumower senden
+      Serial_ESP_to_PCB.println("{" + server.argName(i) + "}"); //Kommando an Ardumower senden
 
     } else {
       //kommt von einem slider
-      dataSerial.println("{" + server.argName(i) + "`" + server.arg(i) + "}"); //Kommando an Ardumower senden
+      Serial_ESP_to_PCB.println("{" + server.argName(i) + "`" + server.arg(i) + "}"); //Kommando an Ardumower senden
     }
 
     if (anzahl == 0) {

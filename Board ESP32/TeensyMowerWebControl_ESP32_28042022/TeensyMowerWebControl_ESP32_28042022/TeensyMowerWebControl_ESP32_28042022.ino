@@ -7,31 +7,37 @@
 #include <esp_wifi.h>
 
 
-#define dataSerial Serial2
-#define debugSerial Serial
-#define BAUDRATE 115200  
-
-IPAddress myIP(10, 0, 0, 168);
-IPAddress network_gateway(10, 0, 0, 1);
-IPAddress network_subnet(255, 255, 255, 0);
-IPAddress network_dns(10, 0, 0, 1);
-char *wifi_network_ssid     = "your ssid";
-char *wifi_network_password = "your pass";
-
-
 #define LED 2
 
-
+#define BAUDRATE 115200
 #define SERIAL_BUFFER_SIZE 256
 
 #define MAX_CONFIG_LEN  100
 #define MSG_HEADER "[WSB]"
-#define VERSION "27.04.2022"
+#define VERSION " Version vom 26.04.2022 experimentell wegen LiveData-Funktion!!!"
 #define CONFIG_MSG_START "config:"
 
+#define SET_IP_SETTING  1  //true=IP-Settings from azurit-programm, false=IP-Settings by user/esp
 
-#define SET_IP_SETTING  1  //true=IP-Settings aus programm, false=IP-Settings von Mower
 
+// if you use Serial for esp to pcb communication and at the same time for serial connection you must keep in mind:
+// -Writing on USB/serial from pc to esp will not be possible, you have to cut the connection to the pcb
+// -Oberserving the esp work with arduino-Monitor will only read data, so communikation between pcb and esp still works
+
+//select your connections
+//#define Serial_ESP_to_PCB  Serial    // Serial Connection between ESP and PCB, ESP-Pin : RX0/TX0
+//#define Serial_ESP_to_PCB  Serial1 // Serial Connection between ESP and PCB, ESP-Pin : RX1/TX1
+#define Serial_ESP_to_PCB  Serial2 // Serial Connection between ESP and PCB, ESP-Pin : RX2/TX2
+#define Serial_ESP_to_USB  Serial    // Serial Connection from ESP via USB to PC (arduino Monitor/Plotter)
+
+
+
+IPAddress myIP(10,0,0,168);
+IPAddress network_gateway(10,0,0,1);
+IPAddress network_subnet(255, 255, 255, 0);
+IPAddress network_dns(10,0,0,1);
+char *wifi_network_ssid     = "ssid";
+char *wifi_network_password = "pass";
 
 bool wifiConnected = false;
 int connectCnt = 0;
@@ -107,13 +113,10 @@ long counter = 0UL;
 
 void setup() {
   // Configure Serial Port
-  dataSerial.begin(BAUDRATE);
-  dataSerial.setTimeout(500);
-
-  debugSerial.begin(115200);
-  debugSerial.setTimeout(500);
-
-
+  Serial_ESP_to_USB.begin(BAUDRATE);
+  Serial_ESP_to_USB.setTimeout(500);
+  Serial_ESP_to_PCB.begin(BAUDRATE);
+  Serial_ESP_to_PCB.setTimeout(500);
   // Configure LED
   pinMode(LED, OUTPUT);
   setLedSequence(ledSeq_startup);
@@ -121,8 +124,10 @@ void setup() {
 
   // Welcome message
   delay(500);
-  debugSerial.println("\n\n");
-  debugSerial.println(MSG_HEADER " ESP32 Serial WIFI Bridge with Webinterface for AzuritBer ! (not azurit) " VERSION);
+  Serial_ESP_to_USB.println("\n\n");
+  Serial_ESP_to_USB.println(MSG_HEADER" ESP32 Serial_ESP_to_USB WIFI Bridge with Webinterface for AzuritBer on Teensy4.1 ! (not Azurit on Due/Mega)");
+  Serial_ESP_to_USB.println(MSG_HEADER" Developed by great software engineers, only slightly modified by Prince Ruprecht");
+  Serial_ESP_to_USB.println(MSG_HEADER""VERSION);
 
   connectWIFI();
 
@@ -172,11 +177,11 @@ void loop() {
 
 void handleSerialInput() {
   if (PFODclientConnected) {
-    if (dataSerial.available()) {
-      size_t len = min(dataSerial.available(), 255);
+    if (Serial_ESP_to_PCB.available()) {
+      size_t len = min(Serial_ESP_to_PCB.available(), 255);
       char sbuf[len];
       String erg = "";
-      dataSerial.readBytes(sbuf, len);
+      Serial_ESP_to_PCB.readBytes(sbuf, len);
       PFODclient.write(sbuf, len);
 
     }
@@ -185,21 +190,21 @@ void handleSerialInput() {
 
 void debug(String msg) {
   if (DEBUG) {
-    dataSerial.print(MSG_HEADER);
-    dataSerial.print(" ");
-    dataSerial.print(msg);
+    Serial_ESP_to_USB.print(MSG_HEADER);
+    Serial_ESP_to_USB.print(" ");
+    Serial_ESP_to_USB.print(msg);
   }
 }
 
 void debugln(String msg) {
   if (DEBUG) {
-    dataSerial.print(MSG_HEADER);
-    dataSerial.print(" ");
-    dataSerial.println(msg);
+    Serial_ESP_to_USB.print(MSG_HEADER);
+    Serial_ESP_to_USB.print(" ");
+    Serial_ESP_to_USB.println(msg);
   }
 }
 
 void flushInput(void) {
-  while (dataSerial.available())
-    dataSerial.read();
+  while (Serial_ESP_to_PCB.available())
+    Serial_ESP_to_PCB.read();
 }

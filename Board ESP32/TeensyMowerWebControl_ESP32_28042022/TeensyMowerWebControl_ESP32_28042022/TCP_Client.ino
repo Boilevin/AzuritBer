@@ -10,7 +10,7 @@ void handlePFODclient() {
       // Client is disconnected
       disconnectPFODClient();
       setLedSequence(ledSeq_connected);
-      dataSerial.println(MSG_HEADER " Client Disconnected");
+      Serial_ESP_to_USB.println(MSG_HEADER " Client Disconnected");
     }
   }
 
@@ -22,7 +22,7 @@ void handlePFODclient() {
       PFODclientConnected = true;
       timeout = millis();
       setLedSequence(ledSeq_clientConnected);
-      dataSerial.println(MSG_HEADER " PFODClient Connected");
+      Serial_ESP_to_USB.println(MSG_HEADER " PFODClient Connected");
     } else {
       // A client is already connected, refuse
       WiFiClient serverClient = PFODserver.available();
@@ -36,15 +36,15 @@ void handlePFODclient() {
       timeout = millis();
 
       String request = PFODclient.readStringUntil('}');
-        dataSerial.println(request);
-        String response = dataSerial.readStringUntil('}');
+        Serial_ESP_to_USB.println(request);
+        String response = Serial_ESP_to_PCB.readStringUntil('}');
         PFODclient.println(response);
 
       while (PFODclient.available()) {
         size_t len = min(PFODclient.available(), 255);
         uint8_t sbuf[len];
         PFODclient.read(sbuf, len);
-        dataSerial.write(sbuf, len);
+        Serial_ESP_to_PCB.write(sbuf, len);
       }
     }
   }

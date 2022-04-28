@@ -14,8 +14,8 @@ void waitForParams(void) {
     uint8_t configMsgLen = 0;
     boolean msgComplete = false;
     while (! msgComplete) {
-      if (dataSerial.available()) {
-        char ch = dataSerial.read();
+      if (Serial_ESP_to_PCB.available()) {
+        char ch = Serial_ESP_to_PCB.read();
         if (ch == '\n' || ch == '\r') {
           msgComplete = true;
           configMsg[configMsgLen] = 0;  // Zero terminate
@@ -23,7 +23,7 @@ void waitForParams(void) {
           configMsg[configMsgLen] = ch;
           configMsgLen++;
           if (configMsgLen > MAX_CONFIG_LEN) {
-            dataSerial.println(MSG_HEADER " ERR: Config too long");
+            Serial_ESP_to_USB.println(MSG_HEADER " ERR: Config too long");
             configMsgLen = 0; // discard all we have got so far
           }
           if (memcmp(configMsg, CONFIG_MSG_START, min(uint8_t(strlen(CONFIG_MSG_START)), configMsgLen)) != 0 ) {
@@ -52,13 +52,13 @@ void waitForParams(void) {
       if (i == NBPARAMS - 1) {
         // Correct number of parameters, done
         done = true;
-        dataSerial.println(MSG_HEADER " OK");
+        Serial_ESP_to_USB.println(MSG_HEADER " OK");
       } else {
-        dataSerial.println(MSG_HEADER " ERR: Not enough parameters");
+        Serial_ESP_to_USB.println(MSG_HEADER " ERR: Not enough parameters");
         configMsgLen = 0;
       }
     } else {
-      dataSerial.println(MSG_HEADER " ERR: Expected \"" CONFIG_MSG_START "...\"");
+      Serial_ESP_to_USB.println(MSG_HEADER " ERR: Expected \"" CONFIG_MSG_START "...\"");
     }
 
     delay(100);
@@ -71,13 +71,13 @@ void waitForParams(void) {
 
 void printParams(void) {
   int i;
-  dataSerial.println(MSG_HEADER " Configuration parameters:");
+  Serial_ESP_to_USB.println(MSG_HEADER " Configuration parameters:");
   for (i = 0; i < NBPARAMS; i++) {
-    dataSerial.print(MSG_HEADER "    ");
-    dataSerial.print(params[i].name);
-    dataSerial.print(" = \"");
-    dataSerial.print(params[i].valueStr);
-    dataSerial.println("\"");
+    Serial_ESP_to_USB.print(MSG_HEADER "    ");
+    Serial_ESP_to_USB.print(params[i].name);
+    Serial_ESP_to_USB.print(" = \"");
+    Serial_ESP_to_USB.print(params[i].valueStr);
+    Serial_ESP_to_USB.println("\"");
   }
 }
 

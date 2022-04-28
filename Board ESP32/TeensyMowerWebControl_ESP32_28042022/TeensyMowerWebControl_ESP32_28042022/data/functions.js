@@ -22,21 +22,48 @@ function writeProgress(){
   var ele = document.getElementById("aktivity");
   switch (aktivity) {
     case 0:
-      ele.innerText="<||||"
+      ele.innerText=" < | | | | | | |";
       break;
     case 1:
-      ele.innerText=".<|||"
+      ele.innerText=" . < | | | | | |";
       break;
     case 2:
-      ele.innerText="..<||"
+      ele.innerText=" . . < | | | | |";
       break;
     case 3:
-      ele.innerText='...<|'
+      ele.innerText=" , . . < | | | |";
       break;
+	case 4:
+      ele.innerText=" , , . . < | | |";
+      break;
+    case 5:
+      ele.innerText=" | , , . . < | |";
+      break;
+    case 6:
+      ele.innerText=" | | , , . . < |";
+      break;
+	case 7:
+      ele.innerText=" | | | , , . . <";
+      break;
+	case 8:
+      ele.innerText=" | | | | , , . .";
+      break;
+	case 9:
+      ele.innerText=" | | | | | , , .";
+      break; 
+	case 10:
+      ele.innerText=" | | | | | | , ,";
+      break;      
+	case 11:
+      ele.innerText=" | | | | | | | ,";
+      break;
+    case 12:
+      ele.innerText=" | | | | | | | |";
+      break;    
     default:
   }
 
-  if (aktivity>=3)aktivity = 0;
+  if (aktivity>=12)aktivity = 0;
   else aktivity++;
 }
 
