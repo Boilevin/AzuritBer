@@ -209,12 +209,6 @@ void RemoteControl::processSlider(String result, short &value, double scale) {
   }
 }
 
-void RemoteControl::sendConsoleMenu(boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->print(F("{.Console`500"));
-  serialPort->println(F("|TextConsole~  "));
-  serialPort->print(robot->html_line);
-  serialPort->println("}");
-}
 
 
 
@@ -226,7 +220,7 @@ void RemoteControl::sendMainMenu(boolean update) {
     serialPort->print(robot->name);
     serialPort->print(")");
   }
-  serialPort->print(F("|r~Commands|n~Manual|s~Settings|in~Info|c~Test IMU|yt~Test ODO|m1~Console|yp~Plot"));
+  serialPort->print(F("|r~Commands|n~Manual|s~Settings|in~Info|c~Test IMU|yt~Test ODO|C~Console|yp~Plot"));
   //bb1
   serialPort->println(F("|y4~Error counters}"));
 
@@ -243,12 +237,12 @@ void RemoteControl::sendSettingsMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Settings"));
   if ((robot->stateCurr == STATE_OFF) || (robot->stateCurr == STATE_STATION))  //deactivate the save setting if the mower is not OFF to avoid zombie
   {
-    serialPort->print(F("|sz~Save settings|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter 1|s18~Perimeter 2|s6~Lawn sensor|s7~IMU|s8~Raspberry"));
+    serialPort->print(F("|sz~Save settings|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~Raspberry"));
     serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s14~GPS|s15~DROP|s16~ByLane Setting|s17~RFID|i~Timer|s12~Date/time|sx~Factory settings}"));
   }
   else
   {
-    serialPort->print(F("|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter 1|s18~Perimeter 2|s6~Lawn sensor|s7~IMU|s8~Raspberry"));
+    serialPort->print(F("|s1~Motor|s2~Mow|s3~Bumper/Button|s4~Sonar|s5~Perimeter|s6~Lawn sensor|s7~IMU|s8~Raspberry"));
     serialPort->println(F("|s9~Battery|s10~Station|s11~Odometry|s13~Rain Temp Humid|s14~GPS|s15~DROP|s16~ByLane Setting|s17~RFID|i~Timer|s12~Date/time|sx~Factory settings}"));
   }
 }
@@ -258,8 +252,7 @@ void RemoteControl::processSettingsMenu(String pfodCmd) {
   else if (pfodCmd == "s2") sendMowMenu(false);
   else if (pfodCmd == "s3") sendBumperMenu(false);
   else if (pfodCmd == "s4") sendSonarMenu(false);
-  else if (pfodCmd == "s5") sendPerimeter1Menu(false);
-  else if (pfodCmd == "s18") sendPerimeter2Menu(false);
+  else if (pfodCmd == "s5") sendPerimeterMenu(false);
   else if (pfodCmd == "s6") sendLawnSensorMenu(false);
   else if (pfodCmd == "s7") sendImuMenu(false);
   else if (pfodCmd == "s8") sendRemoteMenu(false);
@@ -591,88 +584,75 @@ void RemoteControl::processSonarMenu(String pfodCmd) {
   sendSonarMenu(true);
 }
 
-void RemoteControl::sendPerimeter1Menu(boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->print(F("{.Perimeter1`1000"));
-  serialPort->print("|ea00~Use ");
+void RemoteControl::sendPerimeterMenu(boolean update) {
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.Perimeter`1000"));
+  serialPort->print(F("|e00~Use "));
   sendYesNo(robot->perimeterUse);
-
-  serialPort->println("|ea01~Mag L/R");
+  serialPort->print(F("|e09~Actual Mowing Area"));
+  serialPort->print(robot->areaInMowing);
+  serialPort->println(F("|e02~Mag / Smag"));
   serialPort->print(robot->perimeterMag);
-  serialPort->print("/");
-
-  serialPort->print(robot->perimeterMagRight);
-  sendSlider("ea02", F("Tracking Max Speed PWM"), robot->MaxSpeedperiPwm, "", 1, 255, 80);
-  sendSlider("ea03", F("Mini Smag"), robot->perimeter.timedOutIfBelowSmag, "", 1, 200, 1);
-  sendSlider("ea04", F("Timeout (s) if Outside"), robot->perimeter.timeOutSecIfNotInside, "", 1, 20, 1);
-  sendSlider("ea05", F("Big AREA Smag Center"), robot->perimeterTriggerMinSmag, "", 1, 600, 100);
-  sendSlider("ea06", F("Perimeter MAG MAX VALUE"), robot->perimeterMagMaxValue, "", 1 , 2500, 500);
-  serialPort->print(F("|ea07~Reduce Speed near Wire "));
-  sendYesNo(robot->reduceSpeedNearPerimeter);
-  serialPort->print(F("|ea08~Actual Speed coeff "));
-  serialPort->print(robot->perimeterSpeedCoeff);
-  serialPort->print(F("|ea09~Smooth Mag L "));
+  serialPort->print(F("/"));
   serialPort->print(robot->perimeter.getSmoothMagnitude(0));
+  //serialPort->print(robot->perimeterMagRight);
+  //if (robot->perimeterMag < 0) serialPort->print(" (inside)");
+  //else serialPort->print(" (outside)");
+  sendSlider("e08", F("Mini Smag"), robot->perimeter.timedOutIfBelowSmag, "", 1, 200, 1);
+  sendSlider("e14", F("Timeout (s) if Outside"), robot->perimeter.timeOutSecIfNotInside, "", 1, 20, 1);
+  sendSlider("e04", F("Big AREA Smag Center"), robot->perimeterTriggerMinSmag, "", 1, 600, 100);
+  sendSlider("e18", F("Tracking Max Speed PWM"), robot->MaxSpeedperiPwm, "", 1, 255, 80);
+  sendSlider("e20", F("Circle Arc disance (cm) Obstacle while tracking"), robot->DistPeriObstacleAvoid, "", 1 , 250, 1);
+  sendSlider("e21", F("Perimeter MAG MAX VALUE"), robot->perimeterMagMaxValue, "", 1 , 2500, 500);
+  sendSlider("e11", F("Transition timeout"), robot->trackingPerimeterTransitionTimeOut, "", 1, 5000, 1);
+  sendSlider("e12", F("Track error timeout"), robot->trackingErrorTimeOut, "", 1, 10000, 1);
+  sendPIDSlider("e07", F("Track"), robot->perimeterPID, 0.1, 52);
+  serialPort->print(F("|e10~Swap Left coil polarity "));
+  sendYesNo(robot->perimeter.swapCoilPolarityLeft);
+  serialPort->print(F("|e22~Swap Right coil polarity "));
+  sendYesNo(robot->perimeter.swapCoilPolarityRight);
+  serialPort->print(F("|e23~Read The 2 Coils "));
+  sendYesNo(robot->perimeter.read2Coil);
+  serialPort->print(F("|e13~Block inner wheel  "));
+  sendYesNo(robot->trakBlockInnerWheel);
+  serialPort->print(F("|e15~Reduce Speed near Wire "));
+  sendYesNo(robot->reduceSpeedNearPerimeter);
+  serialPort->print(F("|e24~Actual Speed coeff "));
+  serialPort->print(robot->perimeterSpeedCoeff);
   serialPort->println("}");
 }
 
-void RemoteControl::processPerimeter1Menu(String pfodCmd) {
-  if (pfodCmd == "ea00") robot->perimeterUse = !robot->perimeterUse;
-  else if (pfodCmd.startsWith("ea05")) processSlider(pfodCmd, robot->perimeterTriggerMinSmag, 1);
-  else if (pfodCmd.startsWith("ea02")) {
+void RemoteControl::processPerimeterMenu(String pfodCmd) {
+  if (pfodCmd == "e00") robot->perimeterUse = !robot->perimeterUse;
+  else if (pfodCmd.startsWith("e04")) processSlider(pfodCmd, robot->perimeterTriggerMinSmag, 1);
+  else if (pfodCmd.startsWith("e18")) {
     processSlider(pfodCmd, robot->MaxSpeedperiPwm, 1);
     robot->ActualSpeedPeriPWM = robot->MaxSpeedperiPwm; //immediatly see the speed change without resetting
   }
-  else if (pfodCmd.startsWith("ea06")) processSlider(pfodCmd, robot->perimeterMagMaxValue, 1);
+  else if (pfodCmd.startsWith("e20")) processSlider(pfodCmd, robot->DistPeriObstacleAvoid, 1);
+  else if (pfodCmd.startsWith("e21")) processSlider(pfodCmd, robot->perimeterMagMaxValue, 1);
   else if (pfodCmd.startsWith("e07")) processPIDSlider(pfodCmd, "e07", robot->perimeterPID, 0.1, 100);
-  else if (pfodCmd.startsWith("ea03")) processSlider(pfodCmd, robot->perimeter.timedOutIfBelowSmag, 1);
-  else if (pfodCmd.startsWith("ea07")) robot->reduceSpeedNearPerimeter = !robot->reduceSpeedNearPerimeter;
-  else if (pfodCmd.startsWith("ea04")) processSlider(pfodCmd, robot->perimeter.timeOutSecIfNotInside, 1);
-
-  sendPerimeter1Menu(true);
-}
-
-
-void RemoteControl::sendPerimeter2Menu(boolean update) {
-  if (update) serialPort->print("{:"); else serialPort->print(F("{.Perimeter2`1000"));
-  serialPort->print("|eb00~Actual Mowing Area");
-  serialPort->print(robot->areaInMowing);
-  sendSlider("eb01", F("Circle Arc disance (cm) Obstacle while tracking"), robot->DistPeriObstacleAvoid, "", 1 , 250, 1);
-  sendSlider("eb02", F("Transition timeout"), robot->trackingPerimeterTransitionTimeOut, "", 1, 5000, 1);
-  sendSlider("eb03", F("Track error timeout"), robot->trackingErrorTimeOut, "", 1, 10000, 1);
-  sendPIDSlider("eb04", F("Track"), robot->perimeterPID, 0.1, 52);
-  serialPort->print(F("|eb05~Swap Left coil polarity "));
-  sendYesNo(robot->perimeter.swapCoilPolarityLeft);
-  serialPort->print(F("|eb06~Swap Right coil polarity "));
-  sendYesNo(robot->perimeter.swapCoilPolarityRight);
-  serialPort->print(F("|eb07~Read The 2 Coils "));
-  sendYesNo(robot->perimeter.read2Coil);
-  serialPort->print(F("|eb08~Block inner wheel  "));
-  sendYesNo(robot->trakBlockInnerWheel);
-  serialPort->println("}");
-}
-
-void RemoteControl::processPerimeter2Menu(String pfodCmd) {
-
-  if (pfodCmd.startsWith("eb01")) processSlider(pfodCmd, robot->DistPeriObstacleAvoid, 1);
-  else if (pfodCmd.startsWith("eb04")) processPIDSlider(pfodCmd, "eb04", robot->perimeterPID, 0.1, 100);
-  else if ((robot->developerActive) && (pfodCmd.startsWith("eb00"))) {
+  else if (pfodCmd.startsWith("e08")) processSlider(pfodCmd, robot->perimeter.timedOutIfBelowSmag, 1);
+  else if ((robot->developerActive) && (pfodCmd.startsWith("e09"))) {
     robot->areaInMowing = robot->areaInMowing + 1;
     if (robot->areaInMowing > 3) robot->areaInMowing = 1;
     robot->perimeter.changeArea(robot->areaInMowing);
     robot->perimeter.begin(pinPerimeterLeft, pinPerimeterRight);
   }
 
-  else if (pfodCmd.startsWith("eb05")) robot->perimeter.swapCoilPolarityLeft = !robot->perimeter.swapCoilPolarityLeft;
-  else if (pfodCmd.startsWith("eb06")) robot->perimeter.swapCoilPolarityRight = !robot->perimeter.swapCoilPolarityRight;
-  else if (pfodCmd.startsWith("eb07")) robot->perimeter.read2Coil = !robot->perimeter.read2Coil;
+  else if (pfodCmd.startsWith("e10")) robot->perimeter.swapCoilPolarityLeft = !robot->perimeter.swapCoilPolarityLeft;
+  else if (pfodCmd.startsWith("e22")) robot->perimeter.swapCoilPolarityRight = !robot->perimeter.swapCoilPolarityRight;
+  else if (pfodCmd.startsWith("e23")) robot->perimeter.read2Coil = !robot->perimeter.read2Coil;
 
-  else if (pfodCmd.startsWith("eb02")) processSlider(pfodCmd, robot->trackingPerimeterTransitionTimeOut, 1);
-  else if (pfodCmd.startsWith("eb03")) processSlider(pfodCmd, robot->trackingErrorTimeOut, 1);
-  else if (pfodCmd.startsWith("eb08")) robot->trakBlockInnerWheel = !robot->trakBlockInnerWheel;
-  sendPerimeter2Menu(true);
+  else if (pfodCmd.startsWith("e11")) processSlider(pfodCmd, robot->trackingPerimeterTransitionTimeOut, 1);
+  else if (pfodCmd.startsWith("e12")) processSlider(pfodCmd, robot->trackingErrorTimeOut, 1);
+  else if (pfodCmd.startsWith("e13")) robot->trakBlockInnerWheel = !robot->trakBlockInnerWheel;
+  else if (pfodCmd.startsWith("e15")) robot->reduceSpeedNearPerimeter = !robot->reduceSpeedNearPerimeter;
+
+
+  else if (pfodCmd.startsWith("e14")) processSlider(pfodCmd, robot->perimeter.timeOutSecIfNotInside, 1);
+
+  sendPerimeterMenu(true);
 }
-
-
 
 void RemoteControl::sendLawnSensorMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Lawn sensor`1000"));
@@ -865,6 +845,20 @@ void RemoteControl::processRfidDetailMenu(int rfidDetailIdx, String pfodCmd) {
   else if (pfodCmd.startsWith("yw10")) processSlider(pfodCmd, robot->ptr->TagDist2, 1);
 
   sendRfidDetailMenu(rfidDetailIdx, true);
+}
+/*
+void RemoteControl::sendConsoleMenu(boolean update) {
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.Console`2000"));
+  serialPort->println(F("|C00~TextConsole :<-6> "));
+  serialPort->print(robot->html_line);
+  serialPort->println("</-6>}");
+}
+*/
+void RemoteControl::sendConsoleMenu(boolean update) {
+  if (update) serialPort->print("{:"); else serialPort->print(F("{.Console`500"));    
+  serialPort->println(F("|TextConsole~  "));
+  serialPort->print(robot->html_line);    
+  serialPort->println("}");
 }
 
 
@@ -1964,12 +1958,14 @@ boolean RemoteControl::readSerial() {
         robot->ConsoleToPfod = false;
         sendMainMenu(false);
       }
-      else if (pfodCmd == "m1") {
+      /*
+      else if (pfodCmd == "C") {
         // Console
         serialPort->println(F("{=Console}"));
         pfodState = PFOD_CONSOLE;
         robot->ConsoleToPfod = true;
       }
+      */
       else if (pfodCmd == "y1") {
         // plot battery
         serialPort->println(F("{=battery|time min`0|battery V`1|charge V`1|charge A`2|capacity Ah`3}"));
@@ -2043,16 +2039,13 @@ boolean RemoteControl::readSerial() {
       else if (pfodCmd == "t") sendDateTimeMenu(false);
       else if (pfodCmd == "i") sendTimerMenu(false);
       else if (pfodCmd == "in") sendInfoMenu(false);
-      else if (pfodCmd == "C") sendConsoleMenu(false);    // <-- add this
-
-
+      else if (pfodCmd == "C") sendConsoleMenu(false);
 
       else if (pfodCmd.startsWith("a")) processMotorMenu(pfodCmd);
       else if (pfodCmd.startsWith("b")) processBumperMenu(pfodCmd);
       else if (pfodCmd.startsWith("c")) processCompassMenu(pfodCmd);
       else if (pfodCmd.startsWith("d")) processSonarMenu(pfodCmd);
-      else if (pfodCmd.startsWith("ea")) processPerimeter1Menu(pfodCmd);
-      else if (pfodCmd.startsWith("eb")) processPerimeter2Menu(pfodCmd);
+      else if (pfodCmd.startsWith("e")) processPerimeterMenu(pfodCmd);
       else if (pfodCmd.startsWith("f")) processLawnSensorMenu(pfodCmd);
       else if (pfodCmd.startsWith("g")) processImuMenu(pfodCmd);
       else if (pfodCmd.startsWith("h")) processRemoteMenu(pfodCmd);
@@ -2104,8 +2097,7 @@ void RemoteControl::processPI(String RpiCmd, float v1, float v2, float v3) {
   else if (pfodCmd.startsWith("b")) processBumperMenu(pfodCmd);
   else if (pfodCmd.startsWith("c")) processCompassMenu(pfodCmd);
   else if (pfodCmd.startsWith("d")) processSonarMenu(pfodCmd);
-  else if (pfodCmd.startsWith("ea")) processPerimeter1Menu(pfodCmd);
-  else if (pfodCmd.startsWith("eb")) processPerimeter2Menu(pfodCmd);
+  else if (pfodCmd.startsWith("e")) processPerimeterMenu(pfodCmd);
   else if (pfodCmd.startsWith("f")) processLawnSensorMenu(pfodCmd);
   else if (pfodCmd.startsWith("g")) processImuMenu(pfodCmd);
   else if (pfodCmd.startsWith("h")) processRemoteMenu(pfodCmd);

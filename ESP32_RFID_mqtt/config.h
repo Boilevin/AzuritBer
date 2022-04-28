@@ -23,8 +23,8 @@
 boolean MODE_STA = true; // ESP32 and phone connects to wifi routeur and auto switch to mode_ap if fail
 boolean MODE_AP = false; //  phone connects directly to ESP32 inside the mower IP: 192.168.4.1 port 8881
 
-const char *ssid = "WAVLINK-N";  // Your Routeur : You need to connect your phone to the same Access Point to use PfodApp
-const char *pw = "basicsheep713"; // and this is the password
+const char *ssid = "your ssid";  // Your Routeur : You need to connect your phone to the same Access Point to use PfodApp
+const char *pw = "your pass"; // and this is the password
 
 IPAddress ip(10, 0, 0, 168); //you need to set a fix IP according to your routeur value
 IPAddress gateway(10, 0, 0, 1); //
@@ -50,7 +50,7 @@ const char* mqtt_stateTopic = "/State";
 const char* mqtt_id = "Mower";//do not change
 
 
-bool debug = true;
+bool debug = false;
 
 
 #define VERSION "1.30"

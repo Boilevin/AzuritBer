@@ -270,7 +270,7 @@ Robot::Robot() {
   ConsoleToPfod = false;
   //bber400
   html_line = "";
-  TextMax   = 5000;    //defines the max. number of characters to print in console
+  TextMax   = 500;    //defines the max. number of characters to print in console
 
 
 
