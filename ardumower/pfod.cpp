@@ -846,21 +846,21 @@ void RemoteControl::processRfidDetailMenu(int rfidDetailIdx, String pfodCmd) {
 
   sendRfidDetailMenu(rfidDetailIdx, true);
 }
-/*
+
 void RemoteControl::sendConsoleMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Console`2000"));
   serialPort->println(F("|C00~TextConsole :<-6> "));
   serialPort->print(robot->html_line);
   serialPort->println("</-6>}");
 }
-*/
+/*
 void RemoteControl::sendConsoleMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.Console`500"));    
   serialPort->println(F("|TextConsole~  "));
   serialPort->print(robot->html_line);    
   serialPort->println("}");
 }
-
+*/
 
 void RemoteControl::sendByLaneMenu(boolean update) {
   if (update) serialPort->print("{:"); else serialPort->print(F("{.ByLane`500"));
