@@ -194,7 +194,7 @@ void esp32_Mqtt_sta() {
 void setup() {
   delay(500);
   Serial.begin(115200);
-  Serial2.begin(115200);
+  Serial2.begin(19200);
   if (debug) Serial.println("********* ESP32 BT and WiFi serial bridge ******************");
 
   //********************************WIFI init code*************************************
