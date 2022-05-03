@@ -620,6 +620,20 @@ void RpiRemote::RaspberryPISendMow () {
   lineToSend = lineToSend + ",";
   writePi(lineToSend);
 }
+
+void RpiRemote::RaspberryPISendGpsLocalisation(){
+  String lineToSend;
+  lineToSend = "RMGPS";
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + millis();
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + robot->gpsX;
+  lineToSend = lineToSend + ",";
+  lineToSend = lineToSend + robot->gpsY;
+  lineToSend = lineToSend + ",";
+  writePi(lineToSend);
+}
+
 void RpiRemote::RaspberryPISendMot () {
   String lineToSend;
   lineToSend = "RMMOT";

@@ -584,6 +584,8 @@ class Robot
     float prevYawCalcOdo;
     unsigned long nextTimeImuLoop ;
     unsigned long nextTimeGpsRead ;
+    unsigned long nextTimeRcRead ;
+    
 
     int delayBetweenTwoDmpAutocalib;
     int maxDurationDmpAutocalib;

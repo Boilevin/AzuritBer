@@ -30,6 +30,7 @@ class RpiRemote
     void sendCommandToPi(String stringLine);
     void SendStatusToPi();
     void SendRfidToPi();
+    void RaspberryPISendGpsLocalisation();
     
 
   private:

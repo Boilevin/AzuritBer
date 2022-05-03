@@ -232,6 +232,7 @@ Robot::Robot() {
   nextTimeCheckIfStuck = 0;
   nextTimePfodLoop = 0;
   nextTimeGpsRead = 0;
+  nextTimeRcRead = 0;
   nextTimeImuLoop = 0;
   nextTimeRain = 0;
   lastMotorMowRpmTime = millis();
@@ -265,7 +266,7 @@ Robot::Robot() {
   motorRightPID.Kp = motorLeftPID.Kp;
   motorRightPID.Ki = motorLeftPID.Ki;
   motorRightPID.Kd = motorLeftPID.Kd;
-  gpsReady = false;
+ // gpsReady = false;
   MyrpiStatusSync = false;
   ConsoleToPfod = false;
   //bber400
@@ -340,6 +341,31 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   ShowMessageln(ADDR_ROBOT_STATS);
   ShowMessage(F("Robot Stats address Stop = "));
   ShowMessageln(addr);
+}
+
+void Robot::processGPSData()
+{
+  if (millis() < nextTimeGPS) return;
+  nextTimeGPS = millis() + 1000;
+  float nlat, nlon;
+  unsigned long age;
+  gps.f_get_position(&nlat, &nlon, &age);
+  if (nlat == GPS::GPS_INVALID_F_ANGLE ) return;
+  if (gpsLon == 0) {
+    gpsLon = nlon;  // this is xy (0,0)
+    gpsLat = nlat;
+    return;
+  }
+  gpsX = (float)gps.distance_between(nlat,  gpsLon,  gpsLat, gpsLon);
+  gpsY = (float)gps.distance_between(gpsLat, nlon,   gpsLat, gpsLon);
+  if (RaspberryPIUse) MyRpi.RaspberryPISendGpsLocalisation();
+  /*
+    Serial.print(" gpsX: ");
+    Serial.print(gpsX);
+    Serial.print(" gpsY: ");
+    Serial.println(gpsY);
+  */
+
 }
 
 
@@ -5252,24 +5278,7 @@ void Robot::checkIfStuck() {
 }
 
 
-void Robot::processGPSData()
-{
-  /*
-    if (millis() < nextTimeGPS) return;
-    nextTimeGPS = millis() + 1000;
-    float nlat, nlon;
-    unsigned long age;
-    gps.f_get_position(&nlat, &nlon, &age);
-    if (nlat == GPS::GPS_INVALID_F_ANGLE ) return;
-    if (gpsLon == 0) {
-    gpsLon = nlon;  // this is xy (0,0)
-    gpsLat = nlat;
-    return;
-    }
-    gpsX = (float)gps.distance_between(nlat,  gpsLon,  gpsLat, gpsLon);
-    gpsY = (float)gps.distance_between(gpsLat, nlon,   gpsLat, gpsLon);
-  */
-}
+
 
 // calculate map position by odometry sensors
 void Robot::calcOdometry() {
@@ -5386,7 +5395,11 @@ void Robot::loop()  {
   }
 
   if (bluetoothUse || esp8266Use) {
-    rc.readSerial();
+    if (millis() >nextTimeRcRead) {
+      nextTimeRcRead=nextTimeRcRead+15;
+      rc.readSerial();
+    }
+    
   }
   readSensors();
   //checkIfStuck();
@@ -5421,9 +5434,12 @@ void Robot::loop()  {
     }
   }
 
-  if (gpsUse && gpsReady && (millis() >= nextTimeGpsRead)) {
-    nextTimeGpsRead = millis() + 1000;
-    gps.run();
+  if (gpsUse) {
+
+    if (gps.feed()) {
+      processGPSData();
+    }
+
   }
 
   if ((Enable_Screen) && (millis() >= nextTimeScreen))   { // warning : refresh screen take 40 ms
