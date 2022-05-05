@@ -266,7 +266,7 @@ Robot::Robot() {
   motorRightPID.Kp = motorLeftPID.Kp;
   motorRightPID.Ki = motorLeftPID.Ki;
   motorRightPID.Kd = motorLeftPID.Kd;
- // gpsReady = false;
+  // gpsReady = false;
   MyrpiStatusSync = false;
   ConsoleToPfod = false;
   //bber400
@@ -437,11 +437,11 @@ void Robot::rfidTagTraitement(unsigned long TagNr, byte statusCurr) {
         break;
       case AREA1:
         line01 = "#SENDER," + String(area1_ip) + ",A1";
-        Serial1.println(line01);
+        Bluetooth.println(line01);
         line01 = "#SENDER," + String(area2_ip) + ",B0";
-        Serial1.println(line01);
+        Bluetooth.println(line01);
         line01 = "#SENDER," + String(area3_ip) + ",B0";
-        Serial1.println(line01);
+        Bluetooth.println(line01);
 
         areaToGo = 1;
         ShowMessageln("Return to Station area ");
@@ -462,9 +462,9 @@ void Robot::rfidTagTraitement(unsigned long TagNr, byte statusCurr) {
       case AREA2:
         //send data to ESP32 to start AREA2 sender and stop AREA1 one
         line01 = "#SENDER," + String(area1_ip) + ",A0";
-        Serial1.println(line01);
+        Bluetooth.println(line01);
         line01 = "#SENDER," + String(area2_ip) + ",B1";
-        Serial1.println(line01);
+        Bluetooth.println(line01);
         if (areaToGo == 2) {
           ShowMessageln("Go to AREA2");
           motorSpeedMaxPwm = ptr->TagSpeed;
@@ -478,9 +478,9 @@ void Robot::rfidTagTraitement(unsigned long TagNr, byte statusCurr) {
 
       case AREA3:
         line01 = "#SENDER," + String(area1_ip) + ",A0";
-        Serial1.println(line01);
+        Bluetooth.println(line01);
         line01 = "#SENDER," + String(area3_ip) + ",B1";
-        Serial1.println(line01);
+        Bluetooth.println(line01);
         if (areaToGo == 3) {
           ShowMessageln("Go to AREA3");
           motorSpeedMaxPwm = ptr->TagSpeed;
@@ -5195,6 +5195,22 @@ void Robot::checkTilt() {
   int rollAngle  = (imu.ypr.roll / PI * 180.0);
   //bber4
   if ( (stateCurr != STATE_MANUAL) && (stateCurr != STATE_OFF) && (stateCurr != STATE_ERROR) && (stateCurr != STATE_STATION) && (stateCurr != STATE_STATION_CHARGING)) {
+    //at 40 deg mower start to reverse ,so do not test if not in mowing condition
+    //at 70 deg it's error
+    if ( (abs(pitchAngle) > 70) || (abs(rollAngle) > 70) ) {
+      nextTimeCheckTilt = millis() + 5000; // avoid repeat
+      ShowMessage(F("ERROR : IMU Roll / Tilt -- > "));
+      ShowMessage(rollAngle);
+      ShowMessage(F(" / "));
+      ShowMessageln(pitchAngle);
+      addErrorCounter(ERR_IMU_TILT);
+      ShowMessageln("Mower STOP");
+      motorMowEnable = false;
+      setNextState(STATE_ERROR, 0);
+      pitchAngle = 0;
+      rollAngle = 0;
+    }
+
     if ( (abs(pitchAngle) > 40) || (abs(rollAngle) > 40) ) {
       nextTimeCheckTilt = millis() + 5000; // avoid repeat
       ShowMessage(F("Warning : IMU Roll / Tilt -- > "));
@@ -5378,8 +5394,6 @@ void Robot::loop()  {
     next_time_refresh_mqtt = millis() + 3000;
     String line01 = "#RMSTA," + String(statusNames[statusCurr]) + "," + String(stateNames[stateCurr]) + "," + String(temperatureDht) + "," + String(batVoltage) + "," + String(loopsPerSec)  ;
     Bluetooth.println(line01);
-
-
   }
   ADCMan.run();
   if (perimeterUse) perimeter.run();
@@ -5395,11 +5409,11 @@ void Robot::loop()  {
   }
 
   if (bluetoothUse || esp8266Use) {
-    if (millis() >nextTimeRcRead) {
-      nextTimeRcRead=nextTimeRcRead+15;
+    if (millis() > nextTimeRcRead) {
+      nextTimeRcRead = nextTimeRcRead + 15;
       rc.readSerial();
     }
-    
+
   }
   readSensors();
   //checkIfStuck();
