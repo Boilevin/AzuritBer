@@ -5410,7 +5410,7 @@ void Robot::loop()  {
 
   if (bluetoothUse || esp8266Use) {
     if (millis() > nextTimeRcRead) {
-      nextTimeRcRead = nextTimeRcRead + 15;
+      nextTimeRcRead = nextTimeRcRead + 5;
       rc.readSerial();
     }
 
