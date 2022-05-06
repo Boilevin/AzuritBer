@@ -5207,7 +5207,7 @@ void Robot::checkTilt() {
       ShowMessageln("Mower STOP");
       motorMowEnable = false;
       setNextState(STATE_ERROR, 0);
-      pitchAngle = 0;
+      pitchAngle = 0; //to avoid the 40 degres test
       rollAngle = 0;
     }
 
@@ -5217,14 +5217,21 @@ void Robot::checkTilt() {
       ShowMessage(rollAngle);
       ShowMessage(F(" / "));
       ShowMessageln(pitchAngle);
-      addErrorCounter(ERR_IMU_TILT);
+      //addErrorCounter(ERR_IMU_TILT);
       //bber500
 
 
-      ShowMessageln("Motor mow STOP start again after 1 minute");
+      ShowMessageln("Motor mow restart after 1 minute");
       motorMowEnable = false;
       lastTimeMotorMowStuck = millis();
-      reverseOrBidir(rollDir);
+
+      if (pitchAngle > 0) {
+        reverseOrBidir(rollDir);
+      }
+      else {
+        setNextState(STATE_FORWARD_ODO, rollDir);
+      }
+
 
     }
   }
