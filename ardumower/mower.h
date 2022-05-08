@@ -134,7 +134,7 @@
 #define ESP8266_BAUDRATE    115200      // baudrate used for communication with esp8266 Wifi module
 
 #define Bluetooth Serial2  // Ardumower default OK for ESP32 or HC05
-#define BLUETOOTH_BAUDRATE  115200     // baudrate used for communication with Bluetooth module 
+#define BLUETOOTH_BAUDRATE  19200     // baudrate used for communication with Bluetooth module 
 #define BLUETOOTH_PIN       1234
 
 #define GpsPort Serial3  // GPS do not forget workarround if PCB1.3 use
