@@ -1,23 +1,36 @@
 #include <WiFi.h>
 #include <WebServer.h>
+#include <HTTPClient.h>
 #include <FS.h>
+#include <SD.h>
+#include <SPI.h>
 #include <detail/RequestHandlersImpl.h>
 #include <Ticker.h>
 #include <SPIFFS.h>
 #include <esp_wifi.h>
+#include <ArduinoOTA.h>                // OTA Upload via ArduinoIDE
 
-//bber1
 //*********RFID**************//
 #include "PN5180.h"
 #include "PN5180ISO15693.h"
-#define rfid_board_IsPluged false //Set to true or false according your hardware
-#define debug_rfid true
 
-//bber2
+//******** YOUR WIFI  ************///
+IPAddress myIP(10, 0, 0, 123);
+IPAddress network_gateway(10, 0, 0, 1);
+IPAddress network_subnet(255, 255, 255, 0);
+IPAddress network_dns(10, 0, 0, 1);
+char *wifi_network_ssid     = "your ssid";
+char *wifi_network_password = "your pass";
+boolean useMqtt = false ; //Set to true only if you have a mosquito broker running in your house 
+#define rfid_board_IsPluged false //Set to true or false according your hardware PN5180 can read RFID card
+
+#define debug_rfid true
+#define debug_mqtt true
+
+
 //*********MQTT*************//
 #include "PubSubClient.h"
-boolean useMqtt = true ; //Set to true only if you have a mosquito broker running in your house or false
-const char* mower_name = "RL1000";//your mower name : help if you have many mower connected to the same broker
+const char* mower_name = "Rl1000";//your mower name : help if you have many mower connected to the same broker
 const char* mqtt_server = "10.0.0.8";
 const uint16_t mqtt_port = 1883;
 const char* mqtt_user = "admin";
@@ -29,17 +42,14 @@ const char* mqtt_batteryTopic = "/Battery";
 const char* mqtt_idleTopic = "/Idle";
 const char* mqtt_statusTopic = "/Status";
 const char* mqtt_stateTopic = "/State";
-const char* mqtt_id = "Mower";//do not change
-#define debug_mqtt true
+const char* mqtt_id = "Mower";
+
 
 #define LED 2
 
-
-#define SERIAL_BUFFER_SIZE 256
-
 #define MAX_CONFIG_LEN  100
 #define MSG_HEADER "[WSB]"
-#define VERSION " Version vom 29.04.2022 experimentell wegen LiveData-Funktion!!!"
+#define VERSION "Ber Version vom 07.05.2022 "
 #define CONFIG_MSG_START "config:"
 
 #define SET_IP_SETTING  1  //true=IP-Settings from azurit-programm, false=IP-Settings by user/esp
@@ -54,28 +64,23 @@ const char* mqtt_id = "Mower";//do not change
 //#define Serial_ESP_to_PCB  Serial1 // Serial Connection between ESP and PCB, ESP-Pin : RX1/TX1
 #define Serial_ESP_to_PCB  Serial2 // Serial Connection between ESP and PCB, ESP-Pin : RX2/TX2
 #define Serial_ESP_to_USB  Serial    // Serial Connection from ESP via USB to PC (arduino Monitor/Plotter)
-#define BAUDRATE_ESP_to_PCB 115200
+#define BAUDRATE_ESP_to_PCB 19200
 #define BAUDRATE_ESP_to_USB 115200
 
-IPAddress myIP(10, 0, 0, 168);
-IPAddress network_gateway(10, 0, 0, 1);
-IPAddress network_subnet(255, 255, 255, 0);
-IPAddress network_dns(10, 0, 0, 1);
-char *wifi_network_ssid     = "your ssid";
-char *wifi_network_password = "password";
 
 bool wifiConnected = false;
 int connectCnt = 0;
 WebServer server(80); // Webserver-Instanz für Port 80 erstellen
-WiFiServer PFODserver(8080); // TCPserver-Instanz für PFOD-App auf Port 8080 erstellen
+WiFiServer PFODserver(8881); // TCPserver-Instanz für PFOD-App auf Port 8080 erstellen
 
 WiFiClient PFODclient;
 bool PFODclientConnected = false;
 
 //bber2
 WiFiClient mqttClient;
-PubSubClient client(mqttClient);
+PubSubClient client_mqtt(mqttClient);
 char line_receive[256];
+byte mon_index = 0;
 unsigned long next_mqtt_test_connection;
 
 
@@ -84,7 +89,7 @@ unsigned long next_mqtt_test_connection;
 #define SLIDER  2
 #define PLOT    3
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define PARAMID_SSID    0
 #define PARAMID_PASSWD  1
@@ -98,11 +103,8 @@ unsigned long next_mqtt_test_connection;
   String msgTest3 = "{.Motor`1000|a00~Overload Counter l, r 0, 0|a01~Power in Watt l, r 0.00, 0.00|a05~motor current in mA l, r 0.00, 0.00|a02~Power max `750`1000`0~ ~0.1|a03~calibrate left motor  `0`1000`0~ ~1|a04~calibrate right motor `0`1000`0~ ~1|a05~Speed l, r pwm0.00, 0.00|a15~Speed max in pwm `255`255`0~ ~1|a11~Accel `1000`2000`500~ ~1|a18~Power ignore time `2000`8000`0~ ~1|a07~Roll time max `1500`8000`0~ ~1|a19~Roll time min `750`1000`0~ ~1|a08~Reverse time `1200`8000`0~ ~1|a09~Forw time max `12000`8000`0~ ~10|a12~Bidir speed ratio 1 `30`100`0~ ~0.01|a13~Bidir speed ratio 2 `92`100`0~ ~0.01|a10~Testing isOFF|a14~for config file:motorSenseScale l, r6.15, 6.15|a16~Swap left direction NO|a17~Swap right direction NO}";
   String msgTest4 = "{.Sonar`1000|d00~Use YES|d04~Use left YES|d05~Use center YES|d06~Use right YES|d01~Counter 0|d02~Value l, c, r 95, 105, 0|d03~Trigger below (0=off) `1797`3000`0~ ~1|d07~Slow below `1115`3000`0~ ~1}";
 */
-//bber1
-//if (rfid_board_IsPluged) {
-PN5180ISO15693 nfc(12, 13, 14);
-//}
 
+PN5180ISO15693 nfc(12, 13, 14);
 uint8_t lastUid[8];
 String SplitResult[10];
 
@@ -149,6 +151,55 @@ String lastMSG = "";
 long timer1s = 0UL;
 long counter = 0UL;
 
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
+  Serial.printf("Listing directory: %s\n", dirname);
+
+  File root = fs.open(dirname);
+  if (!root) {
+    Serial.println("Failed to open directory");
+    return;
+  }
+  if (!root.isDirectory()) {
+    Serial.println("Not a directory");
+    return;
+  }
+
+  File file = root.openNextFile();
+  while (file) {
+    if (file.isDirectory()) {
+      Serial.print("  DIR : ");
+      Serial.println(file.name());
+      if (levels) {
+        listDir(fs, file.name(), levels - 1);
+      }
+    } else {
+      Serial.print("  FILE: ");
+      Serial.print(file.name());
+      Serial.print("  SIZE: ");
+      Serial.println(file.size());
+    }
+    file = root.openNextFile();
+  }
+}
+
+void appendFile(fs::FS &fs, const char * path, const char * message) {
+  Serial.printf("Appending to file: %s\n", path);
+
+  File file = fs.open(path, FILE_APPEND);
+  if (!file) {
+    Serial.println("Failed to open file for appending");
+    return;
+  }
+  if (file.print(message)) {
+    Serial.println("Message appended");
+  } else {
+    Serial.println("Append failed");
+  }
+  file.close();
+}
+
+
+
 void setup() {
   // Configure Serial Port
   Serial_ESP_to_USB.begin(BAUDRATE_ESP_to_USB);
@@ -169,13 +220,54 @@ void setup() {
   Serial_ESP_to_USB.println(MSG_HEADER""VERSION);
 
   connectWIFI();
+  WiFi.setSleep(false); //SD
 
   setLedSequence(ledSeq_connecting);
 
-  if (!SPIFFS.begin()) {
-    debugln("SPIFFS not initialized! Stop!");
-    while (1) yield();
+    
+  if(!SD.begin()){
+        Serial_ESP_to_USB.println(MSG_HEADER" Card Mount Failed");
+        if (!SPIFFS.begin()) {
+            Serial_ESP_to_USB.println(MSG_HEADER" SPIFFS not initialized! Stop!");
+            //while (1) yield();
+        }
+        else {
+          // Die Abfrage auf die reine URL '/' wird auf '/index.html' im SPIFFS umgelenkt
+          server.serveStatic("/", SPIFFS, "/index.html");
+          Serial_ESP_to_USB.println(MSG_HEADER" SPIFFS initialized!");
+        }
+        //return;
   }
+  else {
+        uint8_t cardType = SD.cardType();
+      
+        if(cardType == CARD_NONE){
+            Serial_ESP_to_USB.println(MSG_HEADER" No SD card attached");
+            //return;
+        }
+      
+        Serial_ESP_to_USB.print(MSG_HEADER" SD Card Type: ");
+        if(cardType == CARD_MMC){
+            Serial_ESP_to_USB.println(MSG_HEADER" MMC");
+        } else if(cardType == CARD_SD){
+            Serial_ESP_to_USB.println(MSG_HEADER" SDSC");
+        } else if(cardType == CARD_SDHC){
+            Serial_ESP_to_USB.println(MSG_HEADER" SDHC");
+        } else {
+            Serial_ESP_to_USB.println(MSG_HEADER" UNKNOWN");
+        }
+      
+        uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+        Serial_ESP_to_USB.printf("SD Card Size: %lluMB\n", cardSize);
+        listDir(SD, "/", 3);
+       
+      
+        Serial_ESP_to_USB.printf(MSG_HEADER" Total space: %lluMB\n", SD.totalBytes() / (1024 * 1024));
+        Serial_ESP_to_USB.printf(MSG_HEADER" Used space: %lluMB\n", SD.usedBytes() / (1024 * 1024));
+        
+        // Die Abfrage auf die reine URL '/' wird auf '/index.html' umgelenkt
+        server.serveStatic("/", SD, "/index.html");
+  } 
 
   // add handler for webserver
   server.onNotFound([]() {
@@ -197,11 +289,21 @@ void setup() {
   flushInput();
 
   // Start PFODserver
+  if (DEBUG) Serial_ESP_to_USB.println("Starting PFODServeur on port 8881");
   PFODserver.begin();
   PFODserver.setNoDelay(true);
-
+ArduinoOTASetup();
 
   //bber1
+//BT seial for Pfod init
+  /*
+  Serial.println("Start Bluetooth");
+  ESP_BT.begin("NEW_PCB1");
+  Serial.println("Bluetooth started with name NEW_PCB  Wait 10 seconde......");
+  delay(1000);
+  
+  */
+  
   //********************************RFID code*************************************
   if (rfid_board_IsPluged) {
     // rfid reader init
@@ -219,8 +321,8 @@ void setup() {
   }
   //bber2
    //********************************MQTT code*************************************
-  client.setServer(mqtt_server, mqtt_port);
-  client.setCallback(receivedCallback);
+  client_mqtt.setServer(mqtt_server, mqtt_port);
+  client_mqtt.setCallback(receivedCallback);
 }
 
 void loop() {
@@ -228,7 +330,9 @@ void loop() {
   Check_WIFI();
   server.handleClient();  //Webserver
   handlePFODclient();
-  handleSerialInput();
+
+  ArduinoOTA.handle();                 // OTA Upload via ArduinoIDE
+
 
   if (millis() > timer1s + 1000UL) {
     timer1s = millis();
@@ -256,9 +360,7 @@ void loop() {
       // Test if we previously knew about a card (in which case it's just been removed
       // The most significant (last) byte of a valid UID should always be 0xE0. e.g. E007C4A509C247A8
       if (lastUid[7] == 0xE0) {
-
         Serial_ESP_to_PCB.print("{RFID"); // pfod start message with {
-
         for (int j = 0; j <= 2; j++) {
           Serial_ESP_to_PCB.print(lastUid[j], HEX);
         }
@@ -272,11 +374,12 @@ void loop() {
   }
 //bber2
 //*********MQTT*************//
-  if ((useMqtt) && (!client.connected()) && (millis() > next_mqtt_test_connection))
+  if ((useMqtt) && (!client_mqtt.connected()) && (millis() > next_mqtt_test_connection))
   {
     next_mqtt_test_connection = millis() + 5000;
     mqttconnect();
   }
+  if (useMqtt) client_mqtt.loop();
 }
 
 void handleSerialInput() {
@@ -312,7 +415,49 @@ void flushInput(void) {
   while (Serial_ESP_to_PCB.available())
     Serial_ESP_to_PCB.read();
 }
+void ArduinoOTASetup()
+{
+  // Port defaults to 3232
+  // ArduinoOTA.setPort(3232);
 
+  // Hostname defaults to esp3232-[MAC]
+  // ArduinoOTA.setHostname("myesp32");
+
+  // No authentication by default
+  // ArduinoOTA.setPassword("admin");
+
+  // Password can be set with it's md5 value as well
+  // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
+  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
+
+  ArduinoOTA
+    .onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH)
+        type = "sketch";
+      else // U_SPIFFS
+        type = "filesystem";
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial_ESP_to_USB.println("Start updating " + type);
+    })
+    .onEnd([]() {
+      Serial_ESP_to_USB.println("\nEnd");
+    })
+    .onProgress([](unsigned int progress, unsigned int total) {
+      Serial_ESP_to_USB.printf("Progress: %u%%\r", (progress / (total / 100)));
+    })
+    .onError([](ota_error_t error) {
+      Serial_ESP_to_USB.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) Serial_ESP_to_USB.println("Auth Failed");
+      else if (error == OTA_BEGIN_ERROR) Serial_ESP_to_USB.println("Begin Failed");
+      else if (error == OTA_CONNECT_ERROR) Serial_ESP_to_USB.println("Connect Failed");
+      else if (error == OTA_RECEIVE_ERROR) Serial_ESP_to_USB.println("Receive Failed");
+      else if (error == OTA_END_ERROR) Serial_ESP_to_USB.println("End Failed");
+    });
+
+  ArduinoOTA.begin();
+}
 //bber2
 //*********MQTT*************//
 void receivedCallback(char* topic, byte* payload, unsigned int payload_length) { //data coming from mqtt
@@ -379,6 +524,19 @@ int csvSplit(String string)//use to cut a string separator eg "STARTTIMER;1;1;0;
   SplitResult[bufferIndex++] = tempString;//ecriture du dernier
   return bufferIndex;
 }
+
+void start_stop_AreaSender() {
+  //line_receive is a char array separate by ,
+  //example to stop sender on ip 15  "#SENDER,10.0.0.15,A0
+  //example to start sender on ip 15  "#SENDER,10.0.0.15,A1
+  HTTPClient http;
+  char val1[10], val2[20], val3[10];
+  sscanf(line_receive, "%[^,],%[^,],%[^,]", val1, val2, val3);
+  String serverPath = "http://" + String(val2) + "/" + String(val3);
+  http.begin(serverPath.c_str());
+  http.GET();
+}
+
 void esp32_Mqtt_sta() {
   //receive state from mower msgid,status,state,temp,battery,idle
   //message separation
@@ -388,40 +546,40 @@ void esp32_Mqtt_sta() {
   //status
   char outTopic1[strlen(mower_name) + strlen(mqtt_statusTopic)];
   sprintf(outTopic1, "%s%s", mower_name, mqtt_statusTopic);
-  client.publish(outTopic1, val2);
+  client_mqtt.publish(outTopic1, val2);
   //state
   char outTopic2[strlen(mower_name) + strlen(mqtt_stateTopic)];
   sprintf(outTopic2, "%s%s", mower_name, mqtt_stateTopic);
-  client.publish(outTopic2, val3);
+  client_mqtt.publish(outTopic2, val3);
   //temp
   char outTopic3[strlen(mower_name) + strlen(mqtt_tempTopic)];
   sprintf(outTopic3, "%s%s", mower_name, mqtt_tempTopic);
-  client.publish(outTopic3, val4);
+  client_mqtt.publish(outTopic3, val4);
   //battery
   char outTopic4[strlen(mower_name) + strlen(mqtt_batteryTopic)];
   sprintf(outTopic4, "%s%s", mower_name, mqtt_batteryTopic);
-  client.publish(outTopic4, val5);
+  client_mqtt.publish(outTopic4, val5);
   //idle
   char outTopic5[strlen(mower_name) + strlen(mqtt_idleTopic)];
   sprintf(outTopic5, "%s%s", mower_name, mqtt_idleTopic);
-  client.publish(outTopic5, val6);
+  client_mqtt.publish(outTopic5, val6);
 }
 void mqttconnect() {
 
-  if (!client.connected()) {
+  if (!client_mqtt.connected()) {
     if (debug_mqtt) Serial.print("MQTT connecting ...");
 
-    if (client.connect(mqtt_id, mqtt_user, mqtt_pass)) {
+    if (client_mqtt.connect(mqtt_id, mqtt_user, mqtt_pass)) {
       if (debug_mqtt) Serial.println("connected");
       char outMessage[strlen(mower_name) + strlen(mqtt_subscribeTopic1)];
       sprintf(outMessage, "%s%s", mower_name, mqtt_subscribeTopic1);
       if (debug_mqtt) Serial.print("Subscribe to : ");
       if (debug_mqtt) Serial.println(outMessage);
-      client.subscribe(outMessage);
+      client_mqtt.subscribe(outMessage);
 
     } else {
       if (debug_mqtt) Serial.print("mqtt failed, status code =");
-      if (debug_mqtt) Serial.print(client.state());
+      if (debug_mqtt) Serial.print(client_mqtt.state());
       if (debug_mqtt) Serial.println("try again in 5 seconds");
 
     }
