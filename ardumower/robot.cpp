@@ -318,10 +318,10 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   int addr = ADDR_ROBOT_STATS;
 
   if (readflag) {
-    ShowMessageln(F("Load Robot Stats"));
+    ShowMessageln("Load Robot Stats");
   }
   else {
-    ShowMessageln(F("Save Robot Stats"));
+    ShowMessageln("Save Robot Stats");
   }
 
   short magic = 0;
@@ -337,9 +337,9 @@ void Robot::loadSaveRobotStats(boolean readflag) {
   eereadwrite(readflag, addr, statsBatteryChargingCapacityTotal);
   eereadwrite(readflag, addr, statsBatteryChargingCapacityAverage);
   // <----------------------------new robot stats to save goes here!----------------
-  ShowMessage(F("Robot Stats address Start = "));
+  ShowMessage("Robot Stats address Start = ");
   ShowMessageln(ADDR_ROBOT_STATS);
-  ShowMessage(F("Robot Stats address Stop = "));
+  ShowMessage("Robot Stats address Stop = ");
   ShowMessageln(addr);
 }
 
@@ -400,12 +400,12 @@ void Robot::rfidTagTraitement(unsigned long TagNr, byte statusCurr) {
   if (tagAndStatus_exist_in_list)
   {
     //debut du traitement
-    ShowMessage(F("Tag and Status find to do is "));
-    ShowMessageln(F(rfidToDoNameList(ptr->TagToDo)));
+    ShowMessage("Tag and Status find to do is ");
+    ShowMessageln(rfidToDoNameList(ptr->TagToDo));
     switch (ptr->TagToDo) {
 
       case NOTHING:
-        ShowMessageln(F("nothing to do ???"));
+        ShowMessageln("nothing to do ???");
         break;
       case RTS:
         ShowMessage("Fast return tag : Turning ");
@@ -529,8 +529,8 @@ void Robot::insert_rfid_list(unsigned long TagNr, byte TagMowerStatus, byte TagT
   node->next = head;  // def du nouveau noeud au premier
   head = node; // tete de la liste devient celui que l on a ajouté.
   rfidListElementCount = rfidListElementCount + 1;
-  ShowMessageln(F("1 RFID TAG insertion OK"));
-  ShowMessage(F("NEW RFID LIST COUNT = "));
+  ShowMessageln("1 RFID TAG insertion OK");
+  ShowMessage("NEW RFID LIST COUNT = ");
   ShowMessageln(rfidListElementCount);
 }
 void Robot::delete_rfid_list(unsigned long TagNr, byte TagMowerStatus, int pos_into_list) {
@@ -659,9 +659,9 @@ void Robot::saveRfidList() {
     eereadwrite(readflag, addr, ptr->TagDist2);
     ptr = ptr->next;
   }
-  ShowMessage(F("RFID LIST address Start="));
+  ShowMessage("RFID LIST address Start=");
   ShowMessageln(ADDR_RFID_LIST);
-  ShowMessage(F("RFID LIST address Stop="));
+  ShowMessage("RFID LIST address Stop=");
   ShowMessageln(addr);
 }
 
@@ -674,8 +674,8 @@ void Robot::loadRfidList() {
   short magic = 0;
   eereadwrite(readflag, addr, magic); // magic
   if (magic != MAGIC) {
-    ShowMessageln(F("RFID LIST USERDATA: NO EEPROM RFID LIST DATA"));
-    ShowMessageln(F("PLEASE SAVE YOUR RFID LIST ONCE"));
+    ShowMessageln("RFID LIST USERDATA: NO EEPROM RFID LIST DATA");
+    ShowMessageln("PLEASE SAVE YOUR RFID LIST ONCE");
     addErrorCounter(ERR_EEPROM_DATA);
     setNextState(STATE_ERROR, 0);
     return;
@@ -697,32 +697,32 @@ void Robot::loadRfidList() {
     insert_rfid_list(PR.TagNr, PR.TagMowerStatus, PR.TagToDo, PR.TagSpeed, PR.TagAngle1, PR.TagDist1, PR.TagAngle2, PR.TagDist2);
 
   }
-  ShowMessage(F("RFID LIST address Start="));
+  ShowMessage("RFID LIST address Start=");
   ShowMessageln(ADDR_RFID_LIST);
-  ShowMessage(F("RFID LIST address Stop="));
+  ShowMessage("RFID LIST address Stop=");
   ShowMessageln(addr);
   sort_rfid_list();
   print_rfid_list();
 }
 
 void Robot::loadSaveErrorCounters(boolean readflag) {
-  if (readflag) ShowMessageln(F("Load ErrorCounters"));
-  else ShowMessageln(F("Save ErrorCounters"));
+  if (readflag) ShowMessageln("Load ErrorCounters");
+  else ShowMessageln("Save ErrorCounters");
   int addr = ADDR_ERR_COUNTERS;
   short magic = 0;
   if (!readflag) magic = MAGIC;
   eereadwrite(readflag, addr, magic); // magic
   if ((readflag) && (magic != MAGIC)) {
-    ShowMessageln(F("EEPROM ERR COUNTERS: NO EEPROM ERROR DATA"));
-    ShowMessageln(F("PLEASE CHECK AND SAVE YOUR SETTINGS"));
+    ShowMessageln("EEPROM ERR COUNTERS: NO EEPROM ERROR DATA");
+    ShowMessageln("PLEASE CHECK AND SAVE YOUR SETTINGS");
     addErrorCounter(ERR_EEPROM_DATA);
     setNextState(STATE_ERROR, 0);
     return;
   }
   eereadwrite(readflag, addr, errorCounterMax);
-  ShowMessage(F("ErrorCounters address Start="));
+  ShowMessage("ErrorCounters address Start=");
   ShowMessageln(ADDR_ERR_COUNTERS);
-  ShowMessage(F("ErrorCounters address Stop="));
+  ShowMessage("ErrorCounters address Stop=");
   ShowMessageln(addr);
 }
 
@@ -736,8 +736,8 @@ void Robot::loadSaveUserSettings(boolean readflag) {
 
   if ((readflag) && (magic != MAGIC)) {
 
-    ShowMessageln(F("EEPROM USERDATA: NO EEPROM USER DATA"));
-    ShowMessageln(F("PLEASE CHECK AND SAVE YOUR SETTINGS"));
+    ShowMessageln("EEPROM USERDATA: NO EEPROM USER DATA");
+    ShowMessageln("PLEASE CHECK AND SAVE YOUR SETTINGS");
     addErrorCounter(ERR_EEPROM_DATA);
     setNextState(STATE_ERROR, 0);
     return;
@@ -879,17 +879,17 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, useMqtt);
   if (readflag)
   {
-    ShowMessage(F("UserSettings are read from EEprom Address : "));
+    ShowMessage("UserSettings are read from EEprom Address : ");
     ShowMessage(ADDR_USER_SETTINGS);
-    ShowMessage(F(" To "));
+    ShowMessage(" To ");
     ShowMessageln(addr);
     motorInitialSpeedMaxPwm = motorSpeedMaxPwm; //the Pi can change the speed so store the initial value to restore after PFND for example
   }
   else
   {
-    ShowMessage(F("UserSettings are saved from EEprom Address : "));
+    ShowMessage("UserSettings are saved from EEprom Address : ");
     ShowMessage(ADDR_USER_SETTINGS);
-    ShowMessage(F(" To "));
+    ShowMessage(" To ");
     ShowMessageln(addr);
   }
 
@@ -1020,7 +1020,7 @@ void Robot::printSettingSerial() {
   watchdogReset();
 
   // ------ sonar -----------------------------------
-  ShowMessageln(F("---------- sonar ---------------"));
+  ShowMessageln("---------- sonar ---------------");
   ShowMessage  ("sonarUse              : ");
   ShowMessageln(sonarUse);
   ShowMessage  ("sonarLikeBumper       : ");
@@ -1319,7 +1319,7 @@ void Robot::addErrorCounter(byte errType) {
 }
 
 void Robot::resetErrorCounters() {
-  ShowMessageln(F("resetErrorCounters"));
+  ShowMessageln("resetErrorCounters");
   for (int i = 0; i < ERR_ENUM_COUNT; i++) errorCounter[i] = errorCounterMax[i] = 0;
   loadSaveErrorCounters(false);
   resetMotorFault();
@@ -1329,17 +1329,17 @@ void Robot::resetMotorFault() {
   if (digitalRead(pinMotorLeftFault) == LOW) {
     digitalWrite(pinMotorEnable, LOW);
     digitalWrite(pinMotorEnable, HIGH);
-    ShowMessageln(F("Reset motor left fault"));
+    ShowMessageln("Reset motor left fault");
   }
   if  (digitalRead(pinMotorRightFault) == LOW) {
     digitalWrite(pinMotorEnable, LOW);
     digitalWrite(pinMotorEnable, HIGH);
-    ShowMessageln(F("Reset motor right fault"));
+    ShowMessageln("Reset motor right fault");
   }
   if (digitalRead(pinMotorMowFault) == LOW) {
     digitalWrite(pinMotorMowEnable, LOW);
     digitalWrite(pinMotorMowEnable, HIGH);
-    ShowMessageln(F("Reset motor mow fault"));
+    ShowMessageln("Reset motor mow fault");
   }
 }
 
@@ -1366,12 +1366,12 @@ void Robot::checkErrorCounter() {
 void Robot::autoReboot() {
   //this feature use the watchdog to perform a restart of the due
   if (RaspberryPIUse) {
-    ShowMessageln(F("Due reset after 1 secondes, send a command to Pi for restart also"));
+    ShowMessageln("Due reset after 1 secondes, send a command to Pi for restart also");
     MyRpi.sendCommandToPi("RestartPi");
   }
   else
   {
-    ShowMessageln(F("Due reset after 1 secondes"));
+    ShowMessageln("Due reset after 1 secondes");
   }
   delay(1000);
   watchdogReset();
@@ -2334,7 +2334,7 @@ void Robot::motorMowControl() {
 
 void Robot::resetIdleTime() {
   if (idleTimeSec == BATTERY_SW_OFF) { // battery switched off?
-    ShowMessageln(F("BATTERY switching ON again"));
+    ShowMessageln("BATTERY switching ON again");
     setActuator(ACT_BATTERY_SW, 1);  // switch on battery again (if connected via USB)
   }
   idleTimeSec = 0;
@@ -2447,17 +2447,17 @@ void Robot::setup()  {
   stateStartTime = millis();
   setBeeper(100, 50, 50, 200, 200 );//beep for 3 sec
   gps.init();
-  ShowMessageln(F("START"));
-  ShowMessage(F("Ardumower "));
+  ShowMessageln("START");
+  ShowMessage("Ardumower ");
   ShowMessageln(VER);
 #ifdef USE_DEVELOPER_TEST
   ShowMessageln("Warning: USE_DEVELOPER_TEST activated");
 #endif
-  ShowMessage(F("Config: "));
+  ShowMessage("Config: ");
   ShowMessageln(name);
-  ShowMessageln(F("press..."));
-  ShowMessageln(F("  d for menu"));
-  ShowMessageln(F("  v to change console output (sensor counters, values, perimeter etc.)"));
+  ShowMessageln("press...");
+  ShowMessageln("  d for menu");
+  ShowMessageln("  v to change console output (sensor counters, values, perimeter etc.)");
   ShowMessageln(consoleModeNames[consoleMode]);
   ShowMessageln ("");
   // ShowMessage ("        Free memory is :   ");
@@ -2490,7 +2490,7 @@ void Robot::setup()  {
 
 
 void Robot::printRemote() {
-  ShowMessage(F("RC "));
+  ShowMessage("RC ");
   ShowMessage(remoteSwitch);
   ShowMessage(",");
   ShowMessage(remoteSteer);
@@ -2501,11 +2501,11 @@ void Robot::printRemote() {
 }
 
 void Robot::printOdometry() {
-  ShowMessage(F("ODO,"));
+  ShowMessage("ODO,");
   ShowMessage(odometryX);
   ShowMessage(",");
   ShowMessageln(odometryY);
-  ShowMessage(F("ODO,"));
+  ShowMessage("ODO,");
   ShowMessage(odometryX);
   ShowMessage(",");
   ShowMessageln(odometryY);
@@ -2586,18 +2586,18 @@ void Robot::printInfo(Stream & s) {
 
 void Robot::printMenu() {
   ShowMessageln(" ");
-  ShowMessageln(F(" MAIN MENU:"));
-  ShowMessageln(F("1=test motors"));
-  ShowMessageln(F("To test odometry --> use Arduremote"));
-  ShowMessageln(F("3=communications menu"));
-  ShowMessageln(F("5=Deactivate and Delete GYRO calibration : To calibrate GYRO --> use Arduremote Do not move IMU during the Calib"));
-  ShowMessageln(F("6=Deactivate and Delete Compass calibration : To calibrate Compass --> use Arduremote start/stop"));
-  ShowMessageln(F("9=save user settings"));
-  ShowMessageln(F("l=load factory settings: Do not save setting before restart the mower"));
-  ShowMessageln(F("r=delete robot stats"));
-  ShowMessageln(F("x=read settings"));
-  ShowMessageln(F("e=delete all errors"));
-  ShowMessageln(F("0=exit"));
+  ShowMessageln(" MAIN MENU:");
+  ShowMessageln("1=test motors");
+  ShowMessageln("To test odometry --> use Arduremote");
+  ShowMessageln("3=communications menu");
+  ShowMessageln("5=Deactivate and Delete GYRO calibration : To calibrate GYRO --> use Arduremote Do not move IMU during the Calib");
+  ShowMessageln("6=Deactivate and Delete Compass calibration : To calibrate Compass --> use Arduremote start/stop");
+  ShowMessageln("9=save user settings");
+  ShowMessageln("l=load factory settings: Do not save setting before restart the mower");
+  ShowMessageln("r=delete robot stats");
+  ShowMessageln("x=read settings");
+  ShowMessageln("e=delete all errors");
+  ShowMessageln("0=exit");
   ShowMessageln(" ");
 }
 
@@ -2628,7 +2628,7 @@ void Robot::testMotors() {
   motorLeftPWMCurr = 0; motorRightPWMCurr = 0;
   setMotorPWM(motorLeftPWMCurr, motorRightPWMCurr);
 
-  ShowMessageln(F("testing left motor (forward) half speed..."));
+  ShowMessageln("testing left motor (forward) half speed...");
   delay(100);
   motorLeftPWMCurr = motorSpeedMaxPwm / 2; motorRightPWMCurr = 0;
   setMotorPWM(motorLeftPWMCurr, motorRightPWMCurr) ;
@@ -2853,7 +2853,7 @@ void Robot::checkButton() {
       //ShowMessage(F("Button Release counter : "));
       //ShowMessageln(buttonCounter);
       if ((statusCurr == NORMAL_MOWING) || (statusCurr == SPIRALE_MOWING) || (stateCurr == STATE_ERROR) || (statusCurr == WIRE_MOWING) || (statusCurr == BACK_TO_STATION) || (statusCurr == TRACK_TO_START)) {
-        ShowMessageln(F("ButtonPressed Stop Mowing and Reset Error"));
+        ShowMessageln("Button Pressed Stop Mowing and Reset Error");
         motorMowEnable = false;
         buttonCounter = 0;
         setNextState(STATE_OFF, 0);
