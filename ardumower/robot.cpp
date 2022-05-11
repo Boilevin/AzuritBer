@@ -2408,12 +2408,12 @@ void Robot::setup()  {
     timer[i].stopTime.hour = 0;
     timer[i].stopTime.minute = 0;
     timer[i].daysOfWeek = 0;
-    timer[i].startDistance = 0;
+    timer[i].startDistance = 1;
     timer[i].startArea = 1;
-    timer[i].startMowPattern = 0;
-    timer[i].startNrLane = 0;
+    timer[i].startMowPattern = 1;
+    timer[i].startNrLane = 2;
     timer[i].startRollDir = 0;
-    timer[i].startLaneMaxlengh = 0;
+    timer[i].startLaneMaxlengh = 6;
     timer[i].rfidBeacon = 0;
   }
   ActualRunningTimer = 99;

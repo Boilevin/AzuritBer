@@ -59,11 +59,11 @@ Mower::Mower() {
   motorLeftChange = 500;
   motorRightChange = 500;
   motorOdoAccel = 1500; //Time for accel from 0 to 100% in ms
-  motorSpeedMaxRpm       = 24;   // motor wheel max RPM (WARNING: do not set too high, so there's still speed control when battery is low!)
-  motorSpeedMaxPwm    = 190;  // motor wheel max Pwm  (8-bit PWM=255, 10-bit PWM=1023)
-  motorPowerMax     = 23;    // motor wheel max power (Watt)
-  motorSenseRightScale = 1.870; // normal is 1.536 motor right sense scale (mA=(ADC-zero)/scale)
-  motorSenseLeftScale = 1.650; // normal is 1.536 motor left sense scale  (mA=(ADC-zero)/scale)
+  motorSpeedMaxRpm       = 27;   // motor wheel max RPM (WARNING: do not set too high, so there's still speed control when battery is low!)
+  motorSpeedMaxPwm    = 15;  // motor wheel max Pwm  (8-bit PWM=255, 10-bit PWM=1023)
+  motorPowerMax     = 12;    // motor wheel max power (Watt)
+  motorSenseRightScale = 1.330; // normal is 1.536 motor right sense scale (mA=(ADC-zero)/scale)
+  motorSenseLeftScale = 1.540; // normal is 1.536 motor left sense scale  (mA=(ADC-zero)/scale)
   motorPowerIgnoreTime = 2000; // time to ignore motor power when start to avoid read the peack on motor start (ms)
   motorZeroSettleTime   = 2000 ; // defaut 3000 how long (ms) to wait for motors to settle at zero speed
   motorRollDegMax    = 100;  // max. roll Deg
@@ -80,15 +80,15 @@ Mower::Mower() {
 
   motorRightOffsetFwd = 0;  //percent offset in PWM use for the 2 wheels motor have the same speed a the same PWM
   motorRightOffsetRev = 0;  //use the 1 ml ODO test to find good value the 2 wheels need to stop at the same time
-  motorTickPerSecond = 200; // use to compute the maxodostate duration and computed on the calibration motor
+  motorTickPerSecond = 260; // use to compute the maxodostate duration and computed on the calibration motor
 
   UseAccelLeft = 1;
   UseBrakeLeft = 1;
   UseAccelRight = 1;
   UseBrakeRight = 1;
   AngleRotate = 100;
-  SpeedOdoMin = 50;
-  SpeedOdoMax = 140;
+  SpeedOdoMin = 60;
+  SpeedOdoMax = 150;
   odoLeftRightCorrection     = true;       // left-right correction for straight lines used in manual mode
   autoAdjustSlopeSpeed = true;  //adjust the speed on slope to have same speed on uphill and downhill
 
@@ -186,12 +186,12 @@ Mower::Mower() {
   yawOppositeLane3RollRight = -47;
   yawOppositeLane3RollLeft = -42;
   laneUseNr = 2;
-  maxDriftPerSecond = 0.05; //limit the stop time if small drift
+  maxDriftPerSecond = 0.15; //limit the stop time if small drift
   maxDurationDmpAutocalib = 60; //in sec
   delayBetweenTwoDmpAutocalib = 360; //in sec
   yawCiblePos = 90;
   yawCibleNeg = -90;
-  DistBetweenLane = 38;
+  DistBetweenLane = 25;
   maxLenghtByLane = 9;  // distance to run in bylane before simulate a wire detection
   justChangeLaneDir = true;
   mowPatternCurr = MOW_LANES;
@@ -229,9 +229,9 @@ Mower::Mower() {
 
   // ------ odometry ------------------------------------
   odometryUse       = 1;       // use odometry?
-  odometryTicksPerRevolution = 1010;   // encoder ticks per one full resolution
-  odometryTicksPerCm = 12.9;  // encoder ticks per cm
-  odometryWheelBaseCm = 43;    // wheel-to-wheel distance (cm)
+  odometryTicksPerRevolution = 700;   // encoder ticks per one full resolution
+  odometryTicksPerCm = 9;  // encoder ticks per cm
+  odometryWheelBaseCm = 37;    // wheel-to-wheel distance (cm)
 
 
 
