@@ -31,6 +31,11 @@
 #include "robot.h"
 #include "imu.h"
 
+//if i remember well  FUERSTRUPRECHT tell me that it is not use mower.h ???
+#if not defined(FUERSTRUPRECHT)  //(DUE) 
+  #include "mower.h"
+#endif
+
 #if not defined(TEENSYDUINO)  //(DUE) 			
 	#include "adcman.h"
 	#include "perimeter.h"
