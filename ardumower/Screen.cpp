@@ -55,7 +55,7 @@ void Screen::refreshMowScreen() {
   u8g2.setCursor(60, 10);
   u8g2.print(int(robot.loopsPerSec));
   u8g2.setCursor(0, 10);
-  u8g2.print(robot.perimeterMag);
+  u8g2.print(robot.perimeterMagLeft);
   u8g2.setFont(u8g2_font_ncenB10_tr);
   u8g2.setCursor(2, 30);
   u8g2.print(robot.mowPatternName());
@@ -160,7 +160,7 @@ void Screen::refreshWaitScreen() {
   u8g2.print(int(robot.loopsPerSec));
 
   u8g2.setCursor(0, 10);
-  u8g2.print(robot.perimeterMag);
+  u8g2.print(robot.perimeterMagLeft);
   u8g2.setFont(u8g2_font_ncenB10_tr);
   //u8g2.setCursor(0, 24);
   //u8g2.print(robot.mowPatternName());

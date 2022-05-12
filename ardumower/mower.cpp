@@ -159,7 +159,7 @@ Mower::Mower() {
   RollTimeFor45Deg = 1000; //time while roll in peri obstacle avoid if no Odometry
   circleTimeForObstacle = 4000; //time while arc circle in peri obstacle avoid if no Odometry
   DistPeriObstacleAvoid = 100; //distance while arc circle in peri obstacle avoid
-  perimeterMagMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
+  perimeterMagLeftMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
   perimeter.read2Coil = false;
   areaToGo = 1;//initialise the areatogo to the station area
 
@@ -224,6 +224,7 @@ Mower::Mower() {
   stationCheckDist   = 2;    // charge station  check distance to be sure voltage is OK cm
   UseBumperDock = true; //bumper is pressed when docking or not
   dockingSpeed   =  60;   //speed docking is (percent of maxspeed)
+  checkDockingSpeed   =  5;   //speed check docking RPM
   autoResetActive  = 0;       // after charging reboot or not
   stationHeading  = 0;  //heading of the charging station to use when no compass
 

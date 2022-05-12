@@ -375,7 +375,7 @@ class Robot
     int motorRollDegMax;
     int motorRollDegMin;
     //int DistPeriOutRev;
-
+    unsigned long stateOffAfter; // using BL Motor the manual PID control can generate a small vibration at end of the movement ,so jump to OFF
     long motorForwTimeMax; // max. forward time (ms) / timeout
     float motorBiDirSpeedRatio1 ;   // bidir mow pattern speed ratio 1
     float motorBiDirSpeedRatio2 ;   // bidir mow pattern speed ratio 2
@@ -604,7 +604,7 @@ class Robot
     int perimeterTrackRollTime ; // perimeter tracking roll time (ms)
     int perimeterTrackRevTime ; // perimeter tracking reverse time (ms)
     PID perimeterPID ;             // perimeter PID controller
-    int perimeterMag ;             // perimeter magnitude
+    int perimeterMagLeft ;             // perimeter magnitude
     int perimeterMagRight ;             // perimeter magnitude
     byte areaInMowing;              //it's the area in mowing nr
     boolean perimeterInside ;      // is inside perimeter?
@@ -616,7 +616,7 @@ class Robot
     int trackingPerimeterTransitionTimeOut;
     int trackingErrorTimeOut;
     boolean trakBlockInnerWheel;
-    float perimeterNoise; //compute each 1 seconde the diff between max and min Mag value help on position of motor wire and ferrite in the chassis
+    float perimeterNoiseLeft; //compute each 1 seconde the diff between max and min Mag value help on position of motor wire and ferrite in the chassis
 
     //add BB
     int leftSpeedperi;
@@ -638,7 +638,7 @@ class Robot
     int DistPeriObstacleAvoid;
     int DistPeriObstacleForw;
     int DistPeriOutStop;
-    int perimeterMagMaxValue;
+    int perimeterMagLeftMaxValue;
     int Tempovar;
     boolean lastPerimeterTrackInside; // was inside or outside
     float PeriCoeffAccel;
@@ -752,6 +752,8 @@ class Robot
     boolean UseBumperDock ;  //bumper is pressed when docking or not
     boolean autoResetActive;       // at the edn of the charging all is rebbot to avoid error after 1 or 2 weeks ON
     byte dockingSpeed ;  //speed docking is (percent of maxspeed) when sonar detect something while tracking
+    byte checkDockingSpeed ;  //station check speed mower force in station
+    
     unsigned long totalDistDrive;  //use to check when to leave the wire in start timer mode
     unsigned long nextTimeBattery ;
     unsigned long nextTimeCheckBattery;

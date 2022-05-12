@@ -530,7 +530,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->motorRightOffsetRev;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterMagMaxValue;
+    lineToSend = lineToSend + robot->perimeterMagLeftMaxValue;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->SpeedOdoMin; //4
     lineToSend = lineToSend + ",";
@@ -598,7 +598,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->dockingSpeed; //8
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + "0";
+    lineToSend = lineToSend + robot->checkDockingSpeed; //9;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + "0";
     lineToSend = lineToSend + ",";
@@ -658,7 +658,7 @@ void RpiRemote::RaspberryPISendPeri () {
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + millis();
   lineToSend = lineToSend + ",";
-  lineToSend = lineToSend + robot->perimeterMag;
+  lineToSend = lineToSend + robot->perimeterMagLeft;
   lineToSend = lineToSend + ",";
   lineToSend = lineToSend + robot->perimeterMagRight;
   lineToSend = lineToSend + ",";
@@ -1476,7 +1476,7 @@ void RpiRemote::readWrite_setting()
       if (nr_page == 11) {
         robot->motorRightOffsetFwd = val[0];
         robot->motorRightOffsetRev = val[1];
-        robot->perimeterMagMaxValue = val[2];
+        robot->perimeterMagLeftMaxValue = val[2];
         robot->SpeedOdoMin = val[3];
         robot->SpeedOdoMax = val[4];
         robot->yawSet1 = val[5];
