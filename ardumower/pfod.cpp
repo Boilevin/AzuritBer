@@ -438,8 +438,8 @@ void RemoteControl::sendMotorMenu(boolean update) {
   #endif	
   */
   sendSlider("a18", F("Power ignore time"), robot->motorPowerIgnoreTime, "", 1, 8000, 1);
-  sendSlider("a07", F("Roll Degrees max"), robot->motorRollDegMax, "", 1, 360, 1);
-  sendSlider("a19", F("Roll Degrees min"), robot->motorRollDegMin, "", 1, 180, 1);
+  sendSlider("a19", F("Roll Degrees min"), robot->motorRollDegMin, "", 1, 90, 1);
+  sendSlider("a07", F("Roll Degrees max"), robot->motorRollDegMax, "", 1, 180, 1); 
   sendSlider("a08", F("Rev Distance / Perimeter"), robot->DistPeriOutRev, "", 1, 100, 1);
   sendSlider("a09", F("Stop Distance / Perimeter"), robot->DistPeriOutStop, "", 1, 30, 1);
   sendPIDSlider("a14", "RPM", robot->motorLeftPID, 0.01, 3.0);
@@ -1162,7 +1162,7 @@ void RemoteControl::sendOdometryMenu(boolean update) {
   serialPort->print(", ");
   serialPort->println(robot->odometryRight);
   sendSlider("l04", F("Ticks per one full revolution"), robot->odometryTicksPerRevolution, "", 1, 2800, 500);
-  sendSlider("l03", F("Ticks per cm"), robot->odometryTicksPerCm, "", 0.1, 60, 10);
+  sendSlider("l03", F("Ticks per cm"), robot->odometryTicksPerCm, "", 0.1, 30, 8);
   sendSlider("l02", F("Wheel base cm"), robot->odometryWheelBaseCm, "", 0.1, 50, 5);
   serialPort->println("}");
 }
@@ -1499,9 +1499,7 @@ void RemoteControl::processCommandMenu(String pfodCmd) {
     sendCommandMenu(true);
   } else if (pfodCmd == "rh") {
     // cmd: home
-	#if not defined(TEENSYDUINO)  //(DUE) 
 		robot->periFindDriveHeading = scalePI(robot->imu.ypr.yaw);
-	#endif	
     robot->areaToGo = 1;
     robot->whereToStart = 99999;
     robot->nextTimeTimer = millis() + 3600000;

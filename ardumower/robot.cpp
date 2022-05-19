@@ -878,7 +878,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, compassRollSpeedCoeff);
   eereadwrite(readflag, addr, useMqtt);
   eereadwrite(readflag, addr, checkDockingSpeed);
-  
+
   if (readflag)
   {
     ShowMessage("UserSettings are read from EEprom Address : ");
@@ -1633,7 +1633,9 @@ void Robot::OdoRampCompute() { //execute only one time when a new state executio
     MaxOdoStateDuration = 3000 + max(movingTimeRight, movingTimeLeft); //add 3 secondes to the max moving duration of the 2 wheels
   }
   //check to set the correct heading
+  
   imuDriveHeading = imu.ypr.yaw / PI * 180; //normal mowing heading
+  
   if (statusCurr == BACK_TO_STATION) {  //possible heading change
     imuDriveHeading = periFindDriveHeading / PI * 180;
   }
@@ -3912,9 +3914,15 @@ void Robot::setNextState(byte stateNew, byte dir) {
       break;
 
     case STATE_PERI_OUT_ROLL: //roll left or right in normal mode
+      if(motorRollDegMin>motorRollDegMax) ShowMessageln("Warning : Roll deg Min > Roll deg Max ????? ");
+    
       if (mowPatternCurr == MOW_RANDOM) AngleRotate = random(motorRollDegMin, motorRollDegMax);
-
+      ShowMessage("Heading : ");
+      ShowMessage((imu.ypr.yaw / PI * 180.0));
+      
       if (dir == RIGHT) {
+        ShowMessage(" Rot Angle : ");
+        ShowMessageln(AngleRotate);
         if (mowPatternCurr == MOW_ZIGZAG) AngleRotate = imu.scale180(imuDriveHeading + 135); //need limit value to valib the rebon
         UseAccelLeft = 1;
         //bb6
@@ -3924,23 +3932,24 @@ void Robot::setNextState(byte stateNew, byte dir) {
         UseBrakeRight = 1;
         motorLeftSpeedRpmSet = motorSpeedMaxRpm ;
         motorRightSpeedRpmSet = -motorSpeedMaxRpm;
-        Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
+        Tempovar = 2*36000 / AngleRotate; //need a value*100 for integer division later
         stateEndOdometryRight = odometryRight - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
         stateEndOdometryLeft = odometryLeft + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar);
-
       } else {
+        ShowMessage(" Rot Angle : ");
+        ShowMessageln(-1*AngleRotate);
         if (mowPatternCurr == MOW_ZIGZAG) AngleRotate = imu.scale180(imuDriveHeading - 135); //need limit value to valib the rebon
         UseAccelLeft = 0;
         UseBrakeLeft = 1;
         UseAccelRight = 1;
-        //bb6 =1
         UseBrakeRight = 0;
         motorLeftSpeedRpmSet = -motorSpeedMaxRpm ;
         motorRightSpeedRpmSet = motorSpeedMaxRpm;
-        Tempovar = 36000 / AngleRotate; //need a value*100 for integer division later
+        Tempovar = 2*36000 / AngleRotate; //need a value*100 for integer division later
         stateEndOdometryRight = odometryRight + (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) ;
         stateEndOdometryLeft = odometryLeft - (int)100 * (odometryTicksPerCm * PI * odometryWheelBaseCm / Tempovar) ;
       }
+
       OdoRampCompute();
       break;
 
@@ -4021,12 +4030,12 @@ void Robot::setNextState(byte stateNew, byte dir) {
       motorRightSpeedRpmSet = -motorSpeedMaxRpm / 1.5;
       stateEndOdometryRight = odometryRight - (int)(odometryTicksPerCm * 5); //stop on 5 cm
       stateEndOdometryLeft = odometryLeft + (int)(odometryTicksPerCm * 5);
-
-
       OdoRampCompute();
       break;
+      
     case STATE_PERI_OUT_FORW:  //Accel after roll so the 2 wheel have the same speed when reach the forward state
-
+      ShowMessage("New heading :");
+      ShowMessageln((imu.ypr.yaw / PI * 180.0));
       if ((mowPatternCurr == MOW_LANES) || (mowPatternCurr == MOW_ZIGZAG)) {
         PrevStateOdoDepassLeft = odometryLeft - stateEndOdometryLeft;
         PrevStateOdoDepassRight = odometryRight - stateEndOdometryRight;
@@ -5566,7 +5575,7 @@ void Robot::loop()  {
 
       break;
 
-   case STATE_MANUAL:
+    case STATE_MANUAL:
       checkCurrent();
       checkBumpers();
       if (millis() > stateOffAfter) setNextState(STATE_OFF, 0);
