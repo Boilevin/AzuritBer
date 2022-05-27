@@ -1135,7 +1135,7 @@ void RemoteControl::sendStationMenu(boolean update) {
   sendSlider("k01", F("Roll Angle (Deg)"), robot->stationRollAngle, "", 1, 180, 0);
   sendSlider("k02", F("Accel Distance after Roll"), robot->stationForwDist, "", 1, 200, 0);
   sendSlider("k03", F("Station check Distance"), robot->stationCheckDist, "", 1, 20, 0);
-  sendSlider("k07", F("Station check Speed"), robot->checkDockingSpeed, "", 0.1, 10, 0);
+  sendSlider("k08", F("Station check Speed"), robot->checkDockingSpeed, "", 0.1, 10, 0);
   sendSlider("k06", F("Sonar Docking Speed % of MaxSpeed"), robot->dockingSpeed, "", 1, 100, 20);
   sendSlider("k04", F("Station Heading"), robot->stationHeading , "", 1, 180, 0);
 
@@ -1150,7 +1150,7 @@ void RemoteControl::processStationMenu(String pfodCmd) {
   else if (pfodCmd.startsWith("k02")) processSlider(pfodCmd, robot->stationForwDist, 1);
   else if (pfodCmd.startsWith("k03")) processSlider(pfodCmd, robot->stationCheckDist, 1);
   else if (pfodCmd.startsWith("k06")) processSlider(pfodCmd, robot->dockingSpeed, 1);
-  else if (pfodCmd.startsWith("k07")) processSlider(pfodCmd, robot->checkDockingSpeed, 0.1);
+  else if (pfodCmd.startsWith("k08")) processSlider(pfodCmd, robot->checkDockingSpeed, 0.1);
   else if (pfodCmd.startsWith("k04")) processSlider(pfodCmd, robot->stationHeading, 1);
   sendStationMenu(true);
 }
