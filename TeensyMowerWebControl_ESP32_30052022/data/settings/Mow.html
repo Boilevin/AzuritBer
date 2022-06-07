@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/Mow</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s2');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+		<h2><p style="text-align:center">Settings/Mow</p></h2>
+
+		<div class="col1"><button id="o12" type="button" onclick="isClicked(this.id)" class="button">Force mowing off: NO </button></span></div><br>
+
+		<div style="text-align:center"><span id="o00">Overload Counter</span></span></div><br>
+		<div style="text-align:center"><span id="o01">Power in Watt</span></span></div><br>
+		<div style="text-align:center"><span id="o11">current in mA</span></span></div><br><br>
+
+
+		<div style="text-align:center"><span id="o02_name">Power max: </span><span id="o02_val">0.0</span></div>
+		<input id="o02" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="0.1" value="0"  min="0" max="100">
+		<div style="text-align:left;float:left"><span id="o02_min">0.0</span></div>
+		<div style="text-align:right;float:right"><span id="o02_max">100.0</span></div>
+		<div style="text-align:center"><span id="o02_act">0.0</span></div><br>
+		
+		<div style="text-align:center"><span id="o05_name">PWM Max Speed: </span><span id="o05_val">50.0</span></div>
+		<input id="o05" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="0.1" value="50"  min="50" max="255">
+		<div style="text-align:left;float:left"><span id="o05_min">0.0</span></div>
+		<div style="text-align:right;float:right"><span id="o05_max">100.0</span></div>
+		<div style="text-align:center"><span id="o05_act">0.0</span></div><br>
+		
+		<div style="text-align:center"><span id="o08_name">PWM Min Speed: </span><span id="o08_val">50.0</span></div>
+		<input id="o08" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="0.1" value="50"  min="50" max="255">
+		<div style="text-align:left;float:left"><span id="o08_min">0.0</span></div>
+		<div style="text-align:right;float:right"><span id="o08_max">100.0</span></div>
+		<div style="text-align:center"><span id="o08_act">0.0</span></div><br>
+
+		<div style="text-align:center"><span id="o03_name">High Grass speed Ratio % :</span><span id="o03_val">0</span></div>
+		<input id="o03" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="0.01" value="0"  min="0" max="3">
+		<div style="text-align:left;float:left"><span id="o03_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="o03_max">3</span></div>
+		<div style="text-align:center"><span id="o03_act">0</span></div><br><br>
+
+		<div style="text-align:center"><span id="o07">PWM Coeff  </span></span></div><br>
+		<div style="text-align:center"><span id="o04">Actual PWM </span></span></div><br><br>	
+
+		<div style="text-align:center"><span id="o13_name">Mow Pattern Max Duration Minutes</span><span id="o13_val">0</span></div>
+		<input id="o13" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="10"  min="10" max="255">
+		<div style="text-align:left;float:left"><span id="o13_min">10</span></div>
+		<div style="text-align:right;float:right"><span id="o13_max">255</span></div>
+		<div style="text-align:center"><span id="o13_act">10</span></div><br><br>
+		<div class="col1"><button id="o10" type="button" onclick="isClicked(this.id)" class="button">Testing is </button></span></div><br>		
+	</div>
+</body>
+</html>

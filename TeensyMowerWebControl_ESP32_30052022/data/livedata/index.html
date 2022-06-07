@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de">
+	<head>
+		<meta charset="UTF-8">
+		<title>TeensyMower Webinterface/Live Data</title>  
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="../design.css" rel="stylesheet">
+		<script language="javascript" type="text/javascript" src="../functions.js"></script>
+	</head>
+<body>	
+		<div class="Fuerst1">
+			<div class="col1flat"><a href="../index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+						
+					
+			<div class="col1flat"><h2>TeensyMower Live Data</h2></div>
+			  
+			<div class="col1"><span style="text-align: center;"> <button type="button" onclick="window.location.href='./LD_IMU.html'" class="button">
+			Live Data IMU </button></span></div>
+			 
+			<div class="col1"><span style="text-align: center;"> <button type="button" onclick="window.location.href='./LD_Batt.html'" class="button">
+			Live Data Battery </button></span></div>
+			 
+			<div class="col1"><span style="text-align: center;"> <button type="button" onclick="window.location.href='./LD_Peri.html'" class="button">
+			Live Data Perimeter </button> </span></div>
+			 
+			<div class="col1"><span style="text-align: center;"> <button type="button" onclick="window.location.href='./LD_Sonar.html'" class="button">	Live Data Sonar </button> </span></div>
+			
+			<div class="col1"><span style="text-align: center;"> <button type="button" onclick="window.location.href='./LD_GPS2D.html'" class="button">	Live Data GPS2D </button> </span></div>	
+			
+			<div class="col1"><span style="text-align: center;"> <button type="button" onclick="window.location.href='./LD_Motor.html'" class="button">	Live Data Motor </button> </span></div>	
+			
+			
+			
+			<div class="col1"><span style="text-align: center;"> <button type="button" onclick="window.location.href='./LD_Counters.html'"class="button">	All the Counters </button> </span></div>	
+
+			
+	</div>
+
+		<script>
+			function isChanging(elem){
+				var ID = elem;
+				var val,ele, ele1;
+				var changed = false;
+				ele = document.getElementById(ID);
+				ele1 = document.getElementById( ID + "_act");
+				val = ele.value;
+				ele1.innerText = val;
+			}
+		</script>
+		
+	</body>
+</html>

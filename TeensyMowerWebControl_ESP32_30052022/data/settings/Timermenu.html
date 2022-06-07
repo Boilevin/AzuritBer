@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/Timermenu</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('i');">
+
+	<div class="Fuerst1">
+			<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+			<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+			<h2><p style="text-align:center">Settings/Timermenu</p></h2>	
+			<div class="col1"><button id="i99" type="button" onclick="isClicked(this.id)" class="button">
+			Use No	</button></span></div><br>
+	
+			<div class="col1"><button id="i00" type="button" onclick="window.location.href='./timermenu_1.html';isClicked(this.id)" class="button">
+			OFF	</button></span></div><br>
+	
+			<div class="col1">			<button id="i01" type="button" onclick="window.location.href='./timermenu_2.html';isClicked(this.id)" class="button">
+			OFF	</button></span></div><br>
+	
+			<div class="col1"><button id="i02" type="button" onclick="window.location.href='./timermenu_3.html';isClicked(this.id)" class="button">
+			OFF	</button></span></div><br>
+	
+			<div class="col1"><button id="i03" type="button" onclick="window.location.href='./timermenu_4.html';isClicked(this.id)" class="button">
+			OFF	</button></span></div><br>
+	
+			<div class="col1"><button id="i04" type="button" onclick="window.location.href='./timermenu_5.html';isClicked(this.id)" class="button">
+			OFF	</button></span></div><br>
+		</ul>
+	</div>
+</body>
+</html>

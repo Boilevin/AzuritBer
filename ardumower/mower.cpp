@@ -159,7 +159,7 @@ Mower::Mower() {
   RollTimeFor45Deg = 1000; //time while roll in peri obstacle avoid if no Odometry
   circleTimeForObstacle = 4000; //time while arc circle in peri obstacle avoid if no Odometry
   DistPeriObstacleAvoid = 100; //distance while arc circle in peri obstacle avoid
-  perimeterMagLeftMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
+  perimeterMagMaxValue = 2000; // Maximum value return when near the perimeter wire (use for tracking and slowing when near wire
   perimeter.read2Coil = false;
   areaToGo = 1;//initialise the areatogo to the station area
 

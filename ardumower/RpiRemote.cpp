@@ -530,7 +530,7 @@ void RpiRemote::receivePiReqSetting (String Setting_page, int nb_page) {
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->motorRightOffsetRev;
     lineToSend = lineToSend + ",";
-    lineToSend = lineToSend + robot->perimeterMagLeftMaxValue;
+    lineToSend = lineToSend + robot->perimeterMagMaxValue;
     lineToSend = lineToSend + ",";
     lineToSend = lineToSend + robot->SpeedOdoMin; //4
     lineToSend = lineToSend + ",";
@@ -1476,7 +1476,7 @@ void RpiRemote::readWrite_setting()
       if (nr_page == 11) {
         robot->motorRightOffsetFwd = val[0];
         robot->motorRightOffsetRev = val[1];
-        robot->perimeterMagLeftMaxValue = val[2];
+        robot->perimeterMagMaxValue = val[2];
         robot->SpeedOdoMin = val[3];
         robot->SpeedOdoMax = val[4];
         robot->yawSet1 = val[5];

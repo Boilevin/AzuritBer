@@ -616,7 +616,7 @@ class Robot
     int trackingPerimeterTransitionTimeOut;
     int trackingErrorTimeOut;
     boolean trakBlockInnerWheel;
-    float perimeterNoiseLeft; //compute each 1 seconde the diff between max and min Mag value help on position of motor wire and ferrite in the chassis
+    float perimeterNoise; //compute each 1 seconde the diff between max and min Mag value help on position of motor wire and ferrite in the chassis
 
     //add BB
     int leftSpeedperi;
@@ -638,7 +638,7 @@ class Robot
     int DistPeriObstacleAvoid;
     int DistPeriObstacleForw;
     int DistPeriOutStop;
-    int perimeterMagLeftMaxValue;
+    int perimeterMagMaxValue;
     int Tempovar;
     boolean lastPerimeterTrackInside; // was inside or outside
     float PeriCoeffAccel;

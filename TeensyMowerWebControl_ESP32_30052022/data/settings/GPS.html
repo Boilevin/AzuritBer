@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/GPS</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+   <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s14');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+		<h2><p style="text-align:center">Settings/GPS</p></h2>
+		<div class="col1"><button id="q00" type="button" onclick="isClicked(this.id)" class="button">
+			Use NO
+		</button></span></div><br>	
+
+		<div style="text-align:center"><span id="q01_name">Stuck if GPS speed is below: </span><span id="q01_val">0</span></div>
+		<input id="q01" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="0.1" value="0"  min="0" max="3">
+		<div style="text-align:left;float:left"><span id="q01_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="q01_max">3</span></div>
+		<div style="text-align:center"><span id="q01_act">0</span></div><br>
+	
+		<div style="text-align:center"><span id="q02_name">GPS speed ignore time: </span><span id="q02_val">0</span></div>
+		<input id="q02" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" value="0"  min="0" max="10000">
+		<div style="text-align:left;float:left"><span id="q02_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="q02_max">10000</span></div>
+		<div style="text-align:center"><span id="q02_act">0</span></div><br><br><br>	
+
+		<div style="text-align:center"><span id="q03">GPS Data 		</span></span></div><br>
+		<div style="text-align:center"><span id="q04">Robot Stuck 	</span></span></div><br>
+		<div style="text-align:center"><span id="q05">HDOP 			</span></span></div><br>
+		<div style="text-align:center"><span id="q06">Satellites 	</span></span></div><br>
+		<div style="text-align:center"><span id="q07">Speed 		</span></span></div><br>
+		<div style="text-align:center"><span id="q08">Course 		</span></span></div><br>
+		<div style="text-align:center"><span id="q09">Altidude 		</span></span></div><br>
+		<div style="text-align:center"><span id="q10">Latitude 		</span></span></div><br>
+		<div style="text-align:center"><span id="q11">Longitude 	</span></span></div><br>
+	</div>
+</body>
+</html>

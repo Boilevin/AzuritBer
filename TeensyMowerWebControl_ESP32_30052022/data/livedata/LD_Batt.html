@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Live_Data/Batterie</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+	<script language="javascript" type="text/javascript" src="../functions.js"></script>
+	
+
+<!-- Resources -->
+<script src="https://www.amcharts.com/lib/4/core.js"></script>
+<script src="https://www.amcharts.com/lib/4/charts.js"></script>
+<script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+
+<!-- Chart1 code -->
+<script>
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart1 = am4core.create("chart1", am4charts.XYChart);
+chart1.hiddenState.properties.opacity = 0;
+
+chart1.padding(10, 10, 10, 10);
+
+chart1.zoomOutButton.disabled = true;
+
+var data1 = [];
+var valor1 = 0;
+var valor2 = 0;
+var valor3 = 0;
+var i1 = 0;
+
+
+for (i1 = 0; i1 <= 59; i1++) {
+    //valor1 = 0;		
+    data1.push({ date: new Date().setSeconds((i1*10) - 600), value1: valor1, value2: valor2, value3: valor3 });
+	document.getElementById("pl1").innerHTML;
+}
+data1.push({ date: new Date().setSeconds( 0), value: document.getElementById("pl1").innerHTML, value: document.getElementById("pl2").innerHTML , value: document.getElementById("pl3").innerHTML });
+
+chart1.data = data1;
+
+var dateAxis1 = chart1.xAxes.push(new am4charts.DateAxis());
+dateAxis1.renderer.grid.template.location = 0;
+dateAxis1.renderer.minGridDistance = 120;
+dateAxis1.dateFormats.setKey("minute", "[bold] HH:MM");
+//dateAxis1.periodChangeDateFormats.setKey("second", "[bold]HH:mm a");
+//dateAxis1.periodChangeDateFormats.setKey("minute", "[bold]HH:mm a");
+dateAxis1.periodChangeDateFormats.setKey("hour", "[bold]HH:mm a");
+dateAxis1.renderer.inside = true;
+dateAxis1.renderer.axisFills.template.disabled = true;
+dateAxis1.renderer.ticks.template.disabled = true;
+dateAxis1.title.text = "";
+
+var valueAxis1 = chart1.yAxes.push(new am4charts.ValueAxis());
+valueAxis1.renderer.grid.template.location = 0;
+valueAxis1.renderer.minGridDistance = 20;
+valueAxis1.tooltip.disabled = true;
+valueAxis1.interpolationDuration = 0;
+valueAxis1.rangeChangeDuration = 0;
+valueAxis1.renderer.inside = false;
+valueAxis1.renderer.opposite = false;
+valueAxis1.renderer.minLabelPosition = 0.;
+valueAxis1.renderer.maxLabelPosition = 1;
+valueAxis1.renderer.axisFills.template.disabled = true;
+valueAxis1.renderer.ticks.template.disabled = true;
+valueAxis1.title.text = "V";
+valueAxis1.stroke = chart1.colors.getIndex(9);
+
+var valueAxis2 = chart1.yAxes.push(new am4charts.ValueAxis());
+valueAxis2.renderer.grid.template.location = 0;
+valueAxis2.renderer.minGridDistance = 20;
+valueAxis2.tooltip.disabled = true;
+valueAxis2.interpolationDuration = 0;
+valueAxis2.rangeChangeDuration = 0;
+valueAxis2.renderer.inside = false;
+valueAxis2.renderer.opposite = true;
+valueAxis2.renderer.minLabelPosition = 0;
+valueAxis2.renderer.maxLabelPosition = 1;
+valueAxis2.renderer.axisFills.template.disabled = true;
+valueAxis2.renderer.ticks.template.disabled = true;
+valueAxis2.title.text = "A";
+valueAxis2.stroke = chart1.colors.getIndex(0);
+valueAxis2.renderer.labels.template.dx = 0;
+
+
+var series1 = chart1.series.push(new am4charts.LineSeries());
+series1.dataFields.dateX = "date";
+series1.dataFields.valueY = "value1";
+series1.interpolationDuration = 0;
+series1.defaultState.transitionDuration = 0;
+series1.tensionX = 0.8;
+series1.name = "Battery_Voltage";
+series1.stroke = chart1.colors.getIndex(6);
+series1.yAxis = valueAxis1;
+
+var series2 = chart1.series.push(new am4charts.LineSeries());
+series2.dataFields.dateX = "date";
+series2.dataFields.valueY = "value2";
+series2.interpolationDuration = 0;
+series2.defaultState.transitionDuration = 0;
+series2.tensionX = 0.8;
+series2.name = "Charging_Voltage";
+series2.stroke = chart1.colors.getIndex(14);
+series2.yAxis = valueAxis1;
+
+var series3 = chart1.series.push(new am4charts.LineSeries());
+series3.dataFields.dateX = "date";
+series3.dataFields.valueY = "value3";
+series3.interpolationDuration = 0;
+series3.defaultState.transitionDuration = 0;
+series3.tensionX = 0.8;
+series3.name = "Charging_Current";
+series3.stroke = chart1.colors.getIndex(60);
+series3.yAxis = valueAxis2;
+
+// Add legend
+chart1.legend = new am4charts.Legend();
+
+chart1.events.on("datavalidated", function () {
+    dateAxis1.zoom({ start: 1 / 60 , end: 1.0 }, false, true);
+});
+
+dateAxis1.interpolationDuration = 0;
+dateAxis1.rangeChangeDuration = 0;
+
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        if (interval1) {
+            clearInterval(interval1);
+        }
+    }
+    else {
+        startInterval();
+    }
+}, false);
+
+// add data
+var interval1;
+function startInterval() {
+    interval1 = setInterval(function() {
+	    var werte1 = document.getElementById("pl1").innerHTML;
+		var werte2 = document.getElementById("pl2").innerHTML;
+		var werte3 = document.getElementById("pl3").innerHTML;
+        var lastdataItem = series1.dataItems.getIndex(series1.dataItems.length - 1);
+		//werte1 = Math.round(5+ Math.random() * 1);
+		//werte2 = Math.round((Math.random() < 0.5 ? 2 : 1) * Math.random() * 5);
+		//werte3 = Math.round((Math.random() < 0.5 ? 2 : 1) * Math.random() * 5);
+		chart1.addData(
+            { date: new Date(lastdataItem.dateX.getTime() + 10000), value1: werte1, value2: werte2, value3: werte3 },
+			//{ date: new Date().setSeconds(0), value1: werte1, value2: werte2, value3: werte3 },
+            1
+        );
+	chart1.data = data1;	
+    }, 10000);
+}
+
+startInterval();
+
+// all the below is optional, makes some fancy effects
+// gradient fill of the series
+series1.fillOpacity = 1;
+var gradient1 = new am4core.LinearGradient();
+gradient1.addColor(chart1.colors.getIndex(9), 0.2);
+series1.fill = gradient1;
+
+// this makes date axis labels to fade out
+
+//dateAxis1.renderer.labels.template.adapter.add("fillOpacity", function (fillOpacity, target) {
+//    var dataItem1 = target.dataItem;
+//    return dataItem1.position;
+//})
+
+
+// need to set this, otherwise fillOpacity is not changed and not set
+dateAxis1.events.on("validated", function () {
+    am4core.iter.each(dateAxis1.renderer.labels.iterator(), function (label) {
+        label.fillOpacity = label.fillOpacity;
+    })
+})
+
+// this makes date axis labels which are at equal minutes to be rotated
+dateAxis1.renderer.labels.template.adapter.add("rotation", function (rotation, target) {
+    var dataItem1 = target.dataItem;
+    if (dataItem1.date && dataItem1.date.getTime() == am4core.time.round(new Date(dataItem1.date.getTime()), "minute").getTime()) {
+        target.verticalCenter = "middle";
+        target.horizontalCenter = "left";
+        return -90;
+    }
+    else {
+        target.verticalCenter = "bottom";
+        target.horizontalCenter = "middle";
+        return 0;
+    }
+})
+
+// bullet at the front of the line
+var bullet1 = series1.createChild(am4charts.CircleBullet);
+bullet1.circle.radius = 3;
+bullet1.fillOpacity = 1;
+bullet1.fill = chart1.colors.getIndex(9);
+bullet1.isMeasured = false;
+
+var bullet2 = series2.createChild(am4charts.CircleBullet);
+bullet2.circle.radius = 3;
+bullet2.fillOpacity = 1;
+bullet2.fill = chart1.colors.getIndex(14);
+bullet2.isMeasured = false;
+
+var bullet3 = series3.createChild(am4charts.CircleBullet);
+bullet3.circle.radius = 3;
+bullet3.fillOpacity = 1;
+bullet3.fill = chart1.colors.getIndex(0);
+bullet3.isMeasured = false;
+
+series1.events.on("validated", function() {
+    bullet1.moveTo(series1.dataItems.last.point);
+    bullet1.validatePosition();
+});
+series2.events.on("validated", function() {
+    bullet2.moveTo(series2.dataItems.last.point);
+    bullet2.validatePosition();
+});
+series3.events.on("validated", function() {
+    bullet3.moveTo(series3.dataItems.last.point);
+    bullet3.validatePosition();
+});
+
+}); // end am4core.ready()
+</script>
+
+</head>
+
+<body onload="getWerte('A2')">
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="../index.html"><img src="../logo_small.png" alt="deTHoMAso"></a></div>			
+		<div class="col1"><a href="./index.html">Back </a></div>
+		<div class="col1"><span id="con">TeensyMower not connected...</span>	
+		<span id="aktivity">/</span></div><br>
+		<div id="chart1" class="Kurve1"></div>	
+		<span id="pl1">Battery_Voltage </span>
+		<span id="pl2">  Charging_Voltage </span>
+		<span id="pl3">  Charging_Current </span>			
+	</div>	
+</body>
+</html>

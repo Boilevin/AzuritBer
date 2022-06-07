@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/DateTime<</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+	<script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s12');">
+
+	<div class="Fuerst1">
+			<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+			<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+			<h2><p style="text-align:center">Settings/Date and Time</p></h2>
+			
+
+	<div style="text-align:center"><span id="t00">15.05.2022, 12:00</span></div><br>		
+
+	<div style="text-align:center"><span id="t01_name">Day of Week </span><span id="t01_val">0</span></div>
+		<input id="t01" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" value="0" min="0" max="6">
+		<div style="text-align:left;float:left"><span id="t01_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="t01_max">6</span></div>
+		<div style="text-align:center"><span id="t01_act">0</span></div><br><br>
+
+	<div style="text-align:center"><span id="t02_name">Day </span><span id="t02_val">0</span></div>
+		<input id="t02" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" value="1"  min="1" max="31">
+		<div style="text-align:left;float:left"><span id="t02_min">1</span></div>
+		<div style="text-align:right;float:right"><span id="t02_max">31</span></div>
+		<div style="text-align:center"><span id="t02_act">1</span></div><br><br>
+
+	<div style="text-align:center"><span id="t03_name">Month </span><span id="t03_val">0</span></div>
+		<input id="t03" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" value="5" min="1" max="12">
+		<div style="text-align:left;float:left"><span id="t03_min">1</span></div>
+		<div style="text-align:right;float:right"><span id="t03_max">12</span></div>
+		<div style="text-align:center"><span id="t03_act">5</span></div><br><br>
+
+	<div style="text-align:center"><span id="t04_name">Year </span><span id="t04_val">0</span></div>
+		<input id="t04" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" value="2022" min="2022" max="2032">
+		<div style="text-align:left;float:left"><span id="t04_min">2022</span></div>
+		<div style="text-align:right;float:right"><span id="t04_max">2032</span></div>
+		<div style="text-align:center"><span id="t04_act">2022</span></div><br><br>
+	</td></tr>
+
+	<div style="text-align:center"><span id="t05_name">Hour </span><span id="t05_val">0</span></div>
+		<input id="t05" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" value="0" min="0" max="23">
+		<div style="text-align:left;float:left"><span id="t05_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="t05_max">23</span></div>
+		<div style="text-align:center"><span id="t05_act">0</span></div><br><br>
+
+	<div style="text-align:center"><span id="t06_name">Minute </span><span id="t06_val">0</span></div>
+		<input id="t06" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" value="0" min="0" max="59">
+		<div style="text-align:left;float:left"><span id="t06_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="t06_max">59</span></div>
+		<div style="text-align:center"><span id="t06_act">0</span></div><br><br>
+
+	<div class="col1"><button id="a10" type="button" onclick="sendDateTime()" class="button">
+				Send local browser time to mower </button></div><br>
+	</div>			
+<script>
+	function sendDateTime(){
+		var paramStr ="";
+		var heute = new Date();
+		paramStr += "t01=" + heute.getDay() + "&";
+		paramStr += "t02=" + heute.getDate() + "&";
+		paramStr += "t03=" + (heute.getMonth() + 1) + "&";
+		paramStr += "t04=" + heute.getFullYear() + "&";
+		paramStr += "t05=" + heute.getHours() + "&";
+		paramStr += "t06=" + heute.getMinutes();
+		buildParams(paramStr);
+	}
+
+</script>
+
+</body>
+</html>

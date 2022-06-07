@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Commands</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="./design.css" rel="stylesheet">
+	<script language="javascript" type="text/javascript" src="./functions.js"></script>
+</head>
+
+<body onload="getWerte('r')">
+	
+		<div class="Fuerst1">
+			<div class="col1flat"><a href="./index.html"><img class="a" src="./logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+			<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	
+		
+			<div class="col1flat"><h2>Commands</h2></div>
+			<div class="col2A"><button id="ro" type="button" onclick="isClicked(this.id)" class="button_orange">OFF</button></div>
+			<div class="col2B"><button id="rt" type="button" onclick="isClicked(this.id)" class="button_red">Power OFF PCB</button></div>
+			<div class="col2A"><span id="rb">Actual Status is </span></div>	
+			<div class="col2B"><span id="rs">Actual State is  </span></div>	
+			<div class="col2A"><button id="ra" type="button" onclick="isClicked(this.id)" class="button">Start Now in Auto mode	</button></div>
+			<div class="col2B"><button id="rc" type="button" onclick="isClicked(this.id)" class="button">Start Now in RC mode	</button></div>
+			<div class="col2A"><button id="rh" type="button" onclick="isClicked(this.id)" class="button">Go to Station			</button></div>
+			<div class="col2B"><button id="rk" type="button" onclick="isClicked(this.id)" class="button">Start Tracking			</button></div>
+			<div class="col2A"><button id="rm" type="button" onclick="isClicked(this.id)" class="button">Mowing is				</button></div>
+			<div class="col2B"><button id="rp" type="button" onclick="isClicked(this.id)" class="button">Pattern is				</button></div>
+			<div class="col2A"><button id="r1"  type="button" onclick="isClicked(this.id)" class="button">User switch 1 is 		</button></div>			
+			<div class="col2B"><button id="r2"  type="button" onclick="isClicked(this.id)" class="button">User switch 2 is 		</button></div>		
+			<div class="col2A"><button id="r3"  type="button" onclick="isClicked(this.id)" class="button">User switch 3 is 		</button></div>	
+			<div class="col2B"></div>	
+			
+			<div class="col2A"><button id="rd1" type="button" onclick="isClicked(this.id)" class="button">UserOut1 ON				</button></div>			
+			<div class="col2B"><button id="rd0" type="button" onclick="isClicked(this.id)" class="button">UserOut1 OFF				</button></div>	
+			<div class="col2A"><button id="re1" type="button" onclick="isClicked(this.id)" class="button">UserOut2 ON				</button></div>		
+			<div class="col2B"><button id="re0" type="button" onclick="isClicked(this.id)" class="button">UserOut2 OFF				</button></div>		
+			<div class="col2A"><button id="rf1" type="button" onclick="isClicked(this.id)" class="button">UserOut3 ON				</button></div>		
+			<div class="col2B"><button id="rf0" type="button" onclick="isClicked(this.id)" class="button">UserOut3 OFF				</button></div>	
+		</div>
+
+	
+</body>
+</html>

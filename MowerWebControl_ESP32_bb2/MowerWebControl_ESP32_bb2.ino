@@ -23,8 +23,8 @@ IPAddress myIP(10, 0, 0, 168);
 IPAddress network_gateway(10, 0, 0, 1);
 IPAddress network_subnet(255, 255, 255, 0);
 IPAddress network_dns(10, 0, 0, 1);
-char *wifi_network_ssid     = "your ssid";
-char *wifi_network_password = "your pass";
+char *wifi_network_ssid     = "ASUS_38_2G";
+char *wifi_network_password = "basicsheep714";
 boolean useMqtt = false ; //Set to true only if you have a mosquito broker running in your house 
 #define rfid_board_IsPluged false //Set to true or false according your hardware PN5180 can read RFID card
 

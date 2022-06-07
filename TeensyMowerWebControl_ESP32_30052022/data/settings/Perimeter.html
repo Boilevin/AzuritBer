@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/Perimeter</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s5');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+		<h2><p style="text-align:center">Settings/Perimeter</p></h2>   	
+
+		<div class="col1"><button id="e00" type="button" onclick="isClicked(this.id)" class="button">
+		Use Perimeter 
+		</button></span></div><br>
+	
+		<div style="text-align:center"><span id="e09">Actual Mowing Area </span></span></div><br>	
+		<div style="text-align:center"><span id="e02">Mag-L / Smag-L </span></span></div><br>	
+		<div style="text-align:center"><span id="e03">Mag-R / Smag-R </span></span></div><br><br>	
+	
+		<div style="text-align:center"><span id="e08_name">Mini Smag </span><span id="e08_val">0</span></div>
+		<input id="e08" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="1" max="200">
+		<div style="text-align:left;float:left"><span id="e08_min">1</span></div>
+		<div style="text-align:right;float:right"><span id="e08_max">200</span></div>
+		<div style="text-align:center"><span id="e08_act">1</span></div><br>
+	
+		<div style="text-align:center"><span id="e14_name">Timeout (s) if Outside </span><span id="e14_val">1</span></div>
+		<input id="e14" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="1" max="20">
+		<div style="text-align:left;float:left"><span id="e14_min">1</span></div>
+		<div style="text-align:right;float:right"><span id="e14_max">20</span></div>
+		<div style="text-align:center"><span id="e14_act">1</span></div><br>
+	
+		<div style="text-align:center"><span id="e04_name">Big AREA Smag Center </span><span id="e04_val">0</span></div>
+		<input id="e04" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="100"  min="100" max="600">
+		<div style="text-align:left;float:left"><span id="e04_min">100</span></div>
+		<div style="text-align:right;float:right"><span id="e04_max">600</span></div>
+		<div style="text-align:center"><span id="e04_act">100</span></div><br>
+	
+		<div style="text-align:center"><span id="e18_name">Tracking Max Speed PWM </span><span id="e18_val">0</span></div>
+		<input id="e18" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="80"  min="80" max="255">
+		<div style="text-align:left;float:left"><span id="e18_min">80</span></div>
+		<div style="text-align:right;float:right"><span id="e18_max">255</span></div>
+		<div style="text-align:center"><span id="e18_act">80</span></div><br>
+	
+		<div style="text-align:center"><span id="e20_name">Circle Arc disance (cm) Obstacle while tracking </span><span id="e20_val">0</span></div>
+		<input id="e20" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="1"  min="1" max="250">
+		<div style="text-align:left;float:left"><span id="e20_min">1</span></div>
+		<div style="text-align:right;float:right"><span id="e20_max">250</span></div>
+		<div style="text-align:center"><span id="e20_act">1</span></div><br>
+	
+		<div style="text-align:center"><span id="e21_name">Perimeter MAG MAX VALUE </span><span id="e21_val">1000</span></div>
+		<input id="e21" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="1000"  min="1000" max="6000">
+		<div style="text-align:left;float:left"><span id="e21_min">1000</span></div>
+		<div style="text-align:right;float:right"><span id="e21_max">6000</span></div>
+		<div style="text-align:center"><span id="e21_act">1000</span></div><br>
+	
+		<div style="text-align:center"><span id="e11_name">Transition timeout: </span><span id="e11_val">1000</span></div>
+		<input id="e11" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="1000"  min="1" max="5000">
+		<div style="text-align:left;float:left"><span id="e11_min">1</span></div>
+		<div style="text-align:right;float:right"><span id="e11_max">5000</span></div>
+		<div style="text-align:center"><span id="e11_act">1000</span></div><br>
+	
+		<div style="text-align:center"><span id="e12_name">Track error timeout: </span><span id="e12_val">0</span></div>
+		<input id="e12" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="1"  min="1" max="10000">
+		<div style="text-align:left;float:left"><span id="e12_min">1</span></div>
+		<div style="text-align:right;float:right"><span id="e12_max">10000</span></div>
+		<div style="text-align:center"><span id="e12_act">1</span></div><br>
+	
+		<div style="text-align:center"><span id="e07p_name">Track P: </span><span id="e07p_val">10.0</span></div>
+		<input id="e07p" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="0.1" value="0.0"  min="0" max="100.0" style="background:blue">
+		<div style="text-align:left;float:left"><span id="e07p_min">0.0</span></div>
+		<div style="text-align:right;float:right"><span id="e07p_max">100.0</span></div>
+		<div style="text-align:center"><span id="e07p_act">10.0</span></div><br>
+	
+		<div style="text-align:center"><span id="e07i_name">Track I: </span><span id="e07i_val">0.0</span></div>
+		<input id="e07i" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="0.1" value="0.0"  min="0" max="100.0" style="background:orange">
+		<div style="text-align:left;float:left"><span id="e07i_min">0.0</span></div>
+		<div style="text-align:right;float:right"><span id="e07i_max">100.0</span></div>
+		<div style="text-align:center"><span id="e07i_act">0.0</span></div><br>
+	
+		<div style="text-align:center"><span id="e07d_name">Track D: </span><span id="e07d_val">0.0</span></div>
+		<input id="e07d" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="0.1" value="0.0"  min="0" max="100.0" style="background:yellow">
+		<div style="text-align:left;float:left"><span id="e07d_min">0.0</span></div>
+		<div style="text-align:right;float:right"><span id="e07d_max">100.0</span></div>
+		<div style="text-align:center"><span id="e07d_act">0</span></div><br>
+	
+		<div class="col1"><button id="e10" type="button" onclick="isClicked(this.id)" class="button">
+		Swap Left coil polarity </button></span></div><br>
+	
+		<div class="col1"><button id="e22" type="button" onclick="isClicked(this.id)" class="button">
+		Swap Right coil polarity </button></span></div><br>
+	
+		<div class="col1"><button id="e23" type="button" onclick="isClicked(this.id)" class="button">
+		Read The 2 Coils </button></span></div><br>
+	
+		<div class="col1"><button id="e13" type="button" onclick="isClicked(this.id)" class="button">
+		Block inner wheel </button></span></div><br>
+	
+		<div class="col1"><button id="e15" type="button" onclick="isClicked(this.id)" class="button">
+		Reduce Speed near Wire 	</button></span></div><br>
+	
+		<div style="text-align:center"><span id="e24">Actual Speed coeff </span></div><br>		
+	</div>
+</body>
+</html>

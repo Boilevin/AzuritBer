@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>deTHoMAso Webinterface/Settings/Timermenu</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('i04');">
+
+	<div class="Fuerst1">
+			<div class="col1flat"><a href="./Timermenu.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+			<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+			<h2><p style="text-align:center">Settings/Timermenue 5</p></h2>
+	
+			<div class="col1"><button id="p04" type="button" onclick="isClicked(this.id)" class="button">
+				Use NO </button></span></div><br>	
+				
+			<div style="text-align:center"><span id="p14_name">Start hour </span><span id="p14_val">0</span></div>
+			<input id="p14" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1.0" value="0"  min="0" max="23">
+			<div style="text-align:left;float:left"><span id="p14_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p14_max">23</span></div>
+			<div style="text-align:center"><span id="p14_act">0</span></div><br>
+		
+			<div style="text-align:center"><span id="p24_name">Start minute </span><span id="p24_val">0</span></div>
+			<input id="p24" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1.0" value="0"  min="0" max="59">
+			<div style="text-align:left;float:left"><span id="p24_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p24_max">59</span></div>
+			<div style="text-align:center"><span id="p24_act">0</span></div><br>
+		
+			<div style="text-align:center"><span id="p34_name">Stop hour </span><span id="p34_val">0</span></div>
+			<input id="p34" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1.0" value="0"  min="0" max="23">
+			<div style="text-align:left;float:left"><span id="p34_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p34_max">23</span></div>
+			<div style="text-align:center"><span id="p34_act">0</span></div><br>
+		
+			<div style="text-align:center"><span id="p44_name">Stop minute </span><span id="p44_val">0</span></div>
+			<input id="p44" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1.0" value="0"  min="0" max="59">
+			<div style="text-align:left;float:left"><span id="p44_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p44_max">59</span></div>
+			<div style="text-align:center"><span id="p44_act">0</span></div><br>
+			
+			<div style="text-align:center"><span id="p64_name">Start Dist/Station: </span><span id="p64_val">0</span></div>
+			<input id="p64" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="255">
+			<div style="text-align:left;float:left"><span id="p64_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p64_max">255</span></div>
+			<div style="text-align:center"><span id="p64_act">0</span></div><br>
+			
+			<div style="text-align:center"><span id="pc4_name">Use Beacon: </span><span id="pc4_val">0</span></div>
+			<input id="pc4" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="40">
+			<div style="text-align:left;float:left"><span id="pc4_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="pc4_max">40</span></div>
+			<div style="text-align:center"><span id="pc4_act">0</span></div><br>
+			
+			
+			
+			<div class="col1"><button id="p74" type="button" onclick="isClicked(this.id)" class="button">
+			Start Pattern : </button></span></div><br>
+			
+			<div class="col1"><button id="pd4" type="button" onclick="isClicked(this.id)" class="button">
+			Start Area : </button></span></div><br>
+			
+			<div class="col1"><button id="p84" type="button" onclick="isClicked(this.id)" class="button">
+			Start Lane NR : </button></span></div><br>
+			
+			<div class="col1"><button id="pa4" type="button" onclick="isClicked(this.id)" class="button">
+			Start Roll Dir : </button></span></div><br>
+			
+			<div style="text-align:center"><span id="pb4_name">Start Max Lane lenght : </span><span id="pb4_val">0</span></div>
+			<input id="pb4" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="40">
+			<div style="text-align:left;float:left"><span id="pb4_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="pb4_max">40</span></div>
+			<div style="text-align:center"><span id="pb4_act">0</span></div><br>
+	
+	
+			<div class="col1"><button id="p540" type="button" onclick="isClicked(this.id)" class="button">
+				SUN NO </button></span></div><br>
+	
+			<div class="col1"><button id="p541" type="button" onclick="isClicked(this.id)" class="button">
+				Mon NO </button></span></div><br>
+	
+			<div class="col1"><button id="p542" type="button" onclick="isClicked(this.id)" class="button">
+				Tue NO </button></span></div><br>
+	
+			<div class="col1"><button id="p543" type="button" onclick="isClicked(this.id)" class="button">
+				Wed NO </button></span></div><br>
+	
+			<div class="col1"><button id="p544" type="button" onclick="isClicked(this.id)" class="button">
+				Thu NO </button></span></div><br>
+	
+			<div class="col1"><button id="p545" type="button" onclick="isClicked(this.id)" class="button">
+				Fri NO </button></span></div><br>
+	
+			<div class="col1"><button id="p546" type="button" onclick="isClicked(this.id)" class="button">
+				Sat NO </button></span></div><br>
+	
+			<div class="col1"><button id="p94" type="button" onclick="isClicked(this.id)" class="button">
+				Set to current time </button></span></div><br>
+	</div>
+</body>
+</html>

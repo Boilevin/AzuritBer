@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Manual</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="./design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="./functions.js"></script>
+</head>
+
+<body onload="getWerte('n');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="./logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+		<div class="col1flat"><h2>Manual navigation</h2></div>
+		
+		<div class="col3A"><p> </p></div>
+		<div class="col3B"><button id="nf" type="button" onclick="isClicked(this.id)" class="button">forward			</button></div>
+		<div class="col3C"><p> </p></div>			
+		<div class="col3A"><button id="nl" type="button" onclick="isClicked(this.id)" class="button">left				</button></div>
+		<div class="col3B"><button id="ns" type="button" onclick="isClicked(this.id)" class="button">stop				</button></div>
+		<div class="col3C"><button id="nr" type="button" onclick="isClicked(this.id)" class="button">right				</button></div>
+		<div class="col3A"><p> </p></div>			
+		<div class="col3B"><button id="nb" type="button" onclick="isClicked(this.id)" class="button">back				</button></div>
+		<div class="col3C"><p> </p></div>
+		<div class="col3A"><p> </p></div>
+		<div class="col3B"><p> </p></div>
+		<div class="col3C"><p> </p></div>
+		<div class="col3A"><p> </p></div>			
+		<div class="col3B"><button id="nm" type="button" onclick="isClicked(this.id)" class="button">Mow is OFF		</button></div>
+		<div class="col3C"><p> </p></div>						
+	</div>
+</body>
+</html>

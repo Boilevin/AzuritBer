@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/Sonar</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s4');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+		<h2><p style="text-align:center">Settings/Sonar</p></h2>
+
+		<div class="col1"><button id="d00" type="button" onclick="isClicked(this.id)" class="button">
+		Use </button></span></div><br>
+
+		<div class="col1"><button id="d04" type="button" onclick="isClicked(this.id)" class="button">
+		Use left </button></span></div><br>
+
+		<div class="col1"><button id="d05" type="button" onclick="isClicked(this.id)" class="button">
+		Use center	</button></span></div><br>
+
+		<div class="col1"><button id="d06" type="button" onclick="isClicked(this.id)" class="button">
+		Use right </button></span></div><br>
+
+		<div style="text-align:center"><span style="text-align:center"><span id="d01">Counter 0</span></span></div><br>
+		<div style="text-align:center"><span style="text-align:center"><span id="d02">Value l, c, r 0, 0</span></span></div><br><br>
+
+
+		<div style="text-align:center"><span id="d03_name">Sonar Brake below </span><span id="d03_val">0</span></div>
+		<input id="d03" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="20"  min="20" max="150">
+		<div style="text-align:left;float:left"><span id="d03_min">20</span></div>
+		<div style="text-align:right;float:right"><span id="d03_max">150</span></div>
+		<div style="text-align:center"><span id="d03_act">20</span></div><br>
+	
+		<div style="text-align:center"><span id="d09_name">Sonar To Front Dist </span><span id="d09_val">0</span></div>
+		<input id="d09" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="10"  min="0" max="100">
+		<div style="text-align:left;float:left"><span id="d09_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="d09_max">100</span></div>
+		<div style="text-align:center"><span id="d09_act">10</span></div><br>
+	</div>
+</body>
+</html>

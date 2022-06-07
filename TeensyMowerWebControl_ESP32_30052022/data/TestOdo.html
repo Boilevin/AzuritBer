@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/TestOdo</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="./design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="./functions.js"></script>
+</head>
+
+<body onload="getWerte('yt')">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="./logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+		<div class="col1flat"><h2>Odometry Test Menu</h2></div>			
+		<div class="col1"><span id="yt10">Ticks Right / Left </span></div>	
+		<div class="col1"><button id="yt12" type="button" onclick="isClicked(this.id)" class="button">Mow is 			</button></div>
+		<div class="col2A"><button id="yt0" type="button" onclick="isClicked(this.id)" class="button">1 turn Wheel Fwd	</button></div>
+		<div class="col2A"><button id="yt1" type="button" onclick="isClicked(this.id)" class="button">5 turns Wheel Fwd	</button></div>
+		<div class="col2A"><button id="yt2" type="button" onclick="isClicked(this.id)" class="button">1 turn Wheel Rev	</button></div>
+		<div class="col2A"><button id="yt3" type="button" onclick="isClicked(this.id)" class="button">5 turns Wheel Fwd	</button></div>
+		<div class="col2A"><button id="yt4" type="button" onclick="isClicked(this.id)" class="button">3 meter Forward	</button></div>
+		<div class="col2A"><button id="yt7" type="button" onclick="isClicked(this.id)" class="button">Rotate Non Stop	</button></div>
+		<div class="col2A"><button id="yt6" type="button" onclick="isClicked(this.id)" class="button">Rotate 180Deg		</button></div>
+		<div class="col2A"><button id="yt5" type="button" onclick="isClicked(this.id)" class="button">Rotate 360Deg		</button></div>
+		<div class="col1"> <button id="yt8" type="button" onclick="isClicked(this.id)" class="button">OFF - Stop all test</button></div><br>
+		<div class="col1"><button id="yt13" type="button" onclick="isClicked(this.id)" class="button">Reset Odo count	</button></div>
+	</div>
+</body>
+</html>

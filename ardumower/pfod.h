@@ -37,7 +37,6 @@
 #ifndef PFOD_H
 #define PFOD_H
 
-
 #include "drivers.h"
 #include "pid.h"
 
@@ -49,15 +48,18 @@
  * It does not check the correctness. Therefore true / false has no meaning for the function but only for the syntax.
 */
 
+//#define DUE true                //if you use DUE-CPU
+//#define TEENSYDUINO true        //if you use Teensy4.1-CPU
 #define STANDARD true           //if you are NOT Fürst Ruprecht
 //#define FUERSTRUPRECHT true     //if you are Fürst Ruprecht
 //#define USECONSOLE true         //if you want to send the arduino-console-Output to your mobile/tablet
-								  // you must have the ShowMessage() function in your main-code	
-//#define USEPFOD true            //if you use the arduino-pfod-V3-app
+#define USEPFOD true            //if you use the arduino-pfod-V3-app
 
 #if not defined(TEENSYDUINO)  //(DUE) 
-  #include <Arduino.h>    
-  #include "perimeter.h"
+  #include <Arduino.h>    //(DUE) 
+  
+  #include "perimeter.h"  //(DUE)
+  
 #endif
 
 
@@ -85,6 +87,7 @@ class RemoteControl
     Robot *robot;
     boolean pfodCmdComplete;
     String pfodCmd;
+    String logFileNameArray [51][2];
     int rfidDetailIdx;
     int testmode;
     unsigned long nextPlotTime;
@@ -104,6 +107,7 @@ class RemoteControl
     void sendYesNo(int value);
     void sendOnOff(int value);
     void sendLeftRight(int value);
+    void printDouble( double val, byte precision);//FR: code from Thorsten-ac
 
 
     // PID slider
@@ -142,6 +146,15 @@ class RemoteControl
     // plotting
     void sendPlotMenu(boolean update);
 
+    // live data menu
+    void sendLiveDataMenu(boolean update);
+    void processLiveDataMenu(String pfodCmd);
+    void processLiveDataIMUMenu(boolean update);
+    void processLiveDataBatteryMenu(boolean update);
+    void processLiveDataPerimeterMenu(boolean update);
+    void processLiveDataSonarMenu(boolean update);
+    void processLiveDataGPS2DMenu(boolean update);
+
     // settings
     void sendSettingsMenu(boolean update);
     void sendMotorMenu(boolean update);
@@ -152,7 +165,7 @@ class RemoteControl
 	#endif
     void sendSonarMenu(boolean update);
     void sendPerimeterMenu(boolean update);
-  #if not defined(TEENSYDUINO)
+    #if not defined(TEENSYDUINO)
 		void sendLawnSensorMenu(boolean update);
 	#endif	
     void sendImuMenu(boolean update);
@@ -177,7 +190,7 @@ class RemoteControl
     void processBumperMenu(String pfodCmd);
     void processSonarMenu(String pfodCmd);
     void processPerimeterMenu(String pfodCmd);
-  #if not defined(TEENSYDUINO)
+    #if not defined(TEENSYDUINO)
 		void processLawnSensorMenu(String pfodCmd);
 		void processDropMenu(String pfodCmd);
 	#endif	
@@ -199,13 +212,20 @@ class RemoteControl
 	#endif	
 	#if defined(USECONSOLE)		
 		void sendConsoleMenu(boolean update);
-  #endif;
+  #endif
 
     // timer
     void sendTimerDetailMenu(int timerIdx, boolean update);
     void processTimerDetailMenu(String pfodCmd);
     void sendTimerMenu(boolean update);
     void processTimerMenu(String pfodCmd);
+
+  #if defined(TEENSYDUINO)
+    void sendSdCardLogMenu(boolean update);
+    void processSdCardLogMenu(String pfodCmd);
+    void sendSdCardLogDetailMenu(String logFileName);
+    //void processSdCardLogDetailMenu(int rfidDetailIdx,String pfodCmd);
+  #endif  
 };
 
 

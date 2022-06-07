@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/Stepper</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s18');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+		<h2><p style="text-align:center">Settings/Stepper</p></h2>
+
+		<div style="text-align:center"><span style="text-align:center"><span id="S01">VACTUAL </span></span></div><br>		
+		<div style="text-align:center"><span style="text-align:center"><span id="S09">Power in Watt (l, r): 0, 0</span></span></div><br>	
+		<div style="text-align:center"><span style="text-align:center"><span id="S10">motor current in mA (l, r): 0, 0</span></span></div><br>	
+		
+
+		<div class="col1"><button id="S02" type="button" onclick="isClicked(this.id)" class="button">Enable SpreadCycle-Mode </button></span></div><br>	
+
+		<div style="text-align:center"><span id="S03_name">RMS current </span><span id="S03_val"> </span></div>
+		<input id="S03" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="10" value="500"  min="200" max="1200">
+		<div style="text-align:left;float:left"><span id="S03_min">200</span></div>
+		<div style="text-align:right;float:right"><span id="S03_max">1200</span></div>
+		<div style="text-align:center"><span id="S03_act">500</span></div><br>
+	
+		<div style="text-align:center"><span id="S04_name">MicroSteps </span><span id="S04_val">0</span></div>
+		<input id="S04" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="2" value="128"  min="0" max="128">
+		<div style="text-align:left;float:left"><span id="S04_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="S04_max">128</span></div>
+		<div style="text-align:center"><span id="S04_act">128</span></div><br>
+	
+		<div style="text-align:center"><span id="S05_name">Ihold - Standstill current </span><span id="S05_val"> </span></div>
+		<input id="S05" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="31">
+		<div style="text-align:left;float:left"><span id="S05_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="S05_max">31</span></div>
+		<div style="text-align:center"><span id="S05_act">0</span></div><br>
+	
+		<div style="text-align:center"><span id="S06_name">Irun - Motor run current </span><span id="S06_val"> </span></div>
+		<input id="S06" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="31"  min="0" max="31">
+		<div style="text-align:left;float:left"><span id="S06_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="S06_max">31</span></div>
+		<div style="text-align:center"><span id="S06_act">31</span></div><br>
+	
+		<div style="text-align:center"><span id="S07_name">Iholddelay - motor power down </span><span id="S07_val"> </span></div>
+		<input id="S07" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="15"  min="1" max="31">
+		<div style="text-align:left;float:left"><span id="S07_min">1</span></div>
+		<div style="text-align:right;float:right"><span id="S07_max">31</span></div>
+		<div style="text-align:center"><span id="S07_act">15</span></div>
+	
+		<div style="text-align:center"><span id="S08_name">fclktrim - clockgenerator (31=12MHz) </span><span id="S08_val"> </span></div>
+		<input id="S08" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="31"  min="0" max="31">
+		<div style="text-align:left;float:left"><span id="S08_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="S08_max">31</span></div>
+		<div style="text-align:center"><span id="S08_act">31</span></div><br>
+	
+		<div style="text-align:center"><span id="S11_name">Steering PWM </span><span id="S11_val"> </span></div>
+		<input id="S11" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="20"  min="0" max="50">
+		<div style="text-align:left;float:left"><span id="S11_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="S11_max">50</span></div>
+		<div style="text-align:center"><span id="S11_act">20</span></div><br>
+	
+		<div style="text-align:center"><span id="S12_name">Steering kp  </span><span id="S12_val"> </span></div>
+		<input id="S12" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="20"  min="0" max="30">
+		<div style="text-align:left;float:left"><span id="S12_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="S12_max">30</span></div>
+		<div style="text-align:center"><span id="S12_act">20</span></div><br>
+	
+		<div class="col1"><button id="S09" type="button" onclick="isClicked(this.id)" class="button">Set Stepper-Settings without Saving </button></span></div><br>
+	</div>
+</body>
+</html>

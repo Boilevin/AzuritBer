@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/Motor</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="./design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('in');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="./logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+		<div class="col1flat"><h2>Info</h2></div>		
+		<div class="col1flat"><span id="v00">TeensyMower VER</span></div>
+		<div class="col1"><button id="v01" type="button" onclick="isClicked(this.id)" class="button">Developer</button></div>
+		<div class="col1"><button id="v04" type="button" onclick="isClicked(this.id)" class="button">Stats override</button></div>
+		<div class="col1"><span id="v02">Mowing time trip (min) </span></div>
+		<div class="col1"><span id="v03">Mowing time total (hrs) </span></div>
+		<div class="col1"><span id="v05">Battery charging cycles </span></div>
+		<div class="col1"><span id="v06">Battery recharged capacity trip (mAh)</span></div>
+		<div class="col1"><span id="v07">Battery recharged capacity total (Ah)</span></div>
+		<div class="col1"><span id="v08">Battery recharged capacity average (mAh)</span></div>
+	</div>
+</body>
+</html>

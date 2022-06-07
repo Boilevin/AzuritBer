@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Live_Data/IMU</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+	<script language="javascript" type="text/javascript" src="../functions.js"></script>
+
+<!-- Resources -->
+<script src="https://www.amcharts.com/lib/4/core.js"></script>
+<script src="https://www.amcharts.com/lib/4/charts.js"></script>
+<script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+
+<!-- Chart1 code -->
+<script>
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart1 = am4core.create("chart1", am4charts.XYChart);
+chart1.hiddenState.properties.opacity = 0;
+
+chart1.padding(0, 0, 0, 0);
+
+chart1.zoomOutButton.disabled = true;
+
+var data1 = [];
+var valor1 = 0;
+var valor2 = 0;
+var i1 = 0;
+
+for (i1 = 0; i1 <= 60; i1++) {
+    valor1 = 0;
+    data1.push({ date: new Date().setSeconds(i1 - 60), value: valor1, valor2 });
+}
+
+chart1.data = data1;
+
+var dateAxis1 = chart1.xAxes.push(new am4charts.DateAxis());
+dateAxis1.renderer.grid.template.location = 0;
+dateAxis1.renderer.minGridDistance = 60;
+dateAxis1.dateFormats.setKey("second", "ss");
+dateAxis1.periodChangeDateFormats.setKey("second", "[bold]HH:mm a");
+dateAxis1.periodChangeDateFormats.setKey("minute", "[bold]HH:mm a");
+dateAxis1.periodChangeDateFormats.setKey("hour", "[bold]HH:mm a");
+dateAxis1.renderer.inside = true;
+dateAxis1.renderer.axisFills.template.disabled = true;
+dateAxis1.renderer.ticks.template.disabled = true;
+dateAxis1.title.text = "";
+
+var valueAxis1 = chart1.yAxes.push(new am4charts.ValueAxis());
+valueAxis1.renderer.minGridDistance = 10;
+valueAxis1.tooltip.disabled = true;
+valueAxis1.interpolationDuration = 0;
+valueAxis1.rangeChangeDuration = 0;
+valueAxis1.renderer.inside = true;
+valueAxis1.renderer.minLabelPosition = 0;
+valueAxis1.renderer.maxLabelPosition = 1;
+valueAxis1.renderer.axisFills.template.disabled = true;
+valueAxis1.renderer.ticks.template.disabled = true;
+valueAxis1.title.text = "";
+
+var series1 = chart1.series.push(new am4charts.LineSeries());
+series1.dataFields.dateX = "date";
+series1.dataFields.valueY = "value1";
+series1.interpolationDuration = 0;
+series1.defaultState.transitionDuration = 0;
+series1.tensionX = 0.7;
+series1.name = "motorLeftRpmCurr";
+series1.stroke = chart1.colors.getIndex(6);
+series1.yAxis = valueAxis1;
+
+var series2 = chart1.series.push(new am4charts.LineSeries());
+series2.dataFields.dateX = "date";
+series2.dataFields.valueY = "value2";
+series2.interpolationDuration = 0;
+series2.defaultState.transitionDuration = 0;
+series2.tensionX = 0.7;
+series2.name = "motorRightRpmCurr";
+series2.stroke = chart1.colors.getIndex(60);
+series2.yAxis = valueAxis1;
+
+// Add legend
+chart1.legend = new am4charts.Legend();
+
+chart1.events.on("datavalidated", function () {
+    dateAxis1.zoom({ start: 1 / 60, end: 1.0 }, false, true);
+});
+
+dateAxis1.interpolationDuration = 0;
+dateAxis1.rangeChangeDuration = 0;
+
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        if (interval1) {
+            clearInterval(interval1);
+        }
+    }
+    else {
+        startInterval();
+    }
+}, false);
+
+// add data
+var interval1;
+function startInterval() {
+    interval1 = setInterval(function() {
+	    var werte1 = document.getElementById("pl1").innerHTML;
+        var werte2 = document.getElementById("pl2").innerHTML;
+        //werte1 = Math.round(5+ Math.random() * 1);
+		//werte2 = Math.round((Math.random() < 0.5 ? 2 : 1) * Math.random() * 5);
+        var lastdataItem1 = series1.dataItems.getIndex(series1.dataItems.length - 1);
+		chart1.addData(
+            { date: new Date(lastdataItem1.dateX.getTime() + 1000), value1: werte1, value2: werte2 },
+            1
+        );
+	chart1.data = data1;	
+    }, 1000);
+}
+
+startInterval();
+
+
+
+// this makes date axis labels to fade out
+
+//dateAxis1.renderer.labels.template.adapter.add("fillOpacity", function (fillOpacity, target) {
+//    var dataItem1 = target.dataItem;
+//    return dataItem1.position;
+//})
+
+
+// need to set this, otherwise fillOpacity is not changed and not set
+dateAxis1.events.on("validated", function () {
+    am4core.iter.each(dateAxis1.renderer.labels.iterator(), function (label) {
+        label.fillOpacity = label.fillOpacity;
+    })
+})
+
+// this makes date axis labels which are at equal minutes to be rotated
+dateAxis1.renderer.labels.template.adapter.add("rotation", function (rotation, target) {
+    var dataItem1 = target.dataItem;
+    if (dataItem1.date && dataItem1.date.getTime() == am4core.time.round(new Date(dataItem1.date.getTime()), "minute").getTime()) {
+        target.verticalCenter = "middle";
+        target.horizontalCenter = "left";
+        return -90;
+    }
+    else {
+        target.verticalCenter = "bottom";
+        target.horizontalCenter = "middle";
+        return 0;
+    }
+})
+
+// bullet at the front of the line
+var bullet1 = series1.createChild(am4charts.CircleBullet);
+bullet1.circle.radius = 5;
+bullet1.fillOpacity = 1;
+bullet1.fill = chart1.colors.getIndex(6);
+bullet1.isMeasured = false;
+
+var bullet2 = series2.createChild(am4charts.CircleBullet);
+bullet2.circle.radius = 5;
+bullet2.fillOpacity = 1;
+bullet2.fill = chart1.colors.getIndex(60);
+bullet2.isMeasured = false;
+
+series1.events.on("validated", function() {
+    bullet1.moveTo(series1.dataItems.last.point);
+    bullet1.validatePosition();
+});
+series2.events.on("validated", function() {
+    bullet2.moveTo(series2.dataItems.last.point);
+    bullet2.validatePosition();
+});
+
+}); // end am4core.ready()
+</script>
+
+
+
+
+
+
+<!-- Chart3 code -->
+<script>
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart3 = am4core.create("chart3", am4charts.XYChart);
+chart3.hiddenState.properties.opacity = 0;
+
+chart3.padding(0, 0, 0, 0);
+
+chart3.zoomOutButton.disabled = true;
+
+var data3 = [];
+var valor3 = 0;
+var valor4 = 0;
+var i3 = 0;
+
+for (i3 = 0; i3 <= 60; i3++) {
+    valor3 = 0;
+    data3.push({ date: new Date().setSeconds(i3 - 60), value: valor3, valor4 });
+}
+
+chart3.data = data3;
+
+var dateAxis3 = chart3.xAxes.push(new am4charts.DateAxis());
+dateAxis3.renderer.grid.template.location = 0;
+dateAxis3.renderer.minGridDistance = 60;
+dateAxis3.dateFormats.setKey("second", "ss");
+dateAxis3.periodChangeDateFormats.setKey("second", "[bold]HH:mm a");
+dateAxis3.periodChangeDateFormats.setKey("minute", "[bold]HH:mm a");
+dateAxis3.periodChangeDateFormats.setKey("hour", "[bold]HH:mm a");
+dateAxis3.renderer.inside = true;
+dateAxis3.renderer.axisFills.template.disabled = true;
+dateAxis3.renderer.ticks.template.disabled = true;
+dateAxis3.title.text = "";
+
+var valueAxis3 = chart3.yAxes.push(new am4charts.ValueAxis());
+valueAxis3.renderer.minGridDistance = 10;
+valueAxis3.tooltip.disabled = true;
+valueAxis3.interpolationDuration = 0;
+valueAxis3.rangeChangeDuration = 0;
+valueAxis3.renderer.inside = true;
+valueAxis3.renderer.minLabelPosition = 0;
+valueAxis3.renderer.maxLabelPosition = 1;
+valueAxis3.renderer.axisFills.template.disabled = true;
+valueAxis3.renderer.ticks.template.disabled = true;
+valueAxis3.title.text = "";
+
+var series3 = chart3.series.push(new am4charts.LineSeries());
+series3.dataFields.dateX = "date";
+series3.dataFields.valueY = "value3";
+series3.interpolationDuration = 0;
+series3.defaultState.transitionDuration = 0;
+series3.tensionX = 0.7;
+series3.name = "motorLeftSpeedRpmSet";
+series3.stroke = chart3.colors.getIndex(6);
+series3.yAxis = valueAxis3;
+
+var series4 = chart3.series.push(new am4charts.LineSeries());
+series4.dataFields.dateX = "date";
+series4.dataFields.valueY = "value4";
+series4.interpolationDuration = 0;
+series4.defaultState.transitionDuration = 0;
+series4.tensionX = 0.7;
+series4.name = "motorRightSpeedRpmSet";
+series4.stroke = chart3.colors.getIndex(60);
+series4.yAxis = valueAxis3;
+
+// Add legend
+chart3.legend = new am4charts.Legend();
+
+chart3.events.on("datavalidated", function () {
+    dateAxis3.zoom({ start: 1 / 60, end: 1.0 }, false, true);
+});
+
+dateAxis3.interpolationDuration = 0;
+dateAxis3.rangeChangeDuration = 0;
+
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        if (interval3) {
+            clearInterval(interval3);
+        }
+    }
+    else {
+        startInterval();
+    }
+}, false);
+
+// add data
+var interval3;
+function startInterval() {
+    interval3 = setInterval(function() {
+	    var werte3 = document.getElementById("pl3").innerHTML;
+        var werte4 = document.getElementById("pl4").innerHTML;
+        //werte3 = Math.round(5+ Math.random() * 1);
+		//werte4 = Math.round((Math.random() < 0.5 ? 2 : 1) * Math.random() * 5);
+        var lastdataItem3 = series3.dataItems.getIndex(series3.dataItems.length - 1);
+		chart3.addData(
+            { date: new Date(lastdataItem3.dateX.getTime() + 1000), value3: werte3, value4: werte4 },
+            1
+        );
+	chart3.data = data3;	
+    }, 1000);
+}
+
+startInterval();
+
+
+
+// this makes date axis labels to fade out
+
+//dateAxis3.renderer.labels.template.adapter.add("fillOpacity", function (fillOpacity, target) {
+//    var dataItem3 = target.dataItem;
+//    return dataItem3.position;
+//})
+
+
+// need to set this, otherwise fillOpacity is not changed and not set
+dateAxis3.events.on("validated", function () {
+    am4core.iter.each(dateAxis3.renderer.labels.iterator(), function (label) {
+        label.fillOpacity = label.fillOpacity;
+    })
+})
+
+// this makes date axis labels which are at equal minutes to be rotated
+dateAxis3.renderer.labels.template.adapter.add("rotation", function (rotation, target) {
+    var dataItem3 = target.dataItem;
+    if (dataItem3.date && dataItem3.date.getTime() == am4core.time.round(new Date(dataItem3.date.getTime()), "minute").getTime()) {
+        target.verticalCenter = "middle";
+        target.horizontalCenter = "left";
+        return -90;
+    }
+    else {
+        target.verticalCenter = "bottom";
+        target.horizontalCenter = "middle";
+        return 0;
+    }
+})
+
+// bullet at the front of the line
+var bullet3 = series3.createChild(am4charts.CircleBullet);
+bullet3.circle.radius = 5;
+bullet3.fillOpacity = 1;
+bullet3.fill = chart3.colors.getIndex(6);
+bullet3.isMeasured = false;
+
+var bullet4 = series4.createChild(am4charts.CircleBullet);
+bullet4.circle.radius = 5;
+bullet4.fillOpacity = 1;
+bullet4.fill = chart3.colors.getIndex(60);
+bullet4.isMeasured = false;
+
+series3.events.on("validated", function() {
+    bullet3.moveTo(series3.dataItems.last.point);
+    bullet3.validatePosition();
+});
+series4.events.on("validated", function() {
+    bullet4.moveTo(series4.dataItems.last.point);
+    bullet4.validatePosition();
+});
+
+}); // end am4core.ready()
+</script>
+
+
+
+
+<!-- Chart5 code -->
+<script>
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart5 = am4core.create("chart5", am4charts.XYChart);
+chart5.hiddenState.properties.opacity = 0;
+
+chart5.padding(0, 0, 0, 0);
+
+chart5.zoomOutButton.disabled = true;
+
+var data5 = [];
+var valor5 = 0;
+var valor6 = 0;
+var i5 = 0;
+
+for (i5 = 0; i5 <= 60; i5++) {
+    valor5 = 0;
+    data5.push({ date: new Date().setSeconds(i5 - 60), value: valor5, valor6 });
+}
+
+chart5.data = data5;
+
+var dateAxis5 = chart5.xAxes.push(new am4charts.DateAxis());
+dateAxis5.renderer.grid.template.location = 0;
+dateAxis5.renderer.minGridDistance = 60;
+dateAxis5.dateFormats.setKey("second", "ss");
+dateAxis5.periodChangeDateFormats.setKey("second", "[bold]HH:mm a");
+dateAxis5.periodChangeDateFormats.setKey("minute", "[bold]HH:mm a");
+dateAxis5.periodChangeDateFormats.setKey("hour", "[bold]HH:mm a");
+dateAxis5.renderer.inside = true;
+dateAxis5.renderer.axisFills.template.disabled = true;
+dateAxis5.renderer.ticks.template.disabled = true;
+dateAxis5.title.text = "";
+
+var valueAxis5 = chart5.yAxes.push(new am4charts.ValueAxis());
+valueAxis5.renderer.minGridDistance = 10;
+valueAxis5.tooltip.disabled = true;
+valueAxis5.interpolationDuration = 0;
+valueAxis5.rangeChangeDuration = 0;
+valueAxis5.renderer.inside = true;
+valueAxis5.renderer.minLabelPosition = 0;
+valueAxis5.renderer.maxLabelPosition = 1;
+valueAxis5.renderer.axisFills.template.disabled = true;
+valueAxis5.renderer.ticks.template.disabled = true;
+valueAxis5.title.text = "";
+
+var series5 = chart5.series.push(new am4charts.LineSeries());
+series5.dataFields.dateX = "date";
+series5.dataFields.valueY = "value5";
+series5.interpolationDuration = 0;
+series5.defaultState.transitionDuration = 0;
+series5.tensionX = 0.7;
+series5.name = "motorLeftPWMCurr";
+series5.stroke = chart5.colors.getIndex(6);
+series5.yAxis = valueAxis5;
+
+var series6 = chart5.series.push(new am4charts.LineSeries());
+series6.dataFields.dateX = "date";
+series6.dataFields.valueY = "value6";
+series6.interpolationDuration = 0;
+series6.defaultState.transitionDuration = 0;
+series6.tensionX = 0.7;
+series6.name = "motorRightPWMCurr";
+series6.stroke = chart5.colors.getIndex(60);
+series6.yAxis = valueAxis5;
+
+// Add legend
+chart5.legend = new am4charts.Legend();
+
+chart5.events.on("datavalidated", function () {
+    dateAxis5.zoom({ start: 1 / 60, end: 1.0 }, false, true);
+});
+
+dateAxis5.interpolationDuration = 0;
+dateAxis5.rangeChangeDuration = 0;
+
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        if (interval5) {
+            clearInterval(interval5);
+        }
+    }
+    else {
+        startInterval();
+    }
+}, false);
+
+// add data
+var interval5;
+function startInterval() {
+    interval5 = setInterval(function() {
+	    var werte5 = document.getElementById("pl5").innerHTML;
+        var werte6 = document.getElementById("pl6").innerHTML;
+        //werte5 = Math.round(5+ Math.random() * 1);
+		//werte6 = Math.round((Math.random() < 0.5 ? 2 : 1) * Math.random() * 5);
+        var lastdataItem5 = series5.dataItems.getIndex(series5.dataItems.length - 1);
+		chart5.addData(
+            { date: new Date(lastdataItem5.dateX.getTime() + 1000), value5: werte5, value6: werte6 },
+            1
+        );
+	chart5.data = data5;	
+    }, 1000);
+}
+
+startInterval();
+
+
+
+// this makes date axis labels to fade out
+
+//dateAxis5.renderer.labels.template.adapter.add("fillOpacity", function (fillOpacity, target) {
+//    var dataItem5 = target.dataItem;
+//    return dataItem5.position;
+//})
+
+
+// need to set this, otherwise fillOpacity is not changed and not set
+dateAxis5.events.on("validated", function () {
+    am4core.iter.each(dateAxis5.renderer.labels.iterator(), function (label) {
+        label.fillOpacity = label.fillOpacity;
+    })
+})
+
+// this makes date axis labels which are at equal minutes to be rotated
+dateAxis5.renderer.labels.template.adapter.add("rotation", function (rotation, target) {
+    var dataItem5 = target.dataItem;
+    if (dataItem5.date && dataItem5.date.getTime() == am4core.time.round(new Date(dataItem5.date.getTime()), "minute").getTime()) {
+        target.verticalCenter = "middle";
+        target.horizontalCenter = "left";
+        return -90;
+    }
+    else {
+        target.verticalCenter = "bottom";
+        target.horizontalCenter = "middle";
+        return 0;
+    }
+})
+
+// bullet at the front of the line
+var bullet5 = series5.createChild(am4charts.CircleBullet);
+bullet5.circle.radius = 5;
+bullet5.fillOpacity = 1;
+bullet5.fill = chart5.colors.getIndex(6);
+bullet5.isMeasured = false;
+
+var bullet6 = series6.createChild(am4charts.CircleBullet);
+bullet6.circle.radius = 5;
+bullet6.fillOpacity = 1;
+bullet6.fill = chart5.colors.getIndex(60);
+bullet6.isMeasured = false;
+
+series5.events.on("validated", function() {
+    bullet5.moveTo(series5.dataItems.last.point);
+    bullet5.validatePosition();
+});
+series6.events.on("validated", function() {
+    bullet6.moveTo(series6.dataItems.last.point);
+    bullet6.validatePosition();
+});
+
+}); // end am4core.ready()
+</script>
+
+
+
+
+
+
+<!-- Chart7 code -->
+<script>
+
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+var chart7 = am4core.create("chart7", am4charts.XYChart);
+chart7.hiddenState.properties.opacity = 0;
+
+chart7.padding(0, 0, 0, 0);
+
+chart7.zoomOutButton.disabled = true;
+
+var data7 = [];
+var valor7 = 0;
+var valor8 = 0;
+var i7 = 0;
+
+for (i7 = 0; i7 <= 60; i7++) {
+    valor7 = 0;
+    data7.push({ date: new Date().setSeconds(i7 - 60), value: valor7, valor8 });
+}
+
+chart7.data = data7;
+
+var dateAxis7 = chart7.xAxes.push(new am4charts.DateAxis());
+dateAxis7.renderer.grid.template.location = 0;
+dateAxis7.renderer.minGridDistance = 60;
+dateAxis7.dateFormats.setKey("second", "ss");
+dateAxis7.periodChangeDateFormats.setKey("second", "[bold]HH:mm a");
+dateAxis7.periodChangeDateFormats.setKey("minute", "[bold]HH:mm a");
+dateAxis7.periodChangeDateFormats.setKey("hour", "[bold]HH:mm a");
+dateAxis7.renderer.inside = true;
+dateAxis7.renderer.axisFills.template.disabled = true;
+dateAxis7.renderer.ticks.template.disabled = true;
+dateAxis7.title.text = "";
+
+var valueAxis7 = chart7.yAxes.push(new am4charts.ValueAxis());
+valueAxis7.renderer.minGridDistance = 10;
+valueAxis7.tooltip.disabled = true;
+valueAxis7.interpolationDuration = 0;
+valueAxis7.rangeChangeDuration = 0;
+valueAxis7.renderer.inside = true;
+valueAxis7.renderer.minLabelPosition = 0;
+valueAxis7.renderer.maxLabelPosition = 1;
+valueAxis7.renderer.axisFills.template.disabled = true;
+valueAxis7.renderer.ticks.template.disabled = true;
+valueAxis7.title.text = "";
+
+var series7 = chart7.series.push(new am4charts.LineSeries());
+series7.dataFields.dateX = "date";
+series7.dataFields.valueY = "value7";
+series7.interpolationDuration = 0;
+series7.defaultState.transitionDuration = 0;
+series7.tensionX = 0.7;
+series7.name = "motorLeftPID.eold";
+series7.stroke = chart7.colors.getIndex(6);
+series7.yAxis = valueAxis7;
+
+var series8 = chart7.series.push(new am4charts.LineSeries());
+series8.dataFields.dateX = "date";
+series8.dataFields.valueY = "value8";
+series8.interpolationDuration = 0;
+series8.defaultState.transitionDuration = 0;
+series8.tensionX = 0.7;
+series8.name = "motorRightPID.eold";
+series8.stroke = chart7.colors.getIndex(60);
+series8.yAxis = valueAxis7;
+
+// Add legend
+chart7.legend = new am4charts.Legend();
+
+chart7.events.on("datavalidated", function () {
+    dateAxis7.zoom({ start: 1 / 60, end: 1.0 }, false, true);
+});
+
+dateAxis7.interpolationDuration = 0;
+dateAxis7.rangeChangeDuration = 0;
+
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        if (interval7) {
+            clearInterval(interval7);
+        }
+    }
+    else {
+        startInterval();
+    }
+}, false);
+
+// add data
+var interval7;
+function startInterval() {
+    interval7 = setInterval(function() {
+	    var werte7 = document.getElementById("pl7").innerHTML;
+        var werte8 = document.getElementById("pl8").innerHTML;
+        //werte7 = Math.round(5+ Math.random() * 1);
+		//werte8 = Math.round((Math.random() < 0.5 ? 2 : 1) * Math.random() * 5);
+        var lastdataItem7 = series7.dataItems.getIndex(series7.dataItems.length - 1);
+		chart7.addData(
+            { date: new Date(lastdataItem7.dateX.getTime() + 1000), value7: werte7, value8: werte8 },
+            1
+        );
+	chart7.data = data7;	
+    }, 1000);
+}
+
+startInterval();
+
+
+
+// this makes date axis labels to fade out
+
+//dateAxis7.renderer.labels.template.adapter.add("fillOpacity", function (fillOpacity, target) {
+//    var dataItem7 = target.dataItem;
+//    return dataItem7.position;
+//})
+
+
+// need to set this, otherwise fillOpacity is not changed and not set
+dateAxis7.events.on("validated", function () {
+    am4core.iter.each(dateAxis7.renderer.labels.iterator(), function (label) {
+        label.fillOpacity = label.fillOpacity;
+    })
+})
+
+// this makes date axis labels which are at equal minutes to be rotated
+dateAxis7.renderer.labels.template.adapter.add("rotation", function (rotation, target) {
+    var dataItem7 = target.dataItem;
+    if (dataItem7.date && dataItem7.date.getTime() == am4core.time.round(new Date(dataItem7.date.getTime()), "minute").getTime()) {
+        target.verticalCenter = "middle";
+        target.horizontalCenter = "left";
+        return -90;
+    }
+    else {
+        target.verticalCenter = "bottom";
+        target.horizontalCenter = "middle";
+        return 0;
+    }
+})
+
+// bullet at the front of the line
+var bullet7 = series7.createChild(am4charts.CircleBullet);
+bullet7.circle.radius = 5;
+bullet7.fillOpacity = 1;
+bullet7.fill = chart7.colors.getIndex(6);
+bullet7.isMeasured = false;
+
+var bullet8 = series8.createChild(am4charts.CircleBullet);
+bullet8.circle.radius = 5;
+bullet8.fillOpacity = 1;
+bullet8.fill = chart7.colors.getIndex(60);
+bullet8.isMeasured = false;
+
+series7.events.on("validated", function() {
+    bullet7.moveTo(series7.dataItems.last.point);
+    bullet7.validatePosition();
+});
+series8.events.on("validated", function() {
+    bullet8.moveTo(series8.dataItems.last.point);
+    bullet8.validatePosition();
+});
+
+}); // end am4core.ready()
+</script>
+
+
+</head>
+
+<body onload="getWerte('A6');">
+<div class="Fuerst1">
+			<div class="col1flat"><a href="../index.html"><img src="../logo_small.png" alt="TeensyMower"></a></div>				
+			<div class="col1"><a href="./index.html">Back </a></div>	
+			<div class="col1flat"><span id="con">TeensyMower not connected...</span>	
+			<span id="aktivity">/</span></div><br><br>
+			
+			<div id="chart1" class="Kurve1"></div>	
+			
+			<div id="chart3" class="Kurve1"></div>	
+			
+			<div id="chart5" class="Kurve1"></div>	
+			
+			<div id="chart7" class="Kurve1"></div>	
+			
+			
+			<span id="pl1">motorLeftRpmCurr </span>
+			<span id="pl2">  motorRightRpmCurr </span>
+			<span id="pl3">  motorLeftSpeedRpmSet </span>
+			<span id="pl4">  motorRightSpeedRpmSet </span>
+			<span id="pl5">  motorLeftPWMCurr</span>
+			<span id="pl6">  motorRightPWMCurr</span>
+			<span id="pl7">  motorLeftPID_eold</span>
+			<span id="pl8">  motorRightPID_eold</span>
+	</div>	
+	
+</body>
+</html>

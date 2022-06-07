@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/RFIDDetail</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s17');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+		<h2><p style="text-align:center">Settings/RFID Detail List</p></h2>
+		
+		<div style="text-align:center"><span style="text-align:center"><span id="yw3">Tag ID : </span></span></div><br>
+		<div style="text-align:center"><span style="text-align:center"><span id="yw4">Status : </span></span></div><br>
+		<div style="text-align:center"><span style="text-align:center"><span id="yw5">ToDo   : </span></span></div><br><br>
+
+		<div style="text-align:center"><span id="yw6_name">Speed </span><span id="yw6_val">0</span></div>
+		<input id="yw6" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="60"  min="60" max="255">
+		<div style="text-align:left;float:left"><span id="yw6_min">60</span></div>
+		<div style="text-align:right;float:right"><span id="yw6_max">255</span></div>
+		<div style="text-align:center"><span id="yw6_act">60</span></div><br>
+	
+		<div style="text-align:center"><span id="yw7_name">Angle1 </span><span id="yw7_val">0</span></div>
+		<input id="yw7" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="-180" max="180">
+		<div style="text-align:left;float:left"><span id="yw7_min">-180</span></div>
+		<div style="text-align:right;float:right"><span id="yw7_max">180</span></div>
+		<div style="text-align:center"><span id="yw7_act">0</span></div><br>
+	
+		<div style="text-align:center"><span id="yw8_name">Dist 1 </span><span id="yw8_val">0</span></div>
+		<input id="yw8" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="50"  min="50" max="1000">
+		<div style="text-align:left;float:left"><span id="yw8_min">50</span></div>
+		<div style="text-align:right;float:right"><span id="yw8_max">1000</span></div>
+		<div style="text-align:center"><span id="yw8_act">50</span></div><br>
+	
+		<div style="text-align:center"><span id="yw9_name">Angle2 </span><span id="yw9_val">0</span></div>
+		<input id="yw9" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="-180" max="180">
+		<div style="text-align:left;float:left"><span id="yw9_min">-180</span></div>
+		<div style="text-align:right;float:right"><span id="yw9_max">180</span></div>
+		<div style="text-align:center"><span id="yw9_act">0</span></div><br>
+	
+		<div style="text-align:center"><span id="yw10_name">Dist 2 </span><span id="yw10_val">0</span></div>
+		<input id="yw10" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="50"  min="50" max="1000">
+		<div style="text-align:left;float:left"><span id="yw10_min">50</span></div>
+		<div style="text-align:right;float:right"><span id="yw10_max">1000</span></div>
+		<div style="text-align:center"><span id="yw10_act">50</span></div><br>
+	
+		<div class="col1"><button id="yw2" type="button" onclick="isClicked(this.id)" class="button">
+		DUPLICATE	</button></span></div><br>
+		<div class="col1"><button id="yw0" type="button" onclick="isClicked(this.id)" class="button">
+		DELETE THIS TAG	</button></span></div><br>
+	</div>
+</body>
+</html>

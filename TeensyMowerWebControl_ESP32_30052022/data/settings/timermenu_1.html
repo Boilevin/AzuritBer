@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>deTHoMAso Webinterface/Settings/Timermenu</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('i00');">
+	
+	<div class="Fuerst1">
+			<div class="col1flat"><a href="./Timermenu.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+			<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+			<h2><p style="text-align:center">Settings/Timermenue 1</p></h2>
+	
+			<div class="col1"><button id="p00" type="button" onclick="isClicked(this.id)" class="button">
+			Use NO </button></span></div><br>
+		
+			<div style="text-align:center"><span id="p10_name">Start hour </span><span id="p10_val">0</span></div>
+			<input id="p10" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1.0" value="0"  min="0" max="23">
+			<div style="text-align:left;float:left"><span id="p10_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p10_max">23</span></div>
+			<div style="text-align:center"><span id="p10_act">0</span></div><br>
+		
+			<div style="text-align:center"><span id="p20_name">Start minute </span><span id="p20_val">0</span></div>
+			<input id="p20" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1.0" value="0"  min="0" max="59">
+			<div style="text-align:left;float:left"><span id="p20_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p20_max">59</span></div>
+			<div style="text-align:center"><span id="p20_act">0</span></div><br>
+		
+			<div style="text-align:center"><span id="p30_name">Stop hour </span><span id="p30_val">0</span></div>
+			<input id="p30" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1.0" value="0"  min="0" max="23">
+			<div style="text-align:left;float:left"><span id="p30_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p30_max">23</span></div>
+			<div style="text-align:center"><span id="p30_act">0</span></div><br>
+		
+			<div style="text-align:center"><span id="p40_name">Stop minute </span><span id="p40_val">0</span></div>
+			<input id="p40" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1.0" value="0"  min="0" max="59">
+			<div style="text-align:left;float:left"><span id="p40_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p40_max">59</span></div>
+			<div style="text-align:center"><span id="p40_act">0</span></div><br>
+			
+			<div style="text-align:center"><span id="p60_name">Start Dist/Station: </span><span id="p60_val">0</span></div>
+			<input id="p60" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="255">
+			<div style="text-align:left;float:left"><span id="p60_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="p60_max">255</span></div>
+			<div style="text-align:center"><span id="p60_act">0</span></div><br>
+			
+			<div style="text-align:center"><span id="pc0_name">Use Beacon: </span><span id="pc0_val">0</span></div>
+			<input id="pc0" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="40">
+			<div style="text-align:left;float:left"><span id="pc0_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="pc0_max">40</span></div>
+			<div style="text-align:center"><span id="pc0_act">0</span></div><br>
+			
+			
+			
+			<div class="col1"><button id="p70" type="button" onclick="isClicked(this.id)" class="button">
+			Start Pattern : </button></span></div><br>
+			
+			<div class="col1"><button id="pd0" type="button" onclick="isClicked(this.id)" class="button">
+			Start Area : </button></span></div><br>
+			
+			<div class="col1"><button id="p80" type="button" onclick="isClicked(this.id)" class="button">
+			Start Lane NR : </button></span></div><br>
+			
+			<div class="col1"><button id="pa0" type="button" onclick="isClicked(this.id)" class="button">
+			Start Roll Dir : </button></span></div><br>
+			
+			
+			<div style="text-align:center"><span id="pb0_name">Start Max Lane lenght : </span><span id="pb0_val">0</span></div>
+			<input id="pb0" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="40">
+			<div style="text-align:left;float:left"><span id="pb0_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="pb0_max">40</span></div>
+			<div style="text-align:center"><span id="pb0_act">0</span></div><br>
+			
+			
+		
+			<div class="col1"><button id="p500" type="button" onclick="isClicked(this.id)" class="button">
+			SUN NO </button></span></div><br>
+		
+			<div class="col1"><button id="p501" type="button" onclick="isClicked(this.id)" class="button">
+			Mon NO </button></span></div><br>
+			
+			<div class="col1"><button id="p502" type="button" onclick="isClicked(this.id)" class="button">
+			Tue NO </button></span></div><br>
+			
+			<div class="col1"><button id="p503" type="button" onclick="isClicked(this.id)" class="button">
+			Wed NO</button></span></div><br>
+			
+			<div class="col1"><button id="p504" type="button" onclick="isClicked(this.id)" class="button">
+			Thu NO</button></span></div><br>
+			
+			<div class="col1"><button id="p505" type="button" onclick="isClicked(this.id)" class="button">
+			Fri NO </button></span></div><br>
+			
+			<div class="col1"><button id="p506" type="button" onclick="isClicked(this.id)" class="button">
+			Sat NO </button></span></div><br>
+			
+			<div class="col1"><button id="p90" type="button" onclick="isClicked(this.id)" class="button">
+			Set to current time </button></span></div><br>
+		</ul>
+	</div>	
+
+<script>
+	function isChanging(elem){
+		var ID = elem;
+		var val,ele, ele1;
+		var changed = false;
+		ele = document.getElementById(ID);
+		ele1 = document.getElementById( ID + "_act");
+		val = ele.value;
+		ele1.innerText = val;
+	}
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/Station</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s10');">
+
+	<div class="Fuerst1">
+		<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+		<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+		<h2><p style="text-align:center">Settings/Station</p></h2>
+		<div class="col1"><button id="k05" type="button" onclick="isClicked(this.id)" class="button">
+		Bumper pressed on dock </button></span></div><br>		
+	
+		<div style="text-align:center"><span id="k00_name">Reverse Distance (CM) </span><span id="k00_val">0</span></div>
+		<input id="k00" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="200">
+		<div style="text-align:left;float:left"><span id="k00_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="k00_max">200</span></div>
+		<div style="text-align:center"><span id="k00_act">0</span></div><br>
+	
+		<div style="text-align:center"><span id="k01_name">Roll Angle (Deg) </span><span id="k01_val">0</span></div>
+		<input id="k01" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="180">
+		<div style="text-align:left;float:left"><span id="k01_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="k01_max">180</span></div>
+		<div style="text-align:center"><span id="k01_act">0</span></div><br>
+	
+		<div style="text-align:center"><span id="k02_name">Accel Distance after Roll </span><span id="k02_val">0</span></div>
+		<input id="k02" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="200">
+		<div style="text-align:left;float:left"><span id="k02_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="k02_max">200</span></div>
+		<div style="text-align:center"><span id="k02_act">0</span></div><br>
+	
+		<div style="text-align:center"><span id="k03_name">Station check Distance </span><span id="k03_val">0</span></div>
+		<input id="k03" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="20">
+		<div style="text-align:left;float:left"><span id="k03_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="k03_max">20</span></div>
+		<div style="text-align:center"><span id="k03_act">0</span></div><br>
+		
+		<div style="text-align:center"><span id="K07_name">Station check Speed </span><span id="K07_val">0</span></div>
+		<input id="K07" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="20">
+		<div style="text-align:left;float:left"><span id="K07_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="K07_max">20</span></div>
+		<div style="text-align:center"><span id="K07_act">0</span></div><br>		
+	
+		<div style="text-align:center"><span id="k06_name">Docking Speed % of MaxSpeed </span><span id="k06_val">0</span></div>
+		<input id="k06" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="20"  min="20" max="100">
+		<div style="text-align:left;float:left"><span id="k06_min">20</span></div>
+		<div style="text-align:right;float:right"><span id="k06_max">100</span></div>
+		<div style="text-align:center"><span id="k06_act">20</span></div><br>
+	</div>
+</body>
+</html>

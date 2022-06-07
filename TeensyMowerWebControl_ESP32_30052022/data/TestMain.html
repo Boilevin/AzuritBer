@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/TestMain</title>
+	<meta name="description" content="Kurzbeschreibung">
+	<link href="./design.css" rel="stylesheet">
+	<script language="javascript" type="text/javascript" src="./functions.js"></script>
+</head>
+
+<body onload="getWerte('ya');">
+	<div class="Fuerst1">
+			<div class="col1flat"><a href="./index.html"><img class="a" src="./logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+			<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">	
+		<h2><p style="text-align:center">Test Main</p></h2>
+	
+		<div style="text-align:center"><span id="ya0_name">mowPatternCurr </span><span id="ya0_val">0</span></div>
+		<input id="ya0" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="3">
+		<div style="text-align:left;float:left"><span id="ya0_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="ya0_max">3</span></div>
+		<div style="text-align:center"><span id="ya0_act">0</span></div><br>
+		<div style="text-align:center"><span id="ya1_name">laneUseNr </span><span id="ya1_val">0</span></div>
+		<input id="ya1" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="3">
+		<div style="text-align:left;float:left"><span id="ya1_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="ya1_max">3</span></div>
+		<div style="text-align:center"><span id="ya1_act">0</span></div><br>
+		<div style="text-align:center"><span id="ya2_name">rollDir </span><span id="ya2_val">0</span></div>
+		<input id="ya2" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="1">
+		<div style="text-align:left;float:left"><span id="ya2_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="ya2_max">1</span></div>
+		<div style="text-align:center"><span id="ya2_act">0</span></div><br>
+		<div style="text-align:center"><span id="ya3_name">whereToStart </span><span id="ya3_val">0</span></div>
+		<input id="ya3" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="9999">
+		<div style="text-align:left;float:left"><span id="ya3_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="ya3_max">9999</span></div>
+		<div style="text-align:center"><span id="ya3_act">0</span></div><br>
+		<div style="text-align:center"><span id="ya4_name">areaToGo </span><span id="ya4_val">0</span></div>
+		<input id="ya4" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="3">
+		<div style="text-align:left;float:left"><span id="ya4_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="ya4_max">3</span></div>
+		<div style="text-align:center"><span id="ya4_act">0</span></div><br>
+		<div style="text-align:center"><span id="ya5_name">actualLenghtByLane </span><span id="ya5_val">0</span></div>
+		<input id="ya5" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="0"  min="0" max="255">
+		<div style="text-align:left;float:left"><span id="ya5_min">0</span></div>
+		<div style="text-align:right;float:right"><span id="ya5_max">255</span></div>
+		<div style="text-align:center"><span id="ya5_act">0</span></div><br><br>
+	</div>
+	
+</body>
+</html>

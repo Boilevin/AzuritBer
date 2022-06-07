@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	<meta charset="UTF-8">
+	<title>TeensyMower Webinterface/Settings/Rain<</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="../design.css" rel="stylesheet">
+    <script language="javascript" type="text/javascript" src="../functions.js"></script>
+</head>
+
+<body onload="getWerte('s13');">
+
+	<div class="Fuerst1">
+			<div class="col1flat"><a href="./index.html"><img class="a" src="../logo_small.png" alt="TeensyMower" style="text-align:center float:center"></a></div>
+			<div class="col1flat" ><span id="con" style="color:black text-align:center float:center">TeensyMower not connected...</span><span id="aktivity" style="color:black">/</span></div>
+	</div>
+	<div class="div">			
+			<h2><p style="text-align:center">Settings/Rain Sensor</p></h2>
+
+			<div class="col1"><button id="m00" type="button" onclick="isClicked(this.id)" class="button">
+			Rain Use </button></span></div><br>
+
+			<div style="text-align:center"><span id="m01">Counter 0</span></div><br>	
+			<div style="text-align:center"><span id="m02">Value 0  </span></div><br>	
+			
+			<div class="col1"><button id="m03" type="button" onclick="isClicked(this.id)" class="button">
+			Screen USE No </button></span></div><br>
+	
+	
+			<div class="col1"><button id="m13" type="button" onclick="isClicked(this.id)" class="button">
+			DHT22 Use No </button></span></div><br>
+			
+			<div style="text-align:center"><span id="m04">Temperature Teensy </span></span></div><br>
+			<div style="text-align:center"><span id="m05">Temperature Imu </span></span></div><br>
+			<div style="text-align:center"><span id="m06_name">Max Teensy Temperature </span><span id="m06_val">0</span></div>
+			<input id="m06" type="range" onchange="isChange(this.id);" oninput="isChanging(this.id)" class="slider" step="1" value="50"  min="0" max="80">
+			<div style="text-align:left;float:left"><span id="m06_min">0</span></div>
+			<div style="text-align:right;float:right"><span id="m06_max">80</span></div>
+			<div style="text-align:center"><span id="m06_act">60</span></div><br>
+		</ul>
+	</div>
+</body>
+</html>

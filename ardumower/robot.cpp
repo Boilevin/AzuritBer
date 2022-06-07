@@ -847,7 +847,7 @@ void Robot::loadSaveUserSettings(boolean readflag) {
   eereadwrite(readflag, addr, DistPeriOutRev);
   eereadwrite(readflag, addr, motorRightOffsetFwd);
   eereadwrite(readflag, addr, motorRightOffsetRev);
-  eereadwrite(readflag, addr, perimeterMagLeftMaxValue);
+  eereadwrite(readflag, addr, perimeterMagMaxValue);
   eereadwrite(readflag, addr, SpeedOdoMin);
   eereadwrite(readflag, addr, SpeedOdoMax);
   eereadwrite(readflag, addr, yawSet1);
@@ -1063,8 +1063,8 @@ void Robot::printSettingSerial() {
   ShowMessageln(trackingPerimeterTransitionTimeOut);
   ShowMessage  ("trackingErrorTimeOut     : ");
   ShowMessageln(trackingErrorTimeOut);
-  ShowMessage  ("perimeterMagLeftMaxValue     : ");
-  ShowMessageln(perimeterMagLeftMaxValue);
+  ShowMessage  ("perimeterMagMaxValue     : ");
+  ShowMessageln(perimeterMagMaxValue);
   ShowMessage  ("swapCoilPolarityRight    : ");
   watchdogReset();
   ShowMessageln(perimeter.swapCoilPolarityRight);
@@ -2050,9 +2050,9 @@ void Robot::motorControlPerimeter() {
   nextTimeMotorPerimeterControl = millis() + 15; //bb read the perimeter each 15 ms
   //never stop the PID compute while turning for the new transition
   //use the perimeterMagLeft as cible to smooth the tracking
-  //Value reference perimeterMagLeftMaxValue , maybe need to be calculate in mower setting up procedure
+  //Value reference perimeterMagMaxValue , maybe need to be calculate in mower setting up procedure
 
-  perimeterPID.x = 5 * (double(perimeterMagLeft) / perimeterMagLeftMaxValue);
+  perimeterPID.x = 5 * (double(perimeterMagLeft) / perimeterMagMaxValue);
 
   if (perimeterInside)  perimeterPID.w = -0.5;
   else     perimeterPID.w = 0.5;
@@ -2189,7 +2189,7 @@ void Robot::motorControlPerimeter() {
 
   setMotorPWM( leftSpeedperi, rightSpeedperi);
 
-  if (abs(perimeterMagLeft) < perimeterMagLeftMaxValue / 4) { //250 can be replace by timedOutIfBelowSmag to be tested
+  if (abs(perimeterMagLeft) < perimeterMagMaxValue / 4) { //250 can be replace by timedOutIfBelowSmag to be tested
     perimeterLastTransitionTime = millis(); //initialise perimeterLastTransitionTime if perfect sthraith line
 
   }
@@ -3005,7 +3005,7 @@ void Robot::readSensors() {
     perimeterMagLeft = readSensor(SEN_PERIM_LEFT);
     perimeterMedian.add(perimeterMagLeft);
     if (perimeterMedian.isFull()) {
-      perimeterNoiseLeft = perimeterMedian.getHighest() - perimeterMedian.getLowest();
+      perimeterNoise = perimeterMedian.getHighest() - perimeterMedian.getLowest();
       perimeterMedian.clear();
     }
 
@@ -4984,8 +4984,8 @@ void Robot::checkPerimeterBoundary() {
     //bber200
     //speed coeff between 0.7 and 1 according 50% of perimetermagmax
     if ((millis() >= nextTimeCheckperimeterSpeedCoeff) && (reduceSpeedNearPerimeter)) {
-      int miniValue = (int)perimeterMagLeftMaxValue / 2;
-      perimeterSpeedCoeff = (float) map(perimeter.getSmoothMagnitude(0), miniValue, perimeterMagLeftMaxValue, 100, 70) / 100;
+      int miniValue = (int)perimeterMagMaxValue / 2;
+      perimeterSpeedCoeff = (float) map(perimeter.getSmoothMagnitude(0), miniValue, perimeterMagMaxValue, 100, 70) / 100;
       if (perimeterSpeedCoeff < 0.7) {
         perimeterSpeedCoeff = 0.7;
         nextTimeCheckperimeterSpeedCoeff = millis() + 500; //avoid speed coeff increase when mower go accross the wire
