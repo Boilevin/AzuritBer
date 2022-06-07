@@ -27,7 +27,7 @@
 #define PCBtoESP "[PCB->ESP] "
 #define mqtt-Receive "[mqtt-Receive]"
 #define mqtt-Send "[mqtt-Send]"
-#define VERSION " Version from 22.05.2022 for SPIFFS and SD-Card Use "
+#define VERSION " Version from 01.06.2022 for SPIFFS and SD-Card Use "
 #define CONFIG_MSG_START "config:"
 
 #define SET_IP_SETTING  1  //true=IP-Settings from azurit-programm, false=IP-Settings by user/esp
@@ -49,8 +49,8 @@ IPAddress myIP(10,0,0,168);
 IPAddress network_gateway(10,0,0,1);
 IPAddress network_subnet(255, 255, 255, 0);
 IPAddress network_dns(10,0,0,1);
-char *wifi_network_ssid     = "ASUS_38_2G";
-char *wifi_network_password = "basicsheep714";
+char *wifi_network_ssid     = "xxxx";
+char *wifi_network_password = "xxxx";
 
 bool wifiConnected = false;
 int connectCnt = 0;
@@ -282,9 +282,8 @@ void loop() {
 
 void handleSerialInput() {
   if (PFODclientConnected) {
-    //debugln(MSG_HEADER "PFODclientConnected");
+    debugln(MSG_HEADER " PFODclientConnected");
     if (Serial_ESP_to_PCB.available()) {
-      debugln(MSG_HEADER "PFODclient as data");
       size_t len = min(Serial_ESP_to_PCB.available(), 255);
       char sbuf[len];
       String erg = "";

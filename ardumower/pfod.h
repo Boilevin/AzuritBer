@@ -48,12 +48,10 @@
  * It does not check the correctness. Therefore true / false has no meaning for the function but only for the syntax.
 */
 
-//#define DUE true                //if you use DUE-CPU
-//#define TEENSYDUINO true        //if you use Teensy4.1-CPU
 #define STANDARD true           //if you are NOT Fürst Ruprecht
 //#define FUERSTRUPRECHT true     //if you are Fürst Ruprecht
-//#define USECONSOLE true         //if you want to send the arduino-console-Output to your mobile/tablet
-#define USEPFOD true            //if you use the arduino-pfod-V3-app
+#define USECONSOLE true         //if you want to send the arduino-console-Output to your mobile/tablet
+//#define USEPFOD true            //if you use the arduino-pfod-V3-app
 
 #if not defined(TEENSYDUINO)  //(DUE) 
   #include <Arduino.h>    //(DUE) 
@@ -154,6 +152,8 @@ class RemoteControl
     void processLiveDataPerimeterMenu(boolean update);
     void processLiveDataSonarMenu(boolean update);
     void processLiveDataGPS2DMenu(boolean update);
+    void processLiveDataMotorMenu(boolean update);
+    void processLiveDataCountersMenu(boolean update);
 
     // settings
     void sendSettingsMenu(boolean update);
@@ -206,7 +206,7 @@ class RemoteControl
     void processDateTimeMenu(String pfodCmd);
     void processFactorySettingsMenu(String pfodCmd);
     void processInfoMenu(String pfodCmd);
-	#if defined(useStepperMenu)
+	#if defined(FUERSTRUPRECHT)
 		void sendStepperMenu(boolean update);
 		void processStepperMenu(String pfodCmd);
 	#endif	
