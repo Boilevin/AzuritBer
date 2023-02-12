@@ -1,0 +1,397 @@
+recorder:
+  exclude:
+    entities:
+      - sensor.Denna_loops_s
+      - sensor.Denna_state
+      - sensor.Denna_status
+##### INPUT SECTION #####
+input_number:
+  denna_timer1_start_distance:
+    name: "Start distance"
+    icon: mdi:ray-start-arrow
+    min: 1
+    max: 100
+    step: 1
+  denna_timer1_lane_lenght:
+    name: "Max. lane lenght"
+    icon: mdi:ray-start-end
+    min: 1
+    max: 100
+    step: 1
+
+input_select:
+  denna_timer1_mowpattern:
+    name: "Mow Pattern"
+    icon: mdi:remote
+    options:
+      - "Random"
+      - "Lane"
+      - "Perimeter"
+  denna_timer1_lanenr:
+    name: "Lane number"
+    icon: mdi:arrow-decision
+    options:
+      - "1"
+      - "2"
+      - "3"
+  denna_timer1_rolldir:
+    name: "First roll direction"
+    icon: mdi:directions-fork
+    options:
+      - "Left"
+      - "Right"
+  denna_timer1_areatogo:
+    name: "Area to go"
+    icon: mdi:routes
+    options:
+      - "1"
+      - "2"
+
+input_datetime:
+  denna_timer1_start_time:
+    name: "Start time"
+    icon: mdi:timer #-outline
+    has_date: false
+    has_time: true
+  denna_timer1_stop_time:
+    name: "Stop time"
+    icon: mdi:timer-off #-outline
+    has_date: false
+    has_time: true
+
+input_boolean:
+  denna_timer1_activate:
+    name: "Activate timer"
+    icon: mdi:check-outline
+  denna_timer1_monday:
+    name: "Monday"
+    icon: mdi:calendar-question
+  denna_timer1_tuesday:
+    name: "Tuesday"
+    icon: mdi:calendar-question
+  denna_timer1_wednesday:
+    name: "Wednesday"
+    icon: mdi:calendar-question
+  denna_timer1_thursday:
+    name: "Thursday"
+    icon: mdi:calendar-question
+  denna_timer1_friday:
+    name: "Friday"
+    icon: mdi:calendar-question
+  denna_timer1_saturday:
+    name: "Saturday"
+    icon: mdi:calendar-question
+  denna_timer1_sunday:
+    name: "Sunday"
+    icon: mdi:calendar-question
+
+##### SENSOR SECTION #####
+sensor:
+  # determine if today is selected as a mowing day for timer 1
+  - platform: template
+    sensors:
+      denna_timer1_mowing_day:
+        value_template: >
+          {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+          {% set today_name = sensor_names[now().weekday()] %}
+          {% set entity_id = 'input_boolean.Denna_timer1_'+today_name %}
+          {{ is_state(entity_id, 'on') }}
+
+  - platform: mqtt
+    name: "Denna State"
+    state_topic: "Denna/State"
+    force_update: True
+  # - platform: template
+  #   sensors:
+  #     Denna_state_nice:
+  #       friendly_name: "ArduDenna State"
+  #       value_template: >-
+  #         {% if is_state('sensor.mwr_state', 'OFF') %}
+  #           OFF
+  #         {% elif is_state('sensor.mwr_state', 'REMOTE') %}
+  #           Remote
+  #         {% elif is_state('sensor.mwr_state', 'FORW') %}
+  #           Forward
+  #         {% elif is_state('sensor.mwr_state', 'ROLL') %}
+  #           Roll
+  #         {% elif is_state('sensor.mwr_state', 'REV') %}
+  #           Reverse
+  #         {% elif is_state('sensor.mwr_state', 'CIRC') %}
+  #           Circle
+  #         {% elif is_state('sensor.mwr_state', 'ERR') %}
+  #           ERROR
+  #         {% elif is_state('sensor.mwr_state', 'PFND') %}
+  #           Searching wire
+  #         {% elif is_state('sensor.mwr_state', 'PTRK') %}
+  #           Tracking wire
+  #         {% elif is_state('sensor.mwr_state', 'PROL') %}
+  #           HEATING MIN TIME
+  #         {% elif is_state('sensor.mwr_state', 'PREV') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STAT') %}
+  #           Station
+  #         {% elif is_state('sensor.mwr_state', 'CHARG') %}
+  #           Charging
+  #         {% elif is_state('sensor.mwr_state', 'STCHK') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STREV') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STROL') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STFOR') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'MANU') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROLW') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'POUTFOR') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'POUTREV') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'POUTREV') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'POUTROLL') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'POBSREV') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'POBSROLL') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'POBSCIRC') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'NEXTLANE') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'POUTSTOP') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'LANEROL1') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'LANEROL2') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROLLTOIN') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'WAITREPEAT') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'FRWODO') %}
+  #           Forward ODO
+  #         {% elif is_state('sensor.mwr_state', 'TESTCOMPAS') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROLLTOTRACK') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'AUTOCALIB') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROLLTOFINDYAW') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'TESTMOTOR') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'FINDYAWSTOP') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STOPONBUMPER') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STOPCALIB') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'SONARTRIG') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STOPSPIRAL') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROT360') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'NEXTSPIRE') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ESCAPLANE') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'TRACKSTOP') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROLLTOTAG') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STOPTONEWAREA') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROLL1TONEWAREA') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'DRIVE1TONEWAREA') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROLL2TONEWAREA') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'DRIVE2TONEWAREA') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'WAITSIG2') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STOPTONEWAREA') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'ROLLSTOPTOTRACK') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'STOPTOFASTSTART') %}
+  #           HEATING
+  #         {% elif is_state('sensor.mwr_state', 'CALIBMOTORSPEED') %}
+  #           HEATING
+  #         {% else %}
+  #           Unknown
+  #         {% endif %}
+
+  - platform: mqtt
+    name: "Denna Status"
+    state_topic: "Denna/Status"
+    force_update: True
+  - platform: template
+    sensors:
+      denna_status_nice:
+        friendly_name: "Denna Status"
+        value_template: >-
+          {% if is_state('sensor.mwr_status', 'WAIT') %}
+            Waiting
+          {% elif is_state('sensor.mwr_status', 'NORMAL_MOWING') %}
+            Normal Mowing
+          {% elif is_state('sensor.mwr_status', 'SPIRALE_MOWING') %}
+            Spirale Mowing
+          {% elif is_state('sensor.mwr_status', 'BACK_TO_STATION') %}
+            Back to Station
+          {% elif is_state('sensor.mwr_status', 'TRACK_TO_START') %}
+            Track to Start
+          {% elif is_state('sensor.mwr_status', 'MANUAL') %}
+            Manual mode
+          {% elif is_state('sensor.mwr_status', 'REMOTE') %}
+            Remote mode
+          {% elif is_state('sensor.mwr_status', 'IN_ERROR') %}
+            in Error
+          {% elif is_state('sensor.mwr_status', 'IN_STATION') %}
+            in Station
+          {% elif is_state('sensor.mwr_status', 'TESTING') %}
+            Testing
+          {% elif is_state('sensor.mwr_status', 'WAITSIG2') %}
+            Waiting Signal 2
+          {% elif is_state('sensor.mwr_status', 'WIRE_MOWING') %}
+            Wire Mowing
+          {% else %}
+            Unknown
+          {% endif %}
+
+  - platform: mqtt
+    name: "Denna Battery"
+    state_topic: "Denna/Battery"
+    unit_of_measurement: "V"
+    force_update: True
+    value_template: "{{ value_json | round(1) }}"
+
+  - platform: mqtt
+    name: "Denna Temperature"
+    state_topic: "Denna/Temp"
+    unit_of_measurement: "°C"
+    force_update: True
+    value_template: "{{ value_json | round(1) }}"
+
+  - platform: mqtt
+    name: "Denna Loops/s"
+    state_topic: "Denna/Idle"
+    unit_of_measurement: "/s"
+    force_update: True
+
+  - platform: mqtt
+    name: "Denna timer test"
+    state_topic: "Denna/TEST/"
+
+##### SWITCH SECTION #####
+switch:
+  - platform: mqtt
+    name: "dennaStartStop"
+    command_topic: "Denna/COMMAND/"
+    payload_on: "START"
+    payload_off: "STOP"
+    qos: 0
+    retain: false
+
+  - platform: mqtt
+    name: "dennaHome"
+    command_topic: "Denna/COMMAND/"
+    payload_on: "HOME"
+    qos: 0
+    retain: false
+    
+  - platform: mqtt
+    name: "dennaVideo"
+    command_topic: "Denna/COMMAND/VIDEO/"
+    payload_on: "ON"
+    payload_off: "OFF"
+    state_on: "ON"
+    state_off: "OFF"
+    qos: 0
+    retain: false
+
+##### CAMERA SECTION #####
+
+camera:
+  - platform: mjpeg
+    name: "Denna Camera"
+    still_image_url: http://10.0.0.14:8000/stream.mjpg
+    mjpeg_url: http://10.0.0.14:80008/
+#camera:
+#  - platform: generic
+#    name: "ArduDenna Camera"
+#    still_image_url: http://10.0.0.14:8000
+#    stream_source: http://10.0.0.14:8000/index.html
+
+##### AUTOMATION SECTION #####
+automation:
+  # Start Timer 1
+  - alias: "Denna timer1 start automation"
+    trigger:
+      - platform: time_pattern
+        minutes: "/1"
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.Denna_timer1_activate
+          state: "on"
+        - condition: state
+          entity_id: sensor.Denna_timer1_mowing_day
+          state: "True"
+        - condition: state
+          entity_id: sensor.Denna_status
+          state: "IN_STATION"
+        - condition: state
+          entity_id: sensor.Denna_state
+          state: "STAT"
+        - condition: template
+          value_template: "{{ now().strftime('%H:%M') >= states('input_datetime.Denna_timer1_start_time') }}"
+        - condition: template
+          value_template: "{{ now().strftime('%H:%M') < states('input_datetime.Denna_timer1_stop_time') }}"
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: "Denna/COMMAND/"
+        # STARTTIMER;MowPattern;LaneNr;rollDir;WhereStart;areToGo;LaneLenght
+        payload: "STARTTIMER;{% if is_state('input_select.Denna_timer1_mowpattern', 'Random') %}0{% elif is_state('input_select.Denna_timer1_mowpattern', 'Lane') %}1{% elif is_state('input_select.Denna_timer1_mowpattern', 'Perimeter') %}2{% else %}FAILED{% endif %};{{states('input_select.Denna_timer1_lanenr')}};{% if is_state('input_select.Denna_timer1_rolldir', 'Left') %}0{% elif is_state('input_select.Denna_timer1_rolldir', 'Right') %}1{% else %}FAILED{% endif %};{{states('input_number.Denna_timer1_start_distance')|round(0)}};{{states('input_select.Denna_timer1_areatogo')}};{{states('input_number.Denna_timer1_lane_lenght')|round(0)}}"
+        qos: 0
+
+  # Stop Timer 1
+  - alias: "Denna timer1 stop automation"
+    trigger:
+      - platform: time_pattern
+        minutes: "/1"
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.Denna_timer1_activate
+          state: "on"
+        - condition: state
+          entity_id: sensor.Denna_timer1_mowing_day
+          state: "True"
+        - condition: or
+          conditions:
+            - condition: template
+              value_template: "{{ now().strftime('%H:%M') < states('input_datetime.Denna_timer1_start_time') }}"
+            - condition: template
+              value_template: "{{ now().strftime('%H:%M') >= states('input_datetime.Denna_timer1_stop_time') }}"
+        - condition: or
+          conditions:
+            - condition: state
+              entity_id: sensor.Denna_status
+              state: "NORMAL_MOWING"
+            - condition: state
+              entity_id: sensor.Denna_status
+              state: "SPIRALE_MOWING"
+    action:
+      service: mqtt.publish
+      data_template:
+        topic: "Denna/COMMAND/"
+        payload: "HOME"
+        qos: 0

@@ -1,0 +1,97 @@
+  - badges: []
+    cards:
+      - cards:
+          - aspect_ratio: 50%
+            type: iframe
+            url: http://10.0.0.15:8000
+          - cards:
+              - entities:
+                  - entity: sensor.denna_status
+                    name: Status
+                  - entity: sensor.denna_state
+                    name: State
+                  - entity: sensor.denna_battery
+                    icon: mdi:current-dc
+                    name: Voltage
+                  - entity: sensor.denna_temperature
+                    name: Temperature
+                  - entity: sensor.denna_loops_s
+                show_icon: false
+                show_name: false
+                type: glance
+            type: horizontal-stack
+          - cards:
+              - icon: mdi:robot-mower-outline
+                icon_height: 30px
+                name: Start
+                tap_action:
+                  action: call-service
+                  service: switch.turn_on
+                  service_data:
+                    entity_id: switch.dennastartstop
+                type: entity-button
+                entity: switch.dennastartstop
+              - icon: mdi:home-import-outline
+                icon_height: 30px
+                name: Home
+                tap_action:
+                  action: call-service
+                  service: switch.turn_on
+                  service_data:
+                    entity_id: switch.dennahome
+                type: entity-button
+                entity: switch.dennahome
+              - icon: mdi:stop
+                icon_height: 30px
+                name: Stop
+                tap_action:
+                  action: call-service
+                  service: switch.turn_off
+                  service_data:
+                    entity_id: switch.dennastartstop
+                type: entity-button
+                entity: switch.dennastartstop
+              - entity: switch.dennavideo
+                hold_action:
+                  action: more-info
+                icon: mdi:camera
+                icon_height: 30px
+                name: Video
+                show_icon: true
+                show_name: true
+                tap_action:
+                  action: toggle
+                type: button
+            type: horizontal-stack
+        type: vertical-stack
+      - cards:
+          - entities:
+              - entity: input_boolean.denna_timer1_activate
+              - entity: input_number.denna_timer1_start_distance
+              - entity: input_number.denna_timer1_lane_lenght
+            show_header_toggle: false
+            type: entities
+          - cards:
+              - entities:
+                  - input_datetime.denna_timer1_start_time
+                  - input_datetime.denna_timer1_stop_time
+                  - input_select.denna_timer1_mowpattern
+                  - input_select.denna_timer1_areatogo
+                  - input_select.denna_timer1_lanenr
+                  - input_select.denna_timer1_rolldir
+                show_header_toggle: false
+                type: entities
+              - entities:
+                  - input_boolean.denna_timer1_monday
+                  - input_boolean.denna_timer1_tuesday
+                  - input_boolean.denna_timer1_wednesday
+                  - input_boolean.denna_timer1_thursday
+                  - input_boolean.denna_timer1_friday
+                  - input_boolean.denna_timer1_saturday
+                  - input_boolean.denna_timer1_sunday
+                show_header_toggle: false
+                type: entities
+            type: horizontal-stack
+        type: vertical-stack
+    path: denna
+    title: Denna
