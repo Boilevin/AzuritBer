@@ -15,7 +15,8 @@ void setup() {
   delay(10000);
   
   Serial.println("Try to connect to DUE");
-  Serial2.begin(19200);
+  //Serial2.begin(19200);
+  Serial2.begin(19200,SERIAL_8N1, 16, 17);
   Serial.println("Connected");
   
 }
