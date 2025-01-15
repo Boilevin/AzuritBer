@@ -28,7 +28,7 @@ uint8_t lastUid[8];
 void setup() {
   Serial.begin(115200);
  //BT seial for Pfod init
-  Serial2.begin(19200);
+  Serial2.begin(19200,SERIAL_8N1, 16, 17);
   Serial.println("Start the Bluetooth");
   ESP_BT.begin("ESP32_BT01");
   Serial.println("Bluetooth Ready");
