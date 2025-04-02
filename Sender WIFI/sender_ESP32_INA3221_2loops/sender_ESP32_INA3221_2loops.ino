@@ -22,8 +22,8 @@
 #include <WiFi.h>
 
 //********************* user setting **********************************
-const char* ssid     = "WAVLINK-N";   // put here your acces point ssid
-const char* password = "basicsheep713";  // put here the password
+const char* ssid     = "****";   // put here your acces point ssid
+const char* password = "*****";  // put here the password
 //********************* setting for current sensor **********************************
 float DcDcOutVoltage = 9.0;  //Use to have a correct value on perricurrent (Need to change the value each time you adjust the DC DC )
 
@@ -38,7 +38,7 @@ IPAddress dns(10, 0, 0, 1); // put here one dns (IP of your routeur)
 #define USE_RAINFLOW    0     // check the amount of rain not finish to dev on 31/08/2020
 #define WORKING_TIMEOUT_MINS 300  // timeout for perimeter switch-off if robot not in station (minutes)
 #define PERI_CURRENT_MIN    100    // minimum milliAmpere for cutting wire detection
-#define AUTO_START_SIGNAL   0 //use to start sender when mower leave station
+#define AUTO_START_SIGNAL   1 //use to start sender when mower leave station
 
 
 #define I2C_SDA 4
@@ -232,10 +232,11 @@ void setup()
   Wire.begin(I2C_SDA, I2C_SCL);
   //------------------------  Signal parts  ----------------------------------------
   Serial.begin(115200);
-  timer = timerBegin(0, 80, true);
-  timerAttachInterrupt(timer, &onTimer, true);
-  timerAlarmWrite(timer, 104, true);
-  timerAlarmEnable(timer);
+  timer = timerBegin(1000000);
+  timerAttachInterrupt(timer, &onTimer);
+  //timerAlarmWrite(timer, 104, true);
+  timerAlarm(timer, 104, true, 0);
+  //timerAlarmEnable(timer);
   pinMode(pinIN1, OUTPUT);
   pinMode(pinIN2, OUTPUT);
   pinMode(pinEnableA, OUTPUT);
@@ -732,7 +733,8 @@ void loop()
     }
     if (req.indexOf("GET /sigDuration/104") != -1) {
       sigDuration = 104;
-      timerAlarmWrite(timer, 104, true);
+      //timerAlarmWrite(timer, 104, true);
+      timerAlarm(timer, 104, true, 0);
       // Prepare the response
       String sResponse;
       sResponse = "NOW 104 microsecond signal duration";
@@ -745,7 +747,8 @@ void loop()
 
     if (req.indexOf("GET /sigDuration/50") != -1) {
       sigDuration = 50;
-      timerAlarmWrite(timer, 50, true);
+      //timerAlarmWrite(timer, 50, true);
+      timerAlarm(timer, 104, true, 0);
       // Prepare the response
       String sResponse;
       sResponse = "NOW 50 microsecond signal duration";
